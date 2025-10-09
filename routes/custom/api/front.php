@@ -4,9 +4,9 @@ use App\Http\Controllers\Api\PosController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front\react\pos\IndexPosController;
 
-// Route::post('/check-customer', [IndexPosController::class, 'check']);
-// Route::post('/create-customer', [IndexPosController::class, 'createCustomer']);
-// Route::post('/create-order', [IndexPosController::class, 'createOrder']);
+Route::post('/check-customer', [IndexPosController::class, 'check']);
+Route::post('/create-customer', [IndexPosController::class, 'createCustomer']);
+Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 
 
 // pos screen

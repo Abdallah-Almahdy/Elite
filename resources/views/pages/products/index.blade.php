@@ -1,66 +1,27 @@
-    @extends('admin.app')
+@extends('admin.app')
 
-    @section('styles')
-        <style>
-            .product-image-container {
-                position: relative;
-                display: inline-block;
-            }
+@section('styles')
+<style>
+    /* Additional styles can be added here if needed */
+    .content-wrapper {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 120px);
+    }
+</style>
+@endsection
 
-            .upload-text {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+@section('content')
+<div class="container-fluid py-4">
+    <livewire:Products.Index />
+</div>
+@endsection
 
-                color: white;
-                text-align: center;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-                font-size: 14px;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
+@section('scripts')
+<script>
+    document.addEventListener('livewire:load', function() {
+        console.log('Products page loaded successfully');
 
-            .product-image-container:hover .upload-text {
-                opacity: 1;
-            }
-
-            input[type='checkbox'] {
-
-                width: 30px;
-                height: 30px;
-                background: white;
-                border-radius: 5px;
-                border: 2px solid #555;
-            }
-        </style>
-    @endsection
-
-    @section('content')
-   
-
-        <livewire:Products.Index />
-    @endsection
-    @section('scripts')
-        <script>
-            // console.log('hi');
-
-            document.addEventListener('livewire:load', function() {
-                // When the hover text is clicked, trigger the corresponding file input click
-                document.querySelectorAll('.upload-text').forEach(function(element) {
-                    element.addEventListener('click', function() {
-                        var productId = element.getAttribute('data-product-id'); // Get the product ID
-                        var fileInput = document.getElementById('file-input-' +
-                            productId); // Find the associated file input
-                        if (fileInput) {
-                            fileInput.click(); // Trigger the file input click
-                        }
-                    });
-                });
-            });
-        </script>
-    @endsection
+        // Additional page-specific scripts can go here
+    });
+</script>
+@endsection

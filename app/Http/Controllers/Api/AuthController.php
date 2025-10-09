@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Auth\Events\Registered;
 use App\Http\Resources\userDataResource;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -48,6 +49,9 @@ class AuthController extends Controller
                     'firstName' => $validated['firstName'],
                     'lastName'  => $validated['lastName'],
                     'email'     => $validated['email'],
+                    'age' => isset($validated['birthDate'])
+                        ? Carbon::parse($validated['birthDate'])->age
+                        : null,
                 ]);
 
                 return $user;

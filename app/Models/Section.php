@@ -21,12 +21,9 @@ class Section extends Model
 
 
 
-    public function product(): HasMany
-    {
-        return $this->hasMany(Product::class);
-    }
     public function sub_section(): HasMany
     {
         return $this->hasMany(SubSection::class, 'main_section_id');
     }
+
 }

@@ -18,7 +18,9 @@ class notificationsService
 
 
         // Create a Google client
+
         $client = new Google_Client();
+
         $client->setAuthConfig($keyFilePath);
 
         // Set the scopes required for your application

@@ -17,19 +17,14 @@ class Options extends Model
         'active',
     ];
 
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'product_options', 'option_id', 'product_id')
-            ->withPivot('option_value_id', 'price_adjustment')
+            ->withPivot('option_name', 'price_adjustment', 'option_value')
             ->withTimestamps();
     }
 
-
-
-    public function optionValues()
-    {
-        return $this->belongsToMany(Product::class, 'product_options', 'option_id', 'product_id');
-    }
 
     public function values()
     {
@@ -40,4 +35,5 @@ class Options extends Model
     {
         return $this->hasMany(OrderProductOption::class, 'option_id');
     }
+    
 }

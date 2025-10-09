@@ -31,15 +31,13 @@ class  Product extends Model
     ];
 
 
-    // public function section(): BelongsTo
-    // {
-    //     return $this->belongsTo(SubSection::class);
-    // }
+
     public function invoiceProducts()
     {
         return $this->hasMany(InvoiceProduct::class);
     }
-    public function subSection(): BelongsTo
+
+    public function section(): BelongsTo
     {
         return $this->belongsTo(SubSection::class, 'section_id', 'id');
     }
@@ -49,10 +47,7 @@ class  Product extends Model
         return $this->hasOne(Company::class);
     }
 
-    public function productOptions()
-    {
-        return $this->hasMany(ProductOption::class);
-    }
+
     public function orderProduct(): BelongsTo
     {
         return $this->belongsTo(OrderProduct::class);
@@ -86,5 +81,4 @@ class  Product extends Model
     {
         return $this->uses_recipe;
     }
-
 }

@@ -20,7 +20,8 @@ class SubSection extends Model
         'active',
         'main_section_id',
     ];
-    public function product(): HasMany
+
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
@@ -30,4 +31,6 @@ class SubSection extends Model
     {
         return $this->belongsTo(Section::class,  'main_section_id', 'id');
     }
+
+
 }

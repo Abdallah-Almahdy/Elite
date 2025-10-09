@@ -16,4 +16,14 @@ class ProductOption extends Model
         'option_value',
         'price_adjustment',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function option()
+    {
+        return $this->belongsTo(Options::class, 'option_id');
+    }
 }

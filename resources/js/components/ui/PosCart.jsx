@@ -146,7 +146,7 @@ export function PosCart({ cart, setCart }) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify({
                         name: customerInfo.name,
@@ -166,6 +166,7 @@ export function PosCart({ cart, setCart }) {
                 }
             } catch (error) {
                 console.error('Error creating customer:', error);
+
                 alert('rte حدث خطأ في إنشاء العميل. حاول مرة أخرى.');
                 return false;
             } finally {
