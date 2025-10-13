@@ -21,9 +21,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/hstgr-sicilia-test-srv599157/htdocs/sicilia-test.srv599157.hstgr.cloud
-            git stash
             git pull origin main
-            git stash pop
             composer install --no-dev --optimize-autoloader
             npm install
             npm run build

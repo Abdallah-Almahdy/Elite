@@ -16,14 +16,13 @@ class NotificationController extends Controller
         $user_id = $request->user()->id;
         $user = $user_id ? User::find($user_id) : null;
 
-        $notifications = Notification::where(function ($query) use ($user)
-        {
-            $query->where('is_general', 'true');
-            if ($user)
-            {
+        $notifications = Notification::query()
+            ->where('is_general', true)
+            ->when($user, function ($query) use ($user) {
                 $query->where('created_at', '>=', $user->created_at);
-            }
-        })->orderBy('created_at', 'desc')->get();
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $notifications->merge($user->notifications());
         $merged = $notifications->sortByDesc('created_at')->values();
@@ -35,7 +34,6 @@ class NotificationController extends Controller
                 'id'         => $notification->id,
                 'title'      => $notification->title,
                 'body'       => $notification->body,
-                'type'       => $notification->type,
                 'photo'      => $notification->photo,
                 'created_at' => $notification->created_at,
             ];

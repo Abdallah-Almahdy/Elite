@@ -22,3 +22,5 @@ yarn-error.log
 /.zed
 
 app/Services/resturant-38fd1-firebase-adminsdk-fbsvc-1975b1ebef.json
+app/Services/*.json
+storage/app/firebase-key.json

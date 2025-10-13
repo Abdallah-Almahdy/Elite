@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
 use App\Models\Notification;
 use App\Models\User;
+use App\Models\UserNotification;
 use App\Services\notificationsService;
 
 class Notifications extends Component
@@ -97,10 +98,15 @@ class Notifications extends Component
         } elseif ($this->type === 'user' && $this->user_id)
         {
             $user = User::find($this->user_id);
-            
+
 
             if ($user) {
-                $notification->users()->attach($user->id, ['is_read' => false]);
+                UserNotification::create([
+                    'user_id' => $user->id,
+                    'notification_id' => $notification->id,
+                    'is_read' => false,
+                ]);
+
                 if ($user->customerInfo && $user->customerInfo->notification_token) {
                     $payload['message']['token'] = $user->customerInfo->notification_token;
 
