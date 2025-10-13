@@ -77,6 +77,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::resource('units', UnitController::class);
     Route::resource('recipes', RecipeController::class);
     Route::resource('about', AboutUsController::class);
+    Route::get('about',[AboutUsController::class,'index'])->name('about.index');
     Route::resource('ingredients', IngredientController::class);
     Route::resource('recipes', RecipeController::class)->except(['show']);
 
