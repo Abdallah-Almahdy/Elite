@@ -218,7 +218,7 @@
                 <!-- عننا -->
                 @can('showProductsSidebar')
                 <li class="nav-item mb-1">
-                    <a href="{{ route('about.index') }}" class="nav-link {{ Request::is('dashboard/about*') ? 'bg-success' : '' }}">
+                    <a href="{{ route('dashboard.about.index') }}" class="nav-link {{ Request::is('dashboard/about*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-info-circle ml-2"></i>
                         <p>عننا</p>
                     </a>

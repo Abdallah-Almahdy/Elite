@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\product;
 use App\Models\section;
 
-class homeScreenController extends Controller
+class HomeScreenController extends Controller
 {
     public function support()
     {
