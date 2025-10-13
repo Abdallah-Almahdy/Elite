@@ -25,7 +25,7 @@ class NotificationController extends Controller
             }
         })->orderBy('created_at', 'desc')->get();
 
-        $notifications->merge($user->notfcations());
+        $notifications->merge($user->notifications());
         $merged = $notifications->sortByDesc('created_at')->values();
 
 
