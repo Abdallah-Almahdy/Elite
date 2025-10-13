@@ -82,23 +82,16 @@ class Notifications extends Component
             ]
         ];
 
-        if ($this->type === 'general') {
+        if ($this->type === 'general')
+        {
 
             $payload['message']['topic'] = 'elitetopic';
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->token,
+                'Content-Type'  => 'application/json',
+            ])->post('https://fcm.googleapis.com/v1/projects/resturant-38fd1/messages:send', $payload);
 
-            $users = User::with('customerInfo')->all();
 
-            foreach ($users as $user) {
-                $notification->users()->attach($user->id, ['is_read' => false]);
-                if ($user->customerInfo && $user->customerInfo->notification_token) {
-                    $payload['message']['token'] = $user->customerInfo->notification_token;
-
-                    Http::withHeaders([
-                        'Authorization' => 'Bearer ' . $this->token,
-                        'Content-Type'  => 'application/json',
-                    ])->post('https://fcm.googleapis.com/v1/projects/resturant-38fd1/messages:send', $payload);
-                }
-            }
         } elseif ($this->type === 'user' && $this->user_id) {
             $user = User::find($this->user_id);
 
@@ -124,7 +117,7 @@ class Notifications extends Component
                         $deliveryQuery->where('id', $place_name);
                     });
             })->get();
-         
+
 
             foreach ($users as $user) {
                 $notification->users()->attach($user->id, ['is_read' => false]);
