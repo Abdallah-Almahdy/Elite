@@ -12,9 +12,7 @@ class ProductOption extends Model
     protected $table = 'product_options';
     protected $fillable = [
         'product_id',
-        'option_name',
-        'option_value',
-        'price_adjustment',
+        'option_id',
     ];
 
     public function product()

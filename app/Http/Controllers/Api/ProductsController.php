@@ -19,7 +19,7 @@ class ProductsController extends Controller
         $data = Product::find($id);
 
 
-        return $this -> success($data);
+        return $this->success($data);
     }
 
 
@@ -44,17 +44,17 @@ class ProductsController extends Controller
 
         // return  productsResource::collection($data);
 
-            $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 10);
 
-            $data = Product::where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
+        $data = Product::where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
 
-            return response()->json([
-                'total_products' => $data->total(),
-                'total_pages'    => $data->lastPage(),
-                'current_page'   => $data->currentPage(),
-                'per_page'       => $data->perPage(),
-                'data'           => productsResource::collection($data->items()),
-            ]);
+        return response()->json([
+            'total_products' => $data->total(),
+            'total_pages'    => $data->lastPage(),
+            'current_page'   => $data->currentPage(),
+            'per_page'       => $data->perPage(),
+            'data'           => productsResource::collection($data->items()),
+        ]);
     }
 
 
@@ -72,7 +72,7 @@ class ProductsController extends Controller
 
         Product::create($data);
 
-        return  $this -> success("product created successfully");
+        return  $this->success("product created successfully");
     }
 
 
@@ -104,43 +104,43 @@ class ProductsController extends Controller
 
 
 
-//     public function products_search(Request $request)
-// {
-//     $useFilter   = filter_var($request->input('useFilter', false), FILTER_VALIDATE_BOOLEAN);
-//     $minPrice    = $request->input('minPrice');
-//     $maxPrice    = $request->input('maxPrice');
-//     $searchType  = $request->query('type');
-//     $searchValue = $request->query('search_value');
+    //     public function products_search(Request $request)
+    // {
+    //     $useFilter   = filter_var($request->input('useFilter', false), FILTER_VALIDATE_BOOLEAN);
+    //     $minPrice    = $request->input('minPrice');
+    //     $maxPrice    = $request->input('maxPrice');
+    //     $searchType  = $request->query('type');
+    //     $searchValue = $request->query('search_value');
 
-//     $query = Product::query();
-
-
-//     if ($searchValue) {
-//         if ($searchType == '1') {
-//             $query->where('bar_code', 'LIKE', "%{$searchValue}%");
-//         } elseif ($searchType == '2') {
-//             $query->where('name', 'LIKE', "%{$searchValue}%");
-//         }
-//     }
+    //     $query = Product::query();
 
 
-//     if ($useFilter) {
-//         if (!is_null($minPrice)) {
-//             $query->where('price', '>=', $minPrice);
-//         }
-//         if (!is_null($maxPrice)) {
-//             $query->where('price', '<=', $maxPrice);
-//         }
-//     }
+    //     if ($searchValue) {
+    //         if ($searchType == '1') {
+    //             $query->where('bar_code', 'LIKE', "%{$searchValue}%");
+    //         } elseif ($searchType == '2') {
+    //             $query->where('name', 'LIKE', "%{$searchValue}%");
+    //         }
+    //     }
 
-//     $products = $query->orderBy('created_at', 'desc')->paginate(10);
 
-//     if ($products->count() === 0) {
-//         return [];
-//     }
+    //     if ($useFilter) {
+    //         if (!is_null($minPrice)) {
+    //             $query->where('price', '>=', $minPrice);
+    //         }
+    //         if (!is_null($maxPrice)) {
+    //             $query->where('price', '<=', $maxPrice);
+    //         }
+    //     }
 
-//     return productsResource::collection($products);
-// }
+    //     $products = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    //     if ($products->count() === 0) {
+    //         return [];
+    //     }
+
+    //     return productsResource::collection($products);
+    // }
 
     public function products_search(Request $request)
     {
@@ -164,15 +164,15 @@ class ProductsController extends Controller
 
         if ($useFilter) {
             if (!is_null($minPrice)) {
-                $query->where(function($q) use ($minPrice) {
+                $query->where(function ($q) use ($minPrice) {
                     $q->where('price', '>=', $minPrice)
-                      ->orWhereRaw('(price - (price * offer_rate / 100)) >= ?', [$minPrice]);
+                        ->orWhereRaw('(price - (price * offer_rate / 100)) >= ?', [$minPrice]);
                 });
             }
             if (!is_null($maxPrice)) {
-                $query->where(function($q) use ($maxPrice) {
+                $query->where(function ($q) use ($maxPrice) {
                     $q->where('price', '<=', $maxPrice)
-                      ->orWhereRaw('(price - (price * offer_rate / 100)) <= ?', [$maxPrice]);
+                        ->orWhereRaw('(price - (price * offer_rate / 100)) <= ?', [$maxPrice]);
                 });
             }
         }
@@ -190,7 +190,7 @@ class ProductsController extends Controller
 
 
     public function get_all_products_pagination(Request $request)
-{
+    {
         $perPage = $request->input('per_page', 10);
 
         $data = Product::where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
@@ -202,8 +202,5 @@ class ProductsController extends Controller
             'per_page'       => $data->perPage(),
             'data'           => productsResource::collection($data->items()),
         ]);
+    }
 }
-
-}
-
-

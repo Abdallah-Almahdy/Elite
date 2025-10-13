@@ -22,7 +22,7 @@ class productsResource extends JsonResource
             'name' => $this->name,
             'detail' => $this->description,
             // 'options' =>  $this->options,
-            'options' => OptionsResource::collection($this->productOptions),
+            'options' => OptionsResource::collection($this->options),
             'addsOn' =>  AddsOnsResource::collection($this->addsOn),
             'price' => $this->price,
             'image' => config('app.img_base_link') . $this->photo,

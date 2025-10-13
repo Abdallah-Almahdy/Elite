@@ -19,7 +19,8 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function ()
+{
     // Favorites
     Route::get('get_user_favorites', [FavoritesController::class, 'getUserFavorites']);
     Route::get('update_user_favorites', [FavoritesController::class, 'updateUserFavorites']);

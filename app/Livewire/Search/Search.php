@@ -17,8 +17,6 @@ class Search extends Component
     {
 
 
-
-
         $this->data = Product::where('name', 'like', '%' . $this->searchText . '%')->get();
     }
 

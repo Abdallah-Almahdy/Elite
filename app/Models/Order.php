@@ -22,12 +22,22 @@ class Order extends Model
         'payment_method',
         'promo_code_id',
         'order_type',
-
     ];
 
-    public function delivery(): HasOne
+    public function delivery(): BelongsTo
     {
-        return $this->hasOne(Delivery::class);
+        return $this->belongsTo(Delivery::class);
+
+    }
+
+    public function products(): HasMany
+    {
+        return $this->HasMany(OrderProduct::class);
+    }
+
+    public function orderProducts(): HasMany
+    {
+        return $this->HasMany(OrderProduct::class);
     }
 
 
@@ -36,10 +46,6 @@ class Order extends Model
         return $this->HasMany(OrderTracking::class);
     }
 
-    public function orderProducts(): HasMany
-    {
-        return $this->HasMany(OrderProduct::class);
-    }
 
     public function user_info(): BelongsTo
     {

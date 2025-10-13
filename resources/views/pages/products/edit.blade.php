@@ -1,8 +1,5 @@
 @extends('admin.app')
 
-
-
 @section('content')
-    <livewire:products.edit :data="$data" :sections="$sections"/>
+    <livewire:products.edit :product="$data->id" />
 @endsection
-

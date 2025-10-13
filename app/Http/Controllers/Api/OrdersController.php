@@ -38,10 +38,24 @@ class OrdersController extends Controller
 
     public function createOrder(Request $request)
     {
+        $request->validate([
+            'orderTotalPrice' => 'required|numeric',
+            'userAddress' => 'required|integer',
+            'phoneNumber' => 'required|string',
+            'orderPaymentMethod' => 'required|in:0,1', // 0 credit 1, cash
+            'order_type' => 'required|in:0,1,2', // 0 = delivery, 1 = takeaway, 2 = in-restaurant
+            'promocode_id' => 'nullable|integer|exists:promo_codes,id',
+            'orderProducts' => 'required|array|min:1',
+            'orderProducts.*.product_id' => 'required|integer|exists:products,id',
+            'orderProducts.*.quantity' => 'required|integer|min:1',
+            'delivery_id' => 'nullable|integer|exists:deliveries,id',
+        ]);
+
+
         $userId = $request->user()->id;
         $promocodeId = $request->promocode_id;
 
-        $this->ordersService->createOrder($request, $userId, $promocodeId);
+        $this->ordersService->makeOrder($request, $userId, $promocodeId);
 
         return $this->success([], 'Order created successfully');
     }

@@ -16,6 +16,8 @@ class OrderProductOptionValue extends Model
     protected $fillable = [
         'order_product_option_id',
         'option_value_id',
+        'price',
+        'name',
         'active',
     ];
 
@@ -32,4 +34,6 @@ class OrderProductOptionValue extends Model
     {
         return $this->belongsTo(OptionsValues::class, 'option_value_id');
     }
+
+    
 }

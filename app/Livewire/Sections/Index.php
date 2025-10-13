@@ -8,6 +8,7 @@ use Livewire\Component;
 use App\Models\SubSection;
 use Livewire\WithPagination;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\Layout;
 
 class Index extends Component
 {
@@ -16,6 +17,11 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     public $show = [];
     public $perPage = 5;
+    public $search;
+
+    protected $listeners = ['refreshComponent' => '$refresh'];
+
+
     public function delete($id)
     {
         $checkIfMain = Section::find($id);
@@ -69,11 +75,34 @@ class Index extends Component
         );
     }
 
+
+
+
     public function render()
     {
 
-        $sections = Section::paginate($this->perPage); // Paginate sections
-        $subSections = SubSection::all(); // Get all subsections (not paginated)
+
+        $sections = Section::when($this->search, function ($query) {
+            return $query->where('name', 'like', '%' . $this->search . '%');
+        })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $subSections = SubSection::when($this->search, function ($query) {
+            return $query->where('name', 'like', '%' . $this->search . '%');
+        })
+            ->orderBy('id', 'desc')
+            ->get();
+
+
+        if($this->search =='')
+        {
+            $sections = Section::get();
+            $subSections = SubSection::get();
+        }
+
+
+
 
         return view('livewire.sections.index', [
             'sections' => $sections,

@@ -124,7 +124,7 @@ class Notifications extends Component
                         $deliveryQuery->where('id', $place_name);
                     });
             })->get();
-            dd($users);
+         
 
             foreach ($users as $user) {
                 $notification->users()->attach($user->id, ['is_read' => false]);

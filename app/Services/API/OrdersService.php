@@ -2,9 +2,9 @@
 
 namespace App\Services\API;
 
-use App\Models\order;
-use App\Models\product;
-use App\Models\section;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Section;
 use App\Traits\ApiTrait;
 use App\Models\orderProduct;
 use App\Models\CustomerInfo;
@@ -40,17 +40,16 @@ class OrdersService
     {
         if ($promocodeId) {
             $promoCodeResponse = $this->promocodeService->checkPromocode($request);
-            if ($promoCodeResponse->getStatusCode() != 200) {
+            if ($promoCodeResponse->getStatusCode() != 200)
+            {
                 return $promoCodeResponse;
             }
         }
-
-        $this->checkExists(User::class, 'id', $userId);
-
         // Create main order
         $orderData =  $this->makeOrderLogic($request);
 
         // Mark promo as used
+
         $this->promocodeService->markPromocodeAsUsed($promocodeId, $orderData->id, $userId);
     }
 
@@ -88,46 +87,49 @@ class OrdersService
     | support methods
     |--------------------------------------------------------------------------
     */
-    public function createOrder($request, $userId)
-    {
-        $order_data = order::create([
-            'user_id' => $userId,
-            'totalPrice' => $request->orderTotalPrice,
-            'address' => $request->userAddress,
-            'phoneNumber' => CustomerInfo::where('user_id', $userId)->get()[0]->phonenum,
-            'status' => 0,
-            'payment_method' => $request->orderPaymentMethod,
-        ]);
+    // public function createOrder($request, $userId)
+    // {
+    //     $order_data = Order::create([
+    //         'user_id' => $userId,
+    //         'totalPrice' => $request->orderTotalPrice,
+    //         'address' => $request->userAddress,
+    //         'phoneNumber' => CustomerInfo::where('user_id', $userId)->get()[0]->phonenum,
+    //         'status' => 0,
+    //         'payment_method' => $request->orderPaymentMethod,
 
-        $order_tracking_data = [
-            'user_id'  => $order_data->user_id,
-            'order_id' => $order_data->id,
-            'status' => 0,
-        ];
-        orderTracking::create($order_tracking_data);
+    //     ]);
+
+    //     $order_tracking_data = [
+    //         'user_id'  => $order_data->user_id,
+    //         'order_id' => $order_data->id,
+    //         'status' => 0,
+    //     ];
+    //     orderTracking::create($order_tracking_data);
 
 
-        $products = [];
-        foreach ($request->orderProducts as $product) {
-            $products[] = orderProduct::create([
-                'product_id' => $product['productId'] + 0,
-                'order_id' => $order_data->id,
-                'totalCount' => $product['quantity'],
-                'totalPrice' => $product['quantity'] * product::find($product['productId'])->price,
-            ]);
-        }
-    }
+    //     $products = [];
+    //     foreach ($request->orderProducts as $product) {
+    //         $products[] = orderProduct::create([
+    //             'product_id' => $product['productId'] + 0,
+    //             'order_id' => $order_data->id,
+    //             'totalCount' => $product['quantity'],
+    //             'totalPrice' => $product['quantity'] * product::find($product['productId'])->price,
+    //         ]);
+    //     }
+
+    // }
 
     private function makeOrderLogic($request)
     {
 
-        $userId = $request->user_id;
+        $userId = $request->user()->id;
         $orderTotalPrice = $request->orderTotalPrice;
         $userAddress = $request->userAddress;
         $orderPaymentMethod = $request->orderPaymentMethod;
         $orderType = $request->order_type;
         $promocodeId = $request->promocode_id;
         $orderProducts = $request->orderProducts;
+        $deleveryId = $request->delivery_id;
 
         $order = [
             'user_id' => $userId,
@@ -137,13 +139,25 @@ class OrdersService
             'status' => 0,
             'payment_method' => $orderPaymentMethod,
             'order_type' => $orderType,
+
         ];
 
-        if ($promocodeId) {
+
+        if ($orderType == 0) {
+            $order['delivery_id'] = $deleveryId;
+        }
+
+        // orderPaymentMethod // 0 credit 1, cash
+        // orderType // 0 = delivery, 1 = takeaway, 2 = in
+
+        if ($promocodeId)
+        {
             $order['promo_code_id'] = $promocodeId;
         }
 
-        $orderData = order::create($order);
+        $orderData = Order::create($order);
+
+        dd($orderData);
 
         // Track order
         orderTracking::create([
@@ -203,8 +217,8 @@ class OrdersService
             $userInfo = CustomerInfo::where('user_id', $order->user_id)->get()[0];
 
             foreach ($Products as $product) {
-                $productInfo = product::find($product->product_id);
-                $category = section::find($productInfo->section_id);
+                $productInfo = Product::find($product->product_id);
+                $category = Section::find($productInfo->section_id);
 
 
                 $orderProducts[] =  [
