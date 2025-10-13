@@ -69,6 +69,7 @@ class Notifications extends Component
             'title'   => $data['title'],
             'body'    => $data['body'],
             'photo'   => $data['photo'] ?? null,
+
         ]);
 
 
@@ -89,11 +90,14 @@ class Notifications extends Component
                 'Authorization' => 'Bearer ' . $this->token,
                 'Content-Type'  => 'application/json',
             ])->post('https://fcm.googleapis.com/v1/projects/resturant-38fd1/messages:send', $payload);
-                //gitbub copilot
 
+            $notification->is_general = true;
+            $notification->save();
 
-        } elseif ($this->type === 'user' && $this->user_id) {
+        } elseif ($this->type === 'user' && $this->user_id)
+        {
             $user = User::find($this->user_id);
+            
 
             if ($user) {
                 $notification->users()->attach($user->id, ['is_read' => false]);
