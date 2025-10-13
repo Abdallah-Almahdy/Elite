@@ -14,6 +14,7 @@ class AboutUsController extends Controller
     public function index()
     {
         $about = AboutUS::with('images')->first();
+
         return view('pages.AboutUs.index', compact('about'));
     }
 
