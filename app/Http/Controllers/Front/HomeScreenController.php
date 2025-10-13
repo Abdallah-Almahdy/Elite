@@ -11,6 +11,7 @@ class HomeScreenController extends Controller
     public function support()
     {
         return view('front.support');
+        
     }
     public function index()
     {

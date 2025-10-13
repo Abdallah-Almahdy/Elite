@@ -14,6 +14,7 @@ class SectionsStaticsController extends Controller
         $sections = Section::paginate(15);
         return view(
             'admin.statics.sections.mainSections.index',
+
             [
                 'sections' => $sections,
             ]

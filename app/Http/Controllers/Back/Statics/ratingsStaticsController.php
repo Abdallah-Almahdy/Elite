@@ -16,6 +16,7 @@ class RatingsStaticsController extends Controller
 
         foreach ($ratings as $rating) {
             $rating->userData = User::find($rating->uid);
+
         }
 
         // dd($ratings[0]->User);

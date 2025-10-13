@@ -16,6 +16,7 @@ class StaticsOrdersController extends Controller
     {
         $query = Order::with('user_info');
 
+
         // $userID = User::where('email', $request->input('search'))->first()->id;
 
         if ($search = $request->input('search')) {
