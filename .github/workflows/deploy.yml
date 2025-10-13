@@ -22,7 +22,5 @@ jobs:
           script: |
             cd /home/hstgr-sicilia-test-srv599157/htdocs/sicilia-test.srv599157.hstgr.cloud
             git pull origin main
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
