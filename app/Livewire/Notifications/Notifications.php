@@ -82,8 +82,7 @@ class Notifications extends Component
             ]
         ];
 
-        if ($this->type === 'general')
-        {
+        if ($this->type === 'general'){
 
             $payload['message']['topic'] = 'elitetopic';
             Http::withHeaders([
