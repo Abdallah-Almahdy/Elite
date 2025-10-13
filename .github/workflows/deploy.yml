@@ -1,23 +1,28 @@
-name: 🚀 Deploy to Hostinger via SFTP
+name: 🚀 Deploy to Hostinger VPS
+
 on:
   push:
     branches:
-      - main
+      - main   # غيرها حسب الفرع اللي عايز تشتغل عليه
 
 jobs:
-  sftp-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
 
-      - name: 📦 Deploy to Hostinger via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Connect to VPS via SSH and deploy
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          server: ${{ secrets.SFTP_SERVER }}
-          port: 22
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: './'
-          remote_path: ${{ secrets.SFTP_PATH }}
-          sftp_only: true
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/yourprojectpath
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
