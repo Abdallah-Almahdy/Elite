@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/yourprojectpath
+            cd /home/hstgr-sicilia-test-srv599157/htdocs/sicilia-test.srv599157.hstgr.cloud/public
             git pull origin main
             composer install --no-dev --optimize-autoloader
             php artisan migrate --force
