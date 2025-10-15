@@ -30,10 +30,10 @@ class OrderProductOptionValue extends Model
         return $this->belongsTo(OrderProductOption::class);
     }
 
-    public function optionValue()
+    public function value()
     {
         return $this->belongsTo(OptionsValues::class, 'option_value_id');
     }
 
-    
+
 }

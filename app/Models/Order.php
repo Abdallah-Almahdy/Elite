@@ -17,22 +17,34 @@ class Order extends Model
         'totalPrice',
         'address',
         'phoneNumber',
-        'delivery_id',
         'status',
         'payment_method',
         'promo_code_id',
         'order_type',
+        'temp_address'
     ];
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function hasSuccessPayment()
+    {
+        return $this->payments()->where('status', 'paid')->exists();
+    }
 
     public function delivery(): BelongsTo
     {
-        return $this->belongsTo(Delivery::class);
+        return $this->belongsTo(Delivery::class,'address','id');
 
     }
 
-    public function products(): HasMany
+    public function products()
     {
-        return $this->HasMany(OrderProduct::class);
+        return $this->belongsToMany(Product::class, 'order_products')
+            ->withPivot(['totalCount', 'totalPrice'])
+            ->withTimestamps();
     }
 
     public function orderProducts(): HasMany

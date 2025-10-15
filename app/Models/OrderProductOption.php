@@ -16,19 +16,20 @@ class OrderProductOption extends Model
         'option_id',
     ];
 
+
     public function orderProduct()
     {
         return $this->belongsTo(OrderProduct::class);
-    }
-
-    public function option()
-    {
-        return $this->belongsTo(Options::class);
     }
 
     public function values()
     {
         return $this->hasMany(OrderProductOptionValue::class, 'order_product_option_id');
     }
-    
+
+    public function option()
+    {
+        return $this->belongsTo(Options::class); // لو عندك جدول options أصلي
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\API;
 
+use App\Http\Controllers\Api\PaymentController;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Section;
@@ -13,7 +14,10 @@ use App\Models\OrderProductAddsOn;
 use App\Models\OrderProductOption;
 use App\Services\API\PromocodeService;
 use App\Models\OrderProductOptionValue;
+use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use Nafezly\Payments\Classes\PayeerPayment;
 
 class OrdersService
 {
@@ -36,21 +40,58 @@ class OrdersService
     | main methods
     |--------------------------------------------------------------------------
     */
-    public function makeOrder($request, $userId, $promocodeId)
+    public function makeOrder($request, $userId, $promocodeId = null)
     {
         if ($promocodeId) {
             $promoCodeResponse = $this->promocodeService->checkPromocode($request);
-            if ($promoCodeResponse->getStatusCode() != 200)
-            {
+            if ($promoCodeResponse->getStatusCode() != 200) {
                 return $promoCodeResponse;
             }
         }
         // Create main order
         $orderData =  $this->makeOrderLogic($request);
 
+
+
         // Mark promo as used
 
         $this->promocodeService->markPromocodeAsUsed($promocodeId, $orderData->id, $userId);
+
+        if ($orderData->payment_method == 0) {
+            $paymentmodel = Payment::create([
+                'order_id' => $orderData->id,
+                'provider' => 'paymob',
+                'amount' => $orderData->totalPrice,
+                'status' => 'pending',
+            ]);
+
+
+            $payment = new PaymentController;
+            $data = [
+                "amount" => $orderData->totalPrice,
+                "user_id" => $request->user()->id,
+                "user_first_name" => "abdallah",
+                "user_last_name" => "omar",
+                "user_email" => "abdalla@email.com",
+                "user_phone" => "01203571855",
+                "order_id" => 1
+
+            ];
+
+            $response  =  $payment->pay($data);
+
+            $paymentmodel->update([
+                'provider_payment_id' => $response['payment_id'],
+            ]);
+
+            return response()->json([
+                'iframe_url' => $response['redirect_url']
+            ]);
+        }
+
+        return response()->json([
+            "data" => "order created"
+        ]);
     }
 
     public function cancelOrder($orderId)
@@ -82,42 +123,6 @@ class OrdersService
         return $userOrdersData;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | support methods
-    |--------------------------------------------------------------------------
-    */
-    // public function createOrder($request, $userId)
-    // {
-    //     $order_data = Order::create([
-    //         'user_id' => $userId,
-    //         'totalPrice' => $request->orderTotalPrice,
-    //         'address' => $request->userAddress,
-    //         'phoneNumber' => CustomerInfo::where('user_id', $userId)->get()[0]->phonenum,
-    //         'status' => 0,
-    //         'payment_method' => $request->orderPaymentMethod,
-
-    //     ]);
-
-    //     $order_tracking_data = [
-    //         'user_id'  => $order_data->user_id,
-    //         'order_id' => $order_data->id,
-    //         'status' => 0,
-    //     ];
-    //     orderTracking::create($order_tracking_data);
-
-
-    //     $products = [];
-    //     foreach ($request->orderProducts as $product) {
-    //         $products[] = orderProduct::create([
-    //             'product_id' => $product['productId'] + 0,
-    //             'order_id' => $order_data->id,
-    //             'totalCount' => $product['quantity'],
-    //             'totalPrice' => $product['quantity'] * product::find($product['productId'])->price,
-    //         ]);
-    //     }
-
-    // }
 
     private function makeOrderLogic($request)
     {
@@ -126,38 +131,91 @@ class OrdersService
         $orderTotalPrice = $request->orderTotalPrice;
         $userAddress = $request->userAddress;
         $orderPaymentMethod = $request->orderPaymentMethod;
-        $orderType = $request->order_type;
         $promocodeId = $request->promocode_id;
         $orderProducts = $request->orderProducts;
-        $deleveryId = $request->delivery_id;
-
-        $order = [
-            'user_id' => $userId,
-            'totalPrice' => $orderTotalPrice,
-            'address' => $userAddress,
-            'phoneNumber' => CustomerInfo::where('user_id', $userId)->value('phonenum'),
-            'status' => 0,
-            'payment_method' => $orderPaymentMethod,
-            'order_type' => $orderType,
-
-        ];
 
 
-        if ($orderType == 0) {
-            $order['delivery_id'] = $deleveryId;
-        }
+        $order =
+            [
+                'user_id' => $userId,
+                'totalPrice' => $orderTotalPrice,
+                'address' => $userAddress,
+                'phoneNumber' => 0123,
+                'status' => 0,
+                'payment_method' => $orderPaymentMethod,
+                'order_type' => 0,
+                'special_order_notes' => $request->special_order_notes ?? null,
+            ];
+
 
         // orderPaymentMethod // 0 credit 1, cash
         // orderType // 0 = delivery, 1 = takeaway, 2 = in
 
-        if ($promocodeId)
-        {
+
+        if ($userAddress == 3) {
+            $addressData = [
+                'country' => $request->addressCountry,
+                'city' => $request->addressCity,
+                'street' => $request->addressStreet,
+                'building_number' => $request->addressBuildingNumber ?? null,
+                'floor_number' => $request->addressFloorNumber ?? null,
+                'apartment_number' => $request->addressApartmentNumber ?? null,
+            ];
+
+            $addressJson = json_encode($addressData, JSON_UNESCAPED_UNICODE);
+
+
+            $order['temp_address'] = $addressJson;
+        }
+
+
+
+        if ($promocodeId) {
             $order['promo_code_id'] = $promocodeId;
         }
 
         $orderData = Order::create($order);
 
-        dd($orderData);
+
+        foreach ($orderProducts as $product) {
+            $productModel = Product::find($product['productId']);
+            if (!$productModel) continue;
+
+            // إنشاء OrderProduct
+            $orderProduct = OrderProduct::create([
+                'product_id' => $productModel->id,
+                'order_id' => $orderData->id,
+                'totalCount' => $product['quantity'],
+                'totalPrice' => $product['quantity'] * $productModel->price,
+            ]);
+
+            // لو عنده إضافات (Addons)
+            if (!empty($product['addons'])) {
+                foreach ($product['addons'] as $addonId) {
+                    OrderProductAddsOn::create([
+                        'order_product_id' => $orderProduct->id,
+                        'adds_on_id' => $addonId,
+                        'active' => 1,
+                    ]);
+                }
+            }
+
+            if (!empty($product['options'])) {
+                foreach ($product['options'] as $optionData) {
+                    $orderOption = OrderProductOption::create([
+                        'order_product_id' => $orderProduct->id,
+                        'option_id' => $optionData['optionId'],
+                    ]);
+
+                    // values (array of option_value_ids)
+                    OrderProductOptionValue::create([
+                        'order_product_option_id' => $orderOption->id,
+                        'option_value_id' => $optionData['valueId'],
+                        'active' => 1
+                    ]);
+                }
+            }
+        }
 
         // Track order
         orderTracking::create([
@@ -166,43 +224,6 @@ class OrdersService
             'status' => 0,
         ]);
 
-        // Handle order products
-        foreach ($orderProducts as $product) {
-            $productModel = product::find($product['productId']);
-            $orderProduct = orderProduct::create([
-                'product_id' => $productModel->id,
-                'order_id' => $orderData->id,
-                'totalCount' => $product['quantity'],
-                'totalPrice' => $product['quantity'] * $productModel->price,
-            ]);
-
-            // 🟢 Handle Addons
-            if (!empty($product['addons'])) {
-
-                OrderProductAddsOn::create([
-                    'order_product_id' => $orderProduct->id,
-                    'adds_on_id' => $product['addons'],
-                    'active' => 1
-                ]);
-            }
-
-            // 🟢 Handle Options + Values
-            if (!empty($product['options'])) {
-                foreach ($product['options'] as $optionData) {
-                    $orderOption = OrderProductOption::create([
-                        'order_product_id' => $orderProduct->id,
-                        'option_id' => $optionData['option_id'],
-                    ]);
-
-                    // values (array of option_value_ids)
-                    OrderProductOptionValue::create([
-                        'order_product_option_id' => $orderOption->id,
-                        'option_value_id' => $optionData['values'],
-                        'active' => 1
-                    ]);
-                }
-            }
-        }
 
         return $orderData;
     }

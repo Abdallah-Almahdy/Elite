@@ -12,7 +12,7 @@ use App\Traits\ApiTrait;
 
 class DeliveryController extends Controller
 {
-  
+
     use  ApiTrait;
 
     private $firstCustomerAddress = 1;
@@ -72,4 +72,3 @@ class DeliveryController extends Controller
         return $this->success(['delivery_price' => $delivery->delivery_price]);
     }
 }
-

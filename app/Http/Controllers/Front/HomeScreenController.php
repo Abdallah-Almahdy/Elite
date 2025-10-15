@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\product;
-use App\Models\section;
+use App\Models\Product;
+use App\Models\Section;
 
 class HomeScreenController extends Controller
 {
     public function support()
     {
         return view('front.support');
-        
+
     }
     public function index()
     {
-        $sections = section::take(10)->get();
-        $products = product::take(10)->get();
+        $sections = Section::take(10)->get();
+        $products = Product::take(10)->get();
         return view('front.FrontendHome', ['sections' => $sections, 'products' => $products]);
     }
 
@@ -24,7 +24,7 @@ class HomeScreenController extends Controller
     public function clientShowProductPage($productID)
     {
 
-        $product = product::find($productID);
+        $product = Product::find($productID);
         $relevantProducts = product::where(['section_id' => $product->section_id])->take(10)->get();
         return view('front.product.showProduct', ['product' => $product, 'relevantProducts' => $relevantProducts]);
     }
@@ -32,7 +32,7 @@ class HomeScreenController extends Controller
 
     public function clientSectionProducts($sectionID)
     {
-        $products = product::where(['section_id' => $sectionID])->get();
+        $products = Product::where(['section_id' => $sectionID])->get();
         return view('front.sections.showAllProducs', ['products' => $products]);
     }
 

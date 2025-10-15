@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('customer/save-token', [NotificationController::class, 'saveCustomerToken']);
     Route::post('contact_us', ContactUsController::class);
-    Route::get('get_delivery_price_by_userID', [DeliveryController::class, 'getDeliveryPriceByUserID']);
+    Route::get('get_delivery_price', [DeliveryController::class, 'getDeliveryPriceByUserID']);
 
 
 });

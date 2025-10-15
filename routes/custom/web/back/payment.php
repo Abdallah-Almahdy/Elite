@@ -10,8 +10,8 @@ use App\Http\Controllers\Api\PaymentController;
 
 
 // paymob
-Route::get('/payments/pay', [PaymentController::class, 'payWithPaymob']);
-Route::get('/payments/verify/{payment?}', [PaymentController::class, 'verifyWithPaymob'])->name('payment-verify');
+Route::POST('/payments/pay', [PaymentController::class, 'payWithPaymob']);
+Route::match(['get', 'post'], '/payment/callback', [PaymentController::class, 'callback']);
 
 
 // Route::get('/payment', [PaymentController::class, 'showPaymentForm']);

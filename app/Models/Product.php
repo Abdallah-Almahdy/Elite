@@ -48,10 +48,8 @@ class  Product extends Model
     }
 
 
-    public function orderProduct(): BelongsTo
-    {
-        return $this->belongsTo(OrderProduct::class);
-    }
+    
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorit::class);
