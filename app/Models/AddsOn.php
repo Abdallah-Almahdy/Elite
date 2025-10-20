@@ -26,4 +26,6 @@ class AddsOn extends Model
     {
         return $this->hasMany(OrderProductAddsOn::class, 'adds_on_id');
     }
+
+    
 }

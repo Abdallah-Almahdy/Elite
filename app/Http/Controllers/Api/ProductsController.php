@@ -17,7 +17,7 @@ class ProductsController extends Controller
     public function get_product($id)
     {
         $data = Product::find($id);
-
+        
 
         return $this->success($data);
     }

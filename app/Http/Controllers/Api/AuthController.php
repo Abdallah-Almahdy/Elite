@@ -148,7 +148,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        $user_info = CustomerInfo::where("user_id",  $user->id)->frist();
+        $user_info = CustomerInfo::where("user_id",  $user->id)->first();
 
         $user_info->update($request->except('profileImage'));
 

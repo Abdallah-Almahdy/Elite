@@ -8,6 +8,38 @@ use App\Models\Config;
 
 class ConfigController extends Controller
 {
+
+    public function update(Request $request)
+    {
+
+        $config = Config::instance();
+        return view('configs.edit',compact('config'));
+    }
+
+    public function edit(Request $request)
+    {
+        $request->validate([
+            'color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6})$/']
+        ]);
+
+        $config = Config::instance();
+
+
+        $config->update([
+            'min_supported_version' => $request->min_supported_version,
+            'exact_blocked_version' => $request->exact_blocked_version,
+            'maintenance_mode' =>  $request->maintenance_mode ?? 0,
+            'maintenance_message' => $request->maintenance_message,
+            'color' => $request->color ,
+        ]);
+
+
+        return redirect()->back()->with('success', 'Configuration updated successfully.');
+
+    }
+
+
+
     public function check(Request $request)
     {
         $config = Config::latest()->first();
@@ -18,8 +50,9 @@ class ConfigController extends Controller
                 'min_supported_version' => $config->min_supported_version,
                 'maintenance_mode' => (bool) $config->maintenance_mode,
                 'maintenance_message' => $config->maintenance_message,
+                'color' => $config->color
                 // 'blocked_versions' => $config->blocked_versions ?? [],
-            
+
         ];
 
         return response()->json([
@@ -28,4 +61,7 @@ class ConfigController extends Controller
             'data' => $data
         ], 200);
     }
+
+
+
 }

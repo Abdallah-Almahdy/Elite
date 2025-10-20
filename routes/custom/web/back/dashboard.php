@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ConfigController;
 use App\Models\SubSection;
 
 // Models
@@ -41,6 +42,8 @@ use App\Http\Controllers\Back\Statics\RatingsStaticsController;
 use App\Http\Controllers\Back\Statics\SectionsStaticsController;
 use App\Http\Controllers\Back\WarehouseTransactionsController;
 use App\Livewire\WarehouseTransactions\Create as WarehouseTransactionsCreate;
+use App\Models\Config;
+
 // use App\Livewire\Recipe\Create as CreateRecipe;
 // use App\Livewire\Recipe\Index as IndexRecipe;
 // use App\Livewire\Recipe\Edit as EditRecipe;
@@ -79,6 +82,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::resource('about', AboutUsController::class);
     Route::resource('ingredients', IngredientController::class);
     Route::resource('recipes', RecipeController::class)->except(['show']);
+    Route::get('configs',[ConfigController::class,'update'])->name('config.update');
+    Route::post('configs/edit',[ConfigController::class,'edit'])->name('admin.configs.edit');
 
 
 

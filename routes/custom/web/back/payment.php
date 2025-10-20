@@ -9,9 +9,6 @@ use App\Http\Controllers\Api\PaymentController;
 
 
 
-// paymob
-Route::POST('/payments/pay', [PaymentController::class, 'payWithPaymob']);
-Route::match(['get', 'post'], '/payment/callback', [PaymentController::class, 'callback']);
 
 
 // Route::get('/payment', [PaymentController::class, 'showPaymentForm']);

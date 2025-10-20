@@ -9,17 +9,19 @@ class Config extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'exact_blocked_version',
         'min_supported_version',
+        'exact_blocked_version',
         'maintenance_mode',
         'maintenance_message',
-        'blocked_versions',
+        'color',
     ];
 
-    protected $casts = [
-        'maintenance_mode' => 'boolean',
-        'blocked_versions' => 'array',
-    ];
+    public static function instance(): self
+    {
+        return static::first() ?? static::create();
+    }
+
+
 }
 
 

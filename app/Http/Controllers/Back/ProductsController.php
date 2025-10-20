@@ -55,7 +55,7 @@ class ProductsController extends Controller
     public function show(product $product)
     {
         $options = $product->options;
-
+    
         return view('pages.products.show', ['product' => $product, 'options' => $options]);
     }
 
@@ -66,7 +66,7 @@ class ProductsController extends Controller
     {
         $data = Product::findOrFail($id);
         $sections = SubSection::all();
-      
+
         return view('pages.products.edit', ['data' => $data, 'sections' => $sections]);
     }
 

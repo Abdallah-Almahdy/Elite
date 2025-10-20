@@ -22,14 +22,15 @@ class OrderProductOption extends Model
         return $this->belongsTo(OrderProduct::class);
     }
 
-    public function values()
-    {
-        return $this->hasMany(OrderProductOptionValue::class, 'order_product_option_id');
-    }
 
     public function option()
     {
-        return $this->belongsTo(Options::class); // لو عندك جدول options أصلي
+        return $this->belongsTo(Options::class, 'option_id');
+    }
+
+    public function values()
+    {
+        return $this->hasMany(OrderProductOptionValue::class, 'order_product_option_id');
     }
 
 }

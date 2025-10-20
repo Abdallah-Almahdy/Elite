@@ -13,7 +13,6 @@ class PromoCode extends Model
     protected $table = 'promo_codes';
 
     protected $primaryKey = 'id';
-    public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -47,5 +46,16 @@ class PromoCode extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+
+    public function promocode(){
+
+        return $this->belongsToMany(Product::class);
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'promo_code_products', 'promo_code_id', 'product_id');
     }
 }

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-
+use Spatie\Permission\Models\Permission;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -13,11 +13,49 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $permissions = [
+            'product.create',
+            'product.delete',
+            'product.edit',
+            'section.create',
+            'section.delete',
+            'section.edit',
+            'showOrdersSidebar',
+            'showPermessionsSidebar',
+            'showProductsSidebar',
+            'showQntOption',
+            'showSectionsSidebar',
+            'user.create',
+            'config.update',
+            'showStatics',
+            'showDelevary',
+            'showAdds',
+            'showNotifications',
+            'showPromoCode',
+            'showKitchen',
+            'showPrinters',
+            'showStock',
+            'showCashier',
+            'showRecips',
+            'showUnits',
+            'showGredients',
+            'showSuppliers',
+            'showClients',
+            'showAboutUs',
+            'showReviews',
+            'showComplaints'
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+
+
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => trim($permission), // ← للتأكد لو في مسافات زيادة
+                'guard_name' => 'web',
+            ]);
+        }
+
+        $this->command->info('✅ Permissions seeded successfully!');
     }
 }

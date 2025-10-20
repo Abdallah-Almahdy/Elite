@@ -43,6 +43,25 @@ return [
     'section.edit' => 'تعديل علي قسم',
     'section.delete' => 'حذف قسم',
     'section.create' => 'إنشاء قسم',
+    'user.create' => 'انشاء مستخدم',
+    'config.update' => 'تعديل صفحه الاعدادات',
+    'showStatics' => " الإحصائيات",
+    'showDelevary' => "دلفري",
+    'showAdds' => " الإضافات",
+    'showNotifications' => " الإشعارات",
+    'showPromoCode' => " برومو كود",
+    'showKitchen' => " المطبخ",
+    'showPrinters' => " الطابعات",
+    'showStock' => " المخزون",
+    'showCashier' => " الكاشير",
+    'showRecips' => "الوصفات",
+    'showUnits' => "الوحدات",
+    'showGredients' =>"المكونات",
+    'showSuppliers' => "الموردون",
+    'showClients' => "العملاء",
+    'showAboutUs' => "عننا",
+    'showReviews' => "التقيمات",
+    'showComplaints' => "الشكاوي"
 
 
 ];

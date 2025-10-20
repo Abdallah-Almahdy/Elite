@@ -20,9 +20,7 @@ class Options extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'product_options', 'option_id', 'product_id')
-            ->withPivot('option_name', 'price_adjustment', 'option_value')
-            ->withTimestamps();
+        return $this->belongsToMany(Product::class, 'product_options', 'option_id', 'product_id');
     }
 
 
@@ -31,9 +29,22 @@ class Options extends Model
         return $this->hasMany(OptionsValues::class, 'option_id', 'id');
     }
 
+    public function orderValues()
+    {
+        return $this->belongsToMany(OrderProductOptionValue::class, 'order_product_option_value');
+    }
+
     public function orderProductOptions()
     {
         return $this->hasMany(OrderProductOption::class, 'option_id');
     }
-    
+
+
+
+
+
+
+
+
+
 }

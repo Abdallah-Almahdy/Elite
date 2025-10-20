@@ -31,6 +31,11 @@ class  Product extends Model
     ];
 
 
+public function promoCodes()
+{
+    return $this->belongsToMany(PromoCode::class, 'promo_code_products', 'product_id', 'promo_code_id');
+}
+
 
     public function invoiceProducts()
     {
@@ -48,7 +53,7 @@ class  Product extends Model
     }
 
 
-    
+
 
     public function favorites(): HasMany
     {
@@ -59,6 +64,11 @@ class  Product extends Model
     {
         return $this->belongsToMany(Options::class, 'product_options', 'product_id', 'option_id');
     }
+
+
+
+
+
 
     public function addsOn()
     {

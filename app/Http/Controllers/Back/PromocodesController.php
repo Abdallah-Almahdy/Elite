@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\PromoCode;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,7 +15,8 @@ class PromocodesController extends Controller
 
 
         $data = PromoCode::all();
-        return view('pages.promocodes.index', ['data' => $data]);
+        $products = Product::all();
+        return view('pages.promocodes.index', ['data' => $data, 'products' => $products]);
     }
 
     public function create()
@@ -28,7 +30,8 @@ class PromocodesController extends Controller
             $user->conc_name = str_replace(',', ' ', $user->name);
             return $user;
         });
-        return view('pages.promocodes.create', ['users' => $users]);
+        $products = Product::all();
+        return view('pages.promocodes.create', ['users' => $users,'products' => $products]);
     }
 
     public function edit($id)
@@ -69,10 +72,12 @@ class PromocodesController extends Controller
             'promo_cat' => 'required|in:user,all',
             'min_order_value' => 'nullable|integer|min:0',
             'check_offer_rate' => 'nullable|integer',
+            'product_ids' => 'nullable|array', // ✅ مصفوفة المنتجات
+            'product_ids.*' => 'exists:products,id', // ✅ كل منتج لازم يكون موجود
         ]);
 
 
-        // dd($validated);
+        // نوع الخصم
         if ($request->discount_type == 'cash') {
             $validated['discount_percentage_value'] = null;
             $request->validate(['discount_cash_value' => 'required_if:discount_type,cash|numeric|min:0']);
@@ -84,6 +89,7 @@ class PromocodesController extends Controller
             $validated['discount_percentage_value'] = $request->discount_percentage_value;
         }
 
+        // نوع الكود
         $validated['users_limit'] = $request->users_limit;
         $validated['available_codes'] = $validated['users_limit'];
 
@@ -92,26 +98,29 @@ class PromocodesController extends Controller
             $validated['available_codes'] = 1;
             $validated['type'] = 'limited';
         }
+
         if ($request->promo_cat == 'all') {
-            $request->validate([
-                'type' => 'required'
-            ]);
+            $request->validate(['type' => 'required']);
             $validated['type'] = $request->type;
 
             if ($request->type == 'limited') {
-                $request->validate([
-                    'users_limit' => 'required'
-                ]);
+                $request->validate(['users_limit' => 'required']);
             }
         }
-
 
         $validated['active'] = 1;
         if ($request->user_id) {
             $validated['user_id'] = $request->user_id;
         }
 
-        PromoCode::create($validated);
+        // ✅ إنشاء الكود
+        $promo = PromoCode::create($validated);
+
+ 
+        // ✅ لو تم اختيار منتجات
+        if (!empty($request->product_ids)) {
+            $promo->products()->attach($request->product_ids);
+        }
 
         return redirect()->route('promocodes.index')->with('success', 'تم إضافة الكود الترويجي بنجاح');
     }

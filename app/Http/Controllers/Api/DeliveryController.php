@@ -8,7 +8,7 @@ use App\Http\Resources\deliveryRecourse;
 use App\Models\CustomerInfo;
 use App\Models\Delivery;
 use App\Traits\ApiTrait;
-
+use Illuminate\Support\Facades\Request;
 
 class DeliveryController extends Controller
 {
@@ -71,4 +71,26 @@ class DeliveryController extends Controller
 
         return $this->success(['delivery_price' => $delivery->delivery_price]);
     }
+public function getDeliveryPrice(Request $request)
+{
+    $id = $request->query('deliveryID');
+
+    if (!$id) {
+        return response()->json([
+            'error' => 'معرّف التوصيل (id) مطلوب'
+        ], 400);
+    }
+
+    $delivery = Delivery::find($id);
+
+    if (!$delivery) {
+        return response()->json([
+            'error' => 'لم يتم العثور على بيانات التوصيل لهذا المعرّف'
+        ], 404);
+    }
+    
+    return response()->json([
+        'price' => $delivery->delivery_price
+    ]);
+}
 }

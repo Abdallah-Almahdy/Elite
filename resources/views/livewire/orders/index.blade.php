@@ -1,403 +1,335 @@
-   <div>
-       <!-- Order-status chain -->
-       <!-- Full-width progress bar with icon steps -->
-       <!-- component -->
-       <!-- Add Font Awesome for icons -->
-
-       <!-- Add Font Awesome if not already included -->
-
-       <!-- New Orders Icon -->
-       <!-- Font Awesome (place this in your <head> if not already included) -->
-
-
-
-       {{-- new --}}
-       <table class="table table-bordered">
-           <thead class=" bg-gradient-light">
-               <tr>
-
-
-                   <th> رقم الاوردر</th>
-                   <th>اسم العميل</th>
-                   <th>المبلغ الكلي</th>
-                   <th>حالة</th>
-                   <th>الرقم</th>
-                   <th class="text-center">إعدادات</th>
-               </tr>
-           </thead>
-           <tbody>
-               @forelse ($orders as $order)
-                   <tr>
-                       <td>{{ $order->id }} </td>
-                       <td>
-                           {{ optional($order->user_info)->firstName ?? '' }}
-                           {{ optional($order->user_info)->lastName ?? '' }}
-                       </td>
-                       <td>{{ $order->totalPrice }} </td>
-                       <td> طلب جديد </td>
-                       <td>{{ $order->phoneNumber }} </td>
-
-                       <td class="text-center py-0 align-middle">
-
-                           <a href="{{ route('orders.details', $order->id) }}">
-                               <button class="btn btn-outline-info  rounded">
-
-                                   معاينة
-                                   <i class="fa fa-eye" aria-hidden="true"></i>
-
-                               </button>
-                           </a>
-
-                           <div class="btn-group ">
-
-
-
-
-                               <button wire:click="prep({{ $order->id }})" class="btn btn-outline-info mr-1 rounded">
-
-
-                                   بدأ التحضير
-                                   <i class="fa fa-truck" aria-hidden="true"></i>
-
-                               </button>
-
-                               <button wire:click="cancel({{ $order->id }})"
-                                   class="btn btn-outline-danger rounded mr-1">
-                                   إلغاء
-                                   {{-- <i class="fa fa-times-circle" aria-hidden="true"></i> --}}
-                                   <i class="fa fa-times" aria-hidden="true"></i>
-
-                               </button>
-                           </div>
-                       </td>
-                   </tr>
-
-               @empty
-                   <tr>
-                       <td colspan="6" class="text-center  text-danger">
-
-                           <i class="fa fa-info-circle" aria-hidden="true"></i>
-
-
-                           لا يوجد طلبات جديده
-                       </td>
-                   </tr>
-               @endforelse
-
-           </tbody>
-       </table>
-       {{-- end new --}}
-
-       <!-- /.card طلبيات لم تفتح -->
-
-       <!-- /.card -->
-
-       {{--                                                       علميات   يتم تحضيرها                  --}}
-       <table class="table table-bordered">
-           <thead class="bg-gradient-light">
-               <tr>
-
-
-                   <th> رقم الاوردر</th>
-                   <th>اسم العميل</th>
-                   <th>المبلغ الكلي</th>
-                   <th>حالة</th>
-                   <th>الرقم</th>
-                   <th class="text-center">إعدادات</th>
-               </tr>
-           </thead>
-           <tbody>
-               @forelse ($inPreperOrders as $order)
-                   <tr>
-                       <td>{{ $order->id }} </td>
-                       <td>
-                           {{ optional($order->user_info)->firstName ?? '' }}
-                           {{ optional($order->user_info)->lastName ?? '' }}
-                       </td>
-
-                       <td>{{ $order->totalPrice }} </td>
-                       <td>يتم التحضير </td>
-                       <td>{{ $order->phoneNumber }} </td>
-                       <td class="text-center py-0 align-middle">
-
-                           <a href="{{ route('orders.details', $order->id) }}">
-                               <button class="btn btn-outline-info  rounded">
-
-                                   معاينة
-                                   <i class="fa fa-eye" aria-hidden="true"></i>
-
-                               </button>
-                           </a>
-
-                           <div class="btn-group ">
-
-
-                               <button wire:click="delivery({{ $order->id }})"
-                                   class="btn btn-outline-info mr-1 rounded">
-
-
-                                   شحن
-                                   <i class="fa fa-truck" aria-hidden="true"></i>
-
-                               </button>
-
-                               <button wire:click="cancel({{ $order->id }})"
-                                   class="btn btn-outline-danger rounded mr-1">
-                                   إلغاء
-                                   {{-- <i class="fa fa-times-circle" aria-hidden="true"></i> --}}
-                                   <i class="fa fa-times" aria-hidden="true"></i>
-
-                               </button>
-                           </div>
-                       </td>
-                   </tr>
-
-               @empty
-                   <tr>
-                       <td colspan="6" class="text-center  text-danger">
-
-                           <i class="fa fa-info-circle" aria-hidden="true"></i>
-
-
-                           لا يوجد طلبات يتم تحضيرها
-                       </td>
-                   </tr>
-               @endforelse
-
-           </tbody>
-       </table>
-
-
-
-
-
-
-
-       <table class="table table-bordered">
-           <thead class="bg-gradient-light">
-               <tr>
-
-
-                   <th> رقم الاوردر</th>
-                   <th>اسم العميل</th>
-                   <th>المبلغ الكلي</th>
-                   <th>حالة</th>
-                   <th>الرقم</th>
-                   <th class="text-center">إعدادات</th>
-               </tr>
-           </thead>
-           <tbody>
-               @forelse ($inDeliveryOrders as $order)
-                   <tr>
-                       <td>{{ $order->id }} </td>
-                       <td>
-                           {{ optional($order->user_info)->firstName ?? '' }}
-                           {{ optional($order->user_info)->lastName ?? '' }}
-                       </td>
-
-                       <td>{{ $order->totalPrice }} </td>
-                       <td>يتم التوصيل </td>
-                       <td>{{ $order->phoneNumber }} </td>
-                       {{-- new btns --}}
-                       <td class="text-center py-0 align-middle">
-
-                           <a href="{{ route('orders.details', $order->id) }}">
-                               <button class="btn btn-outline-info  rounded">
-
-                                   معاينة
-                                   <i class="fa fa-eye" aria-hidden="true"></i>
-
-                               </button>
-                           </a>
-
-                           <div class="btn-group ">
-
-
-
-                               <button wire:click="done({{ $order->id }})"
-                                   class="btn btn-outline-success rounded mr-1">
-
-                                   إتمام الطبية
-                                   <i class="fa fa-check" aria-hidden="true"></i>
-
-                               </button>
-
-
-                               <button wire:click="cancel({{ $order->id }})"
-                                   class="btn btn-outline-danger rounded mr-1">
-                                   إلغاء
-                                   {{-- <i class="fa fa-times-circle" aria-hidden="true"></i> --}}
-                                   <i class="fa fa-times" aria-hidden="true"></i>
-
-                               </button>
-                           </div>
-                       </td>
-                       {{-- end new btns --}}
-
-
-                   </tr>
-
-               @empty
-                   <tr>
-                       <td colspan="6" class="text-center  text-danger">
-
-                           <i class="fa fa-info-circle" aria-hidden="true"></i>
-
-
-                           لا يوجد طلبات يتم توصيلها
-                       </td>
-                   </tr>
-               @endforelse
-
-           </tbody>
-       </table>
-
-
-       {{--                                                       علميات  في الشحن                  --}}
-
-
-
-
-
-
-
-       <table class="table table-bordered">
-           <thead class="bg-success">
-               <tr>
-
-
-                   <th> رقم الاوردر</th>
-                   <th>اسم العميل</th>
-                   <th>المبلغ الكلي</th>
-                   <th>حالة</th>
-                   <th>الرقم</th>
-                   <th class="text-center">إعدادات</th>
-               </tr>
-           </thead>
-           <tbody>
-               @forelse ($successedOrders as $order)
-                   <tr>
-                       <td>{{ $order->id }} </td>
-                       <td>
-                           {{ optional($order->user_info)->firstName ?? '' }}
-                           {{ optional($order->user_info)->lastName ?? '' }}
-                       </td>
-
-                       <td>{{ $order->totalPrice }} </td>
-                       <td>طلبية منتهية ناجحة</td>
-                       <td>{{ $order->phoneNumber }} </td>
-                       {{-- new btns --}}
-                       <td class="text-center py-0 align-middle">
-
-                           <a href="{{ route('orders.details', $order->id) }}">
-                               <button class="btn btn-outline-info  rounded">
-
-                                   معاينة
-                                   <i class="fa fa-eye" aria-hidden="true"></i>
-
-                               </button>
-                           </a>
-
-
-                       </td>
-                       {{-- end new btns --}}
-                   </tr>
-
-               @empty
-                   <tr>
-                       <td colspan="6" class="text-center  text-danger">
-
-                           <i class="fa fa-info-circle" aria-hidden="true"></i>
-
-
-                           لا يوجد طلبات ناجحة اليوم
-                       </td>
-                   </tr>
-               @endforelse
-
-           </tbody>
-       </table>
-
-       {{--                                                       علميات ناجه منتهية                  --}}
-
-
-
-
-
-
-
-       {{--                                                       علميات فاشلة                  --}}
-       <table class="table table-bordered">
-           <thead class="bg-danger">
-               <tr>
-
-
-                   <th> رقم الاوردر</th>
-                   <th>اسم العميل</th>
-                   <th>المبلغ الكلي</th>
-                   <th>حالة</th>
-                   <th>الرقم</th>
-                   <th class="text-center">إعدادات</th>
-               </tr>
-           </thead>
-           <tbody>
-               @forelse ($faildOrders as $order)
-                   <tr>
-                       <td>{{ $order->id }} </td>
-                       <td>
-                           {{ optional($order->user_info)->firstName ?? '' }}
-                           {{ optional($order->user_info)->lastName ?? '' }}
-                       </td>
-
-                       <td>{{ $order->totalPrice }} </td>
-                       <td>{{ $order->status == 2 ? 'طلبية فاشلة' : '' }} </td>
-                       <td>{{ $order->phoneNumber }} </td>
-                       {{-- new btns --}}
-                       <td class="text-center py-0 align-middle">
-
-                           <a href="{{ route('orders.details', $order->id) }}">
-                               <button class="btn btn-outline-info  rounded">
-
-                                   معاينة
-                                   <i class="fa fa-eye" aria-hidden="true"></i>
-
-                               </button>
-                           </a>
-
-                           <div class="btn-group ">
-
-
-
-                               <button wire:click="done({{ $order->id }})"
-                                   class="btn btn-outline-success rounded mr-1">
-
-                                   إتمام الطبية
-                                   <i class="fa fa-check" aria-hidden="true"></i>
-
-                               </button>
-
-
-
-                           </div>
-                       </td>
-                       {{-- end new btns --}}
-                   </tr>
-
-               @empty
-                   <tr>
-                       <td colspan="6" class="text-center  text-danger">
-
-                           <i class="fa fa-info-circle" aria-hidden="true"></i>
-
-
-                           لا يوجد طلبيات فاشلة اليوم
-                       </td>
-                   </tr>
-               @endforelse
-
-           </tbody>
-       </table>
-
-
-
-   </div>
+<div class="container-fluid py-3">
+    <!-- طلبات جديدة -->
+    <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-shopping-cart me-2"></i>
+                طلبات جديدة
+            </h5>
+            <span class="badge bg-light text-primary">{{ count($orders) }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">رقم الطلب</th>
+                            <th width="20%">اسم العميل</th>
+                            <th width="15%">المبلغ الكلي</th>
+                            <th width="15%">الحالة</th>
+                            <th width="15%">رقم الهاتف</th>
+                            <th width="25%" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($orders as $order)
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ $order->id }}</td>
+                                <td>
+                                    {{ optional($order->user_info)->firstName ?? '' }}
+                                    {{ optional($order->user_info)->lastName ?? '' }}
+                                </td>
+                                <td class="fw-bold">{{ number_format($order->totalPrice, 2) }} ر.س</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-clock me-1"></i>طلب جديد
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $order->phoneNumber }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>{{ $order->phoneNumber }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-info">
+                                            <i class="fas fa-eye me-1"></i>معاينة
+                                        </a>
+                                        <button wire:click="prep({{ $order->id }})" class="btn btn-outline-primary">
+                                            <i class="fas fa-play me-1"></i>بدء التحضير
+                                        </button>
+                                        <button wire:click="cancel({{ $order->id }})" class="btn btn-outline-danger">
+                                            <i class="fas fa-times me-1"></i>إلغاء
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                                    لا توجد طلبات جديدة
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- طلبات يتم تحضيرها -->
+    <div class="card shadow-sm mb-4 border-warning">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-utensils me-2"></i>
+                طلبات يتم تحضيرها
+            </h5>
+            <span class="badge bg-light text-dark">{{ count($inPreperOrders) }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">رقم الطلب</th>
+                            <th width="20%">اسم العميل</th>
+                            <th width="15%">المبلغ الكلي</th>
+                            <th width="15%">الحالة</th>
+                            <th width="15%">رقم الهاتف</th>
+                            <th width="25%" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($inPreperOrders as $order)
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ $order->id }}</td>
+                                <td>
+                                    {{ optional($order->user_info)->firstName ?? '' }}
+                                    {{ optional($order->user_info)->lastName ?? '' }}
+                                </td>
+                                <td class="fw-bold">{{ number_format($order->totalPrice, 2) }} ر.س</td>
+                                <td>
+                                    <span class="badge bg-info text-white">
+                                        <i class="fas fa-cog me-1"></i>يتم التحضير
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $order->phoneNumber }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>{{ $order->phoneNumber }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-info">
+                                            <i class="fas fa-eye me-1"></i>معاينة
+                                        </a>
+                                        <button wire:click="delivery({{ $order->id }})" class="btn btn-outline-primary">
+                                            <i class="fas fa-truck me-1"></i>شحن
+                                        </button>
+                                        <button wire:click="cancel({{ $order->id }})" class="btn btn-outline-danger">
+                                            <i class="fas fa-times me-1"></i>إلغاء
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                                    لا توجد طلبات يتم تحضيرها
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- طلبات في الشحن -->
+    <div class="card shadow-sm mb-4 border-info">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-truck me-2"></i>
+                طلبات في الشحن
+            </h5>
+            <span class="badge bg-light text-dark">{{ count($inDeliveryOrders) }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">رقم الطلب</th>
+                            <th width="20%">اسم العميل</th>
+                            <th width="15%">المبلغ الكلي</th>
+                            <th width="15%">الحالة</th>
+                            <th width="15%">رقم الهاتف</th>
+                            <th width="25%" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($inDeliveryOrders as $order)
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ $order->id }}</td>
+                                <td>
+                                    {{ optional($order->user_info)->firstName ?? '' }}
+                                    {{ optional($order->user_info)->lastName ?? '' }}
+                                </td>
+                                <td class="fw-bold">{{ number_format($order->totalPrice, 2) }} ر.س</td>
+                                <td>
+                                    <span class="badge bg-primary text-white">
+                                        <i class="fas fa-shipping-fast me-1"></i>يتم التوصيل
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $order->phoneNumber }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>{{ $order->phoneNumber }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-info">
+                                            <i class="fas fa-eye me-1"></i>معاينة
+                                        </a>
+                                        <button wire:click="done({{ $order->id }})" class="btn btn-outline-success">
+                                            <i class="fas fa-check me-1"></i>إتمام
+                                        </button>
+                                        <button wire:click="cancel({{ $order->id }})" class="btn btn-outline-danger">
+                                            <i class="fas fa-times me-1"></i>إلغاء
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                                    لا توجد طلبات في الشحن
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- طلبات ناجحة -->
+    <div class="card shadow-sm mb-4 border-success">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-check-circle me-2"></i>
+                طلبات ناجحة
+            </h5>
+            <span class="badge bg-light text-dark">{{ count($successedOrders) }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">رقم الطلب</th>
+                            <th width="20%">اسم العميل</th>
+                            <th width="15%">المبلغ الكلي</th>
+                            <th width="15%">الحالة</th>
+                            <th width="15%">رقم الهاتف</th>
+                            <th width="25%" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($successedOrders as $order)
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ $order->id }}</td>
+                                <td>
+                                    {{ optional($order->user_info)->firstName ?? '' }}
+                                    {{ optional($order->user_info)->lastName ?? '' }}
+                                </td>
+                                <td class="fw-bold">{{ number_format($order->totalPrice, 2) }} ر.س</td>
+                                <td>
+                                    <span class="badge bg-success text-white">
+                                        <i class="fas fa-check me-1"></i>منتهية بنجاح
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $order->phoneNumber }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>{{ $order->phoneNumber }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-eye me-1"></i>معاينة
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                                    لا توجد طلبات ناجحة اليوم
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- طلبات فاشلة -->
+    <div class="card shadow-sm mb-4 border-danger">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-times-circle me-2"></i>
+                طلبات فاشلة
+            </h5>
+            <span class="badge bg-light text-dark">{{ count($faildOrders) }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">رقم الطلب</th>
+                            <th width="20%">اسم العميل</th>
+                            <th width="15%">المبلغ الكلي</th>
+                            <th width="15%">الحالة</th>
+                            <th width="15%">رقم الهاتف</th>
+                            <th width="25%" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($faildOrders as $order)
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ $order->id }}</td>
+                                <td>
+                                    {{ optional($order->user_info)->firstName ?? '' }}
+                                    {{ optional($order->user_info)->lastName ?? '' }}
+                                </td>
+                                <td class="fw-bold">{{ number_format($order->totalPrice, 2) }} ر.س</td>
+                                <td>
+                                    <span class="badge bg-danger text-white">
+                                        <i class="fas fa-times me-1"></i>طلبية فاشلة
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $order->phoneNumber }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>{{ $order->phoneNumber }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-info">
+                                            <i class="fas fa-eye me-1"></i>معاينة
+                                        </a>
+                                        <button wire:click="done({{ $order->id }})" class="btn btn-outline-success">
+                                            <i class="fas fa-check me-1"></i>إتمام
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                                    لا توجد طلبات فاشلة اليوم
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

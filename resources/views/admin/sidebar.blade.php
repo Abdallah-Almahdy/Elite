@@ -36,14 +36,34 @@
                 @endcan
 
                 <!-- الإعدادات -->
-                @can('showProductsSidebar')
+                @can('config.update')
                 <li class="nav-item mb-1">
-                    <a href="{{ route('products.index') }}" class="nav-link {{ Request::is('dashboard/prodducts*') ? 'bg-success' : '' }}">
+                    <a href="{{ route('config.update') }}" class="nav-link {{ Request::is('dashboard/prodducts*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-cog ml-2"></i>
                         <p>الإعدادات</p>
                     </a>
                 </li>
                 @endcan
+
+
+                @can('showPermessionsSidebar')
+                <li class="nav-item mb-1">
+                    <a href="{{ route('Permissions.index') }}" class="nav-link {{ Request::is('dashboard/Permissions*') ? 'bg-success' : '' }}">
+                        <i class="nav-icon fas fa-user-shield ml-2"></i>
+                        <p>الصلاحيات</p>
+                    </a>
+                </li>
+                @endcan
+
+
+                    @can('user.create')
+                    <li class="nav-item mb-1">
+                    <a href="{{ route('register') }}" class="nav-link {{ Request::is('dashboard/register*') ? 'bg-success' : '' }}">
+                        <i class="nav-icon fas fa-user-shield ml-2"></i>
+                        <p>انشاء مستخدم</p>
+                    </a>
+                </li>
+                 @endcan
 
                 <!-- المنتجات -->
                 @can('showProductsSidebar')
@@ -77,16 +97,11 @@
                 @endcan
 
                 <!-- الصلاحيات -->
-                @can('showPermessionsSidebar')
-                <li class="nav-item mb-1">
-                    <a href="{{ route('Permissions.index') }}" class="nav-link {{ Request::is('dashboard/Permissions*') ? 'bg-success' : '' }}">
-                        <i class="nav-icon fas fa-user-shield ml-2"></i>
-                        <p>الصلاحيات</p>
-                    </a>
-                </li>
+
 
                 <!-- Special Admin Features -->
-                @if (in_array(auth()->user()->id, [7, 48, 50]))
+
+                 @can('showStatics')
                 <!-- الإحصائيات -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('statices.index') }}" class="nav-link {{ Request::is('dashboard/statices') ? 'bg-success' : '' }}">
@@ -94,7 +109,9 @@
                         <p>الإحصائيات</p>
                     </a>
                 </li>
+                @endcan
 
+                @can('showDelevary')
                 <!-- الدليفري -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('delivery.index') }}" class="nav-link {{ Request::is('dashboard/delivery*') ? 'bg-success' : '' }}">
@@ -102,7 +119,9 @@
                         <p>الدليفري</p>
                     </a>
                 </li>
+                @endcan
 
+                @can('showAdds')
                 <!-- الإعلانات -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('banares.index') }}" class="nav-link {{ Request::is('dashboard/banares*') ? 'bg-success' : '' }}">
@@ -110,7 +129,10 @@
                         <p>الإعلانات</p>
                     </a>
                 </li>
+                @endcan
 
+
+                @can('showNotifications')
                 <!-- إشعارات التطبيق -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('notifications.index') }}" class="nav-link {{ Request::is('dashboard/notifications*') ? 'bg-success' : '' }}">
@@ -118,7 +140,10 @@
                         <p>إشعارات التطبيق</p>
                     </a>
                 </li>
+                @endcan
 
+
+                @can('showPromoCode')
                 <!-- البرومو كود -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('promocodes.index') }}" class="nav-link {{ Request::is('dashboard/promocodes*') ? 'bg-success' : '' }}">
@@ -126,7 +151,9 @@
                         <p>البرومو كود</p>
                     </a>
                 </li>
+                @endcan
 
+                @can('showKitchen')
                 <!-- المطابخ -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('kitchens.index') }}" class="nav-link {{ Request::is('dashboard/kitchens*') ? 'bg-success' : '' }}">
@@ -134,7 +161,9 @@
                         <p>المطابخ</p>
                     </a>
                 </li>
+                @endcan
 
+                @can('showPrinters')
                 <!-- الطابعات -->
                 <li class="nav-item mb-1">
                     <a href="{{ route('printers.index') }}" class="nav-link {{ Request::is('dashboard/printers*') ? 'bg-success' : '' }}">
@@ -142,11 +171,12 @@
                         <p>الطابعات</p>
                     </a>
                 </li>
-                @endif
                 @endcan
 
+
+
                 <!-- المخازن -->
-                @can('showProductsSidebar')
+                @can('showStock')
                 <li class="nav-item mb-1">
                     <a href="{{ route('warehouses.index') }}" class="nav-link {{ Request::is('dashboard/warehouses*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-warehouse ml-2"></i>
@@ -156,7 +186,7 @@
                 @endcan
 
                 <!-- الكاشير -->
-                @can('showProductsSidebar')
+                @can('showCashier')
                 <li class="nav-item mb-1">
                     <a href="http://localhost:5174/" target="_blank" class="nav-link">
                         <i class="nav-icon fas fa-cash-register ml-2"></i>
@@ -166,7 +196,7 @@
                 @endcan
 
                 <!-- الوصفات -->
-                @can('showProductsSidebar')
+                @can('showRecips')
                 <li class="nav-item mb-1">
                     <a href="{{ route('recipes.index') }}" class="nav-link {{ Request::is('recipes*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-book ml-2"></i>
@@ -176,7 +206,7 @@
                 @endcan
 
                 <!-- الوحدات -->
-                @can('showProductsSidebar')
+                @can('showUnits')
                 <li class="nav-item mb-1">
                     <a href="{{ route('units.index') }}" class="nav-link {{ Request::is('dashboard/units*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-ruler-combined ml-2"></i>
@@ -186,7 +216,7 @@
                 @endcan
 
                 <!-- المكونات -->
-                @can('showProductsSidebar')
+                @can('showGredients')
                 <li class="nav-item mb-1">
                     <a href="{{ route('ingredients.index') }}" class="nav-link {{ Request::is('dashboard/ingredients*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-lemon ml-2"></i>
@@ -196,7 +226,7 @@
                 @endcan
 
                 <!-- الموردين -->
-                @can('showProductsSidebar')
+                @can('showSuppliers')
                 <li class="nav-item mb-1">
                     <a href="{{ route('suppliers.index') }}" class="nav-link {{ Request::is('dashboard/suppliers*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-truck-loading ml-2"></i>
@@ -206,7 +236,7 @@
                 @endcan
 
                 <!-- العملاء -->
-                @can('showProductsSidebar')
+                @can('showClients')
                 <li class="nav-item mb-1">
                     <a href="{{ route('customers.index') }}" class="nav-link {{ Request::is('dashboard/customers*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-users ml-2"></i>
@@ -216,7 +246,7 @@
                 @endcan
 
                 <!-- عننا -->
-                @can('showProductsSidebar')
+                @can('showAboutUs')
                 <li class="nav-item mb-1">
                     <a href="{{ route('about.index') }}" class="nav-link {{ Request::is('dashboard/about*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-info-circle ml-2"></i>
@@ -226,7 +256,7 @@
                 @endcan
 
                 <!-- تقييمات العملاء -->
-                @can('showProductsSidebar')
+                @can('showReviews')
                 <li class="nav-item mb-1">
                     <a href="{{ route('rates.index') }}" class="nav-link {{ Request::is('dashboard/rates*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-star ml-2"></i>
@@ -236,7 +266,7 @@
                 @endcan
 
                 <!-- شكاوي العملاء -->
-                @can('showProductsSidebar')
+                @can('showComplaints')
                 <li class="nav-item mb-1">
                     <a href="{{ route('contactus.index') }}" class="nav-link {{ Request::is('dashboard/ContactUs*') ? 'bg-success' : '' }}">
                         <i class="nav-icon fas fa-comment-dots ml-2"></i>

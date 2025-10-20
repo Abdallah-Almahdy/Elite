@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use App\Traits\ApiTrait;
 use App\Services\API\OrdersService;
 use App\Services\API\PromocodeService;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 class OrdersController extends Controller
 {
 
@@ -38,11 +39,9 @@ class OrdersController extends Controller
 
     public function createOrder(Request $request)
     {
-
-        $request->validate([
-            'orderTotalPrice' => 'required|numeric',
+        $validator = Validator::make($request->all(), [
             'userAddress' => 'required|integer',
-            'orderPaymentMethod' => 'required|in:0,1', // 0 credit 1, cash
+            'orderPaymentMethod' => 'required|in:0,1',
             'promocode_id' => 'nullable|integer|exists:promo_codes,id',
             'orderProducts' => 'required|array|min:1',
             'orderProducts.*.productId' => 'required|integer|exists:products,id',
@@ -50,8 +49,50 @@ class OrdersController extends Controller
             'orderProducts.*.options' => 'nullable|array',
             'orderProducts.*.options.*.optionId' => 'required_with:orderProducts.*.options|integer|exists:options,id',
             'orderProducts.*.options.*.valueId' => 'required_with:orderProducts.*.options|integer|exists:options_values,id'
-            
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->orderProducts as $index => $orderProduct) {
+                $productId = $orderProduct['productId'];
+
+                // ✅ Validate options belong to the product
+                if (!empty($orderProduct['options'])) {
+                    foreach ($orderProduct['options'] as $optIndex => $option) {
+                        $optionId = $option['optionId'];
+                        $valueId  = $option['valueId'];
+
+                        $productHasOption = DB::table('product_options')
+                            ->where('product_id', $productId)
+                            ->where('option_id', $optionId)
+                            ->exists();
+
+                        if (!$productHasOption) {
+                            $validator->errors()->add(
+                                "orderProducts.$index.options.$optIndex.optionId",
+                                "Option ID $optionId does not belong to Product ID $productId."
+                            );
+                        }
+
+                        // ✅ Validate value belongs to option
+                        $valueBelongsToOption = DB::table('options_values')
+                            ->where('id', $valueId)
+                            ->where('option_id', $optionId)
+                            ->exists();
+
+                        if (!$valueBelongsToOption) {
+                            $validator->errors()->add(
+                                "orderProducts.$index.options.$optIndex.valueId",
+                                "Value ID $valueId does not belong to Option ID $optionId."
+                            );
+                        }
+                    }
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
 
         $userId = $request->user()->id;
@@ -64,9 +105,9 @@ class OrdersController extends Controller
     public function getAllOrders(Request $request)
     {
 
-        $userId = $request->user()->id;
+        $user = $request->user();
 
-        $userOrdersData =  $this->ordersService->getAllUserOrders($userId, $request);
+        $userOrdersData =  $this->ordersService->getAllUserOrders($user);
 
         return $this->success($userOrdersData, 'ordered fetched successfully');
     }
@@ -74,6 +115,15 @@ class OrdersController extends Controller
     public function cancelOrder(Request $request)
     {
         $orderId = $request->query('order_id');
+
+        if (!$request->user()->orders()->where('id', $orderId)->exists())
+        {
+            return response()->json(
+            [
+                "unauthorized"
+            ], 403);
+        }
+
 
         $this->ordersService->cancelOrder($orderId);
 

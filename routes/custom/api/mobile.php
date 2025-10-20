@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('customer/save-token', [NotificationController::class, 'saveCustomerToken']);
     Route::post('contact_us', ContactUsController::class);
-    Route::get('get_delivery_price', [DeliveryController::class, 'getDeliveryPriceByUserID']);
+    Route::get('getDeliveryPrice', [DeliveryController::class, 'getDeliveryPrice']);
 
 
 });
@@ -121,3 +121,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 });
+
+
+// paymob
+Route::POST('/payments/pay', [PaymentController::class, 'pay']);
+Route::match(['get', 'post'], '/payment/callback', [PaymentController::class, 'callback']);
+
+
+Route::get('/getPrice/{id}',[DeliveryController::class, 'getPrice']);

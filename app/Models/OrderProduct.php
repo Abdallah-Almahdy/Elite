@@ -33,8 +33,8 @@ class OrderProduct extends Model
         return $this->hasMany(OrderProductOption::class, 'order_product_id');
     }
 
-    public function addons()
+    public function addsOns()
     {
-        return $this->hasMany(OrderProductAddsOn::class);
+        return $this->hasMany(OrderProductAddsOn::class, 'order_product_id');
     }
 }

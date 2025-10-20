@@ -21,12 +21,24 @@ class Order extends Model
         'payment_method',
         'promo_code_id',
         'order_type',
-        'temp_address'
+        'temp_address',
+        "payment_status",
+        "special_order_notes",
+        "discount"
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function promoCode()
+    {
+        return $this->belongsTo(PromoCode::class, 'promo_code_id');
     }
 
     public function hasSuccessPayment()
@@ -47,10 +59,14 @@ class Order extends Model
             ->withTimestamps();
     }
 
-    public function orderProducts(): HasMany
+
+
+    public function orderProducts()
     {
-        return $this->HasMany(OrderProduct::class);
+        return $this->hasMany(OrderProduct::class);
     }
+
+
 
 
     public function orderTracking(): HasMany

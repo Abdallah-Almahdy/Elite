@@ -16,7 +16,7 @@ return new class extends Migration
             $table->float('totalPrice', 10);
             $table->smallInteger('address');
             $table->text('phoneNumber');
-            $table->tinyInteger('status')->comment('(1 pinding 2 Preparation 3 delivery 4 finished 5 canceld )');
+            $table->tinyInteger('status');
             $table->timestamps();
             $table->tinyInteger('payment_method')->comment('0 credit 1, cash');
             $table->unsignedBigInteger('user_id')->index('orders_user_id_foreign');

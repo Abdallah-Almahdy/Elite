@@ -23,7 +23,7 @@
         "nafezly/payments": "^2.7",
         "samir-hussein/paymob": "^2.0",
         "spatie/laravel-google-fonts": "^1.4",
-        "spatie/laravel-permission": "^6.9",
+        "spatie/laravel-permission": "^6.21",
         "symfony/console": "*"
     },
     "require-dev": {

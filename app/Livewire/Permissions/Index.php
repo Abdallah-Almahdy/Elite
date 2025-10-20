@@ -32,7 +32,8 @@ class Index extends Component
         if ($role) {
             $this->userPermissionNames =  $role->permissions->pluck('name');
             $this->show = 1;
-        } else {
+        } else
+        {
             $this->show = 0;
         }
     }
