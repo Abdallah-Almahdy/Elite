@@ -83,7 +83,7 @@ class OrderDetails extends Component
             'address' => $orderData->temp_address ?? null,
             'phone' => $orderData->phoneNumber,
             'status' => $orderData->status,
-            'tracking_status' => $orderData->orderTracking[0]->status ?? 0, // حالة التتبع
+            'tracking_status' => $orderData->orderTracking[0]->status ?? 0,
             'notes' => $orderData->special_order_notes,
             'payment_method' => $orderData->payment_method,
             'order_type' => $orderData->order_type,
@@ -96,45 +96,66 @@ class OrderDetails extends Component
             'customer' => [
                 'name' => $userInfo[0]->firstName . ' ' . $userInfo[0]->lastName,
                 'phone' => $userInfo[0]->phonenum,
-                "finalAddress" => $finalAddress
+                'finalAddress' => $finalAddress,
             ],
 
             // المنتجات
             'products' => $orderData->orderProducts->map(function ($orderProduct) {
                 $product = $orderProduct->product;
+                $basePrice = $product->price ?? 0;
+                $count = $orderProduct->totalCount ?? 1;
+
+                // 🔹 حساب سعر الـ options
+                $optionsTotal = $orderProduct->options->flatMap(function ($opt) {
+                    return $opt->values->map(function ($val) {
+                        return $val->value->price ?? 0;
+                    });
+                })->sum();
+
+                // 🔹 حساب سعر الـ adds_on
+                $addsOnTotal = $orderProduct->addsOns->sum(function ($add) {
+                    return $add->addsOn->price * $add->quantity ?? 0;
+                });
+
+
+                // 🔹 حساب إجمالي المنتج الكامل (سعر المنتج + الخيارات + الإضافات) × الكمية
+                $totalrow = ($basePrice + $optionsTotal ) * $count + $addsOnTotal;
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'photo' => $product->photo,
                     'section' => $product->section->name ?? 'غير محدد',
-                    'price' => $product->price ?? 0,
-                    'count' => $orderProduct->totalCount,
-                    'total' => $orderProduct->totalPrice,
+                    'price' => $basePrice,
+                    'count' => $count,
+                    'total' => $totalrow,
+                    'discount' => $orderProduct->discount,
 
-                    // الخيارات الخاصة بالمنتج
+                    // الخيارات
                     'options' => $orderProduct->options->flatMap(function ($opt) {
                         return $opt->values->map(function ($val) use ($opt) {
                             return [
                                 'option_name' => $opt->option->name ?? null,
                                 'value_name' => $val->value->name ?? null,
-                                'price' => $val->value->price ?? null,
-
+                                'price' => $val->value->price ?? 0,
                             ];
                         });
                     }),
+
+                    // الإضافات
                     'adds_on' => $orderProduct->addsOns->map(function ($add) {
                         return [
                             'id' => $add->addsOn->id ?? null,
                             'name' => $add->addsOn->name ?? null,
                             'price' => $add->addsOn->price ?? 0,
                             'active' => $add->addsOn->active ?? 0,
-
+                            "quantity"=> $add->quantity
                         ];
                     }),
-
                 ];
             }),
         ];
+
 
 
         // dd($orderData->orderTracking[0]->status);

@@ -25,11 +25,13 @@ class PromocodeService
     | main methods
     |--------------------------------------------------------------------------
     */
-    public function checkPromocode(Request $request, $orderTotal)
+    public function checkPromocode(Request $request, $orderData)
     {
         $promoCodeID = $request->input('promocode_id');
         $userId = $request->user()->id;
-        $products = $request->input('orderProducts');
+        $products = $orderData->products()->get();
+        $orderTotal = $orderData->totalPrice;
+       
 
 
         $promo = PromoCode::find($promoCodeID);
@@ -41,11 +43,18 @@ class PromocodeService
 
         // ✅ الكود لا يعمل مع المنتجات التي عليها عروض
         if ($promo->check_offer_rate == 0) {
-            foreach ($products as $product) {
-                $dbProduct = Product::find($product['productId']);
-                if ($dbProduct && $dbProduct->offer_rate > 0) {
-                    return $this->notFound('هذا الكود لا يمكن استخدامه مع منتج به عرض');
-                }
+            $productIds = collect($products)->pluck('productId')->toArray();
+
+            // هل يوجد منتج عليه عرض عام أو مرتبط بنفس البرومو الحالي
+            $hasOffer = Product::whereIn('id', $productIds)
+                ->where(function ($q) use ($promoCodeID) {
+                    $q->where('offer_rate', '>', 0)
+                        ->orWhere('promo_code_id', $promoCodeID); // العرض مرتبط بنفس البرومو
+                })
+                ->exists();
+
+            if ($hasOffer) {
+                return $this->notFound('هذا الكود لا يمكن استخدامه مع منتج عليه عرض أو مرتبط بنفس العرض');
             }
         }
 

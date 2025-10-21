@@ -17,6 +17,7 @@ class OrderProductAddsOn extends Model
         'order_product_id',
         'adds_on_id',
         'active',
+        "quantity"
     ];
 
     protected $casts = [

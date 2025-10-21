@@ -70,7 +70,18 @@ class Index extends Component
 
         // Query orders with status 0 (pending) for today
         $orders = Order::where('status', 0)
+            ->where(function ($query) {
+                $query->where(function ($q) {
+                    $q->where('payment_method', 0)
+                        ->where('payment_status', 'paid');
+                })
+                    ->orWhere('payment_method', '!=', 0);
+            })
             ->get();
+
+    
+
+
 
         // Query failed orders (status 2) for today
         $faildOrders = Order::where('status', 2)

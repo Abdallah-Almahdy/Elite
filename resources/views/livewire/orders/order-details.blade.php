@@ -201,11 +201,12 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th width="25%">المنتج</th>
+                            <th width="15%">المنتج</th>
                             <th width="10%">الصورة</th>
                             <th width="15%">القسم</th>
                             <th width="10%">السعر</th>
                             <th width="10%">الكمية</th>
+                            <th width="10%">الخصم</th>
                             <th width="20%">الخيارات</th>
                             <th width="10%">الإجمالي</th>
                         </tr>
@@ -221,7 +222,10 @@
                                 </td>
                                 <td><span class="badge bg-secondary">{{ $product['section'] }}</span></td>
                                 <td class="text-nowrap">{{ number_format($product['price'], 2) }} جم</td>
-                                <td><span class="badge bg-primary rounded-pill">{{ $product['count'] }}</span></td>
+
+                             <td><span class="badge bg-primary rounded-pill">{{ $product['count'] }}</span></td>
+                            <td><span class=" fw-bold text-end text-danger"> {{  $product['count'] * $product['discount']}} ج.م</span></td>
+
                                 <td>
                                     @if (!empty($product['options']))
                                         <ul class="list-unstyled mb-0">
@@ -232,7 +236,7 @@
                                                     {{ $option['value_name'] }}
                                                     @if (!empty($option['price']))
                                                         <small
-                                                            class="text-success">(+{{ number_format($option['price'], 2) }}
+                                                            class="text-success">(+{{ number_format($option['price'] * $product['count'], 2) }}
                                                             جم)</small>
                                                     @endif
                                                 </li>
@@ -250,34 +254,36 @@
                                                     {{ $add['name'] }}
                                                     @if ($add['price'] > 0)
                                                         <span
-                                                            class="text-success">(+{{ number_format($add['price'], 2) }}
-                                                            جم)</span>
+                                                            class="text-success">(+{{ number_format($add['price'] * $add['quantity'], 2) }}
+                                                            ج.م)</span>
                                                     @endif
+                                                    <br>
+                                                     :الكميه {{ $add['quantity'] }}
                                                 </li>
                                             @endforeach
                                         </ul>
                                     @endif
                                 </td>
                                 <td class="fw-bold text-success text-nowrap">
-                                    {{ number_format($product['total'], 2) }} جم
+                                    {{ number_format($product['total'] - (  $product['count'] * $product['discount']), 2) }} ج.م
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="6" class="fw-bold text-end">المجموع الكلي:</td>
-                            <td class="fw-bold text-success fs-5">{{ number_format($orderArray['total'], 2) }} جم</td>
+                            <td colspan="7" class="fw-bold text-end">المجموع الكلي:</td>
+                            <td class="fw-bold text-success fs-5">{{ number_format($orderArray['total'] + $orderArray['discount'] , 2) }} ج.م</td>
                         </tr>
 
                         <tr>
-                            <td colspan="6" class="fw-bold text-end text-danger">الخصم:</td>
-                            <td class="fw-bold text-danger">-{{ number_format($orderArray['discount'], 2) }} جم</td>
+                            <td colspan="7" class="fw-bold text-end text-danger">الخصم:</td>
+                            <td class="fw-bold text-danger">-{{ number_format($orderArray['discount'], 2) }} ج.م</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="fw-bold text-end">الإجمالي بعد الخصم:</td>
+                            <td colspan="7" class="fw-bold text-end">الإجمالي بعد الخصم:</td>
                             <td class="fw-bold text-success fs-5">
-                                {{ number_format($orderArray['total'] - $orderArray['discount'], 2) }} جم
+                                {{ number_format($orderArray['total'], 2) }} ج.م
                             </td>
                         </tr>
 

@@ -39,6 +39,7 @@ class OrdersController extends Controller
 
     public function createOrder(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'userAddress' => 'required|integer',
             'orderPaymentMethod' => 'required|in:0,1',
@@ -50,6 +51,10 @@ class OrdersController extends Controller
             'orderProducts.*.options.*.optionId' => 'required_with:orderProducts.*.options|integer|exists:options,id',
             'orderProducts.*.options.*.valueId' => 'required_with:orderProducts.*.options|integer|exists:options_values,id'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
         $validator->after(function ($validator) use ($request) {
             foreach ($request->orderProducts as $index => $orderProduct) {

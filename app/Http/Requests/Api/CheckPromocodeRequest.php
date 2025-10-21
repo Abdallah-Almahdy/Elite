@@ -23,7 +23,6 @@ class CheckPromocodeRequest extends FormRequest
     {
         return [
             'promocode_id' => 'required',
-            'user_id' => 'required',
             'orderTotalPrice' => 'required'
         ];
     }

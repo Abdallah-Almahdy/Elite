@@ -34,6 +34,7 @@ class Edit extends Component
     public $stockQnt;
     public $qnt;
     public $active;
+    public $offer_rate;
 
     protected $rules = [
         'name' => 'required',
@@ -75,6 +76,7 @@ class Edit extends Component
         $this->enableStock = $this->data->qnt > 0;
         $this->stockQnt = $this->data->qnt;
         $this->active = $this->data->active;
+        $this->offer_rate = $this->data->offer_rate;
 
         // Load existing options
         $this->loadOptions();
@@ -186,6 +188,7 @@ class Edit extends Component
             'description' => $this->description,
             'uses_recipe' => $this->hasRecipe,
             'active' => $this->active,
+            "offer_rate" => $this->offer_rate
         ];
 
         // حفظ الصورة إذا وجدت

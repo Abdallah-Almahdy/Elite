@@ -52,15 +52,18 @@ class OrdersService
             $orderData =  $this->makeOrderLogic($request);
 
 
+
             if ($promocodeId) {
-                $promoCodeResponse = $this->promocodeService->checkPromocode($request, $orderData->totalPrice);
+                $promoCodeResponse = $this->promocodeService->checkPromocode($request, $orderData);
                 if ($promoCodeResponse->getStatusCode() != 200) {
                     DB::rollBack();
                     return $promoCodeResponse;
                 }
                 $finalTotal = $promoCodeResponse->getData()->data->final_total;
-                $orderData->totalPrice = $finalTotal;
+
                 $orderData->discount = $orderData->totalPrice - $finalTotal;
+                $orderData->totalPrice = $finalTotal;
+
                 $orderData->save();
             }
 
@@ -99,13 +102,12 @@ class OrdersService
                 $paymentmodel->update([
                     'provider_payment_id' => $response['payment_id'],
                 ]);
-
-                DB::commit();
-
                 return response()->json([
                     'iframe_url' => $response['redirect_url']
                 ]);
             }
+
+            DB::commit();
 
             return response()->json([
                 "data" => "order created"
@@ -127,12 +129,10 @@ class OrdersService
         $order = order::find($orderId);
 
         $this->promocodeService->restorePromocodeUsage($order);
-        $order->status =2;
+        $order->status = 2;
         // 1 = pre 3 = cancel 2 = succ
         orderTracking::where('order_id', $orderId)->update(['status' => 5]);
         $order->save();
-
-
     }
 
     private function makeOrderLogic($request)
@@ -203,19 +203,24 @@ class OrdersService
                 'order_id' => $orderData->id,
                 'totalCount' => $product['quantity'],
                 'totalPrice' => $product['quantity'] * $productModel->price,
+                'discount' => ($productModel->price * ($productModel->offer_rate / 100))
+
             ]);
-            $totalPrice += $orderProduct->totalPrice;
+
+            $totalPrice += $orderProduct->totalPrice - ($orderProduct->discount * $orderProduct->totalCount);
 
             // لو عنده إضافات (Addons)
             if (!empty($product['addson'])) {
-                foreach ($product['addson'] as $addonId) {
-                    OrderProductAddsOn::create([
+                foreach ($product['addson'] as $addon) {
+                    $OrderProductAddsOn = OrderProductAddsOn::create([
                         'order_product_id' => $orderProduct->id,
-                        'adds_on_id' => $addonId,
+                        'adds_on_id' => $addon['id'],
                         'active' => 1,
+                        'quantity' => $addon['quantity']
                     ]);
-                    $addon = AddsOn::find($addonId);
-                    $totalPrice += $addon->price;
+
+                    $addon = AddsOn::find($addon['id']);
+                    $totalPrice += $addon->price  *  $OrderProductAddsOn->quantity;
                 }
             }
 
@@ -233,7 +238,7 @@ class OrdersService
                         'active' => 1
                     ]);
 
-                    $totalPrice += OptionsValues::find($optionData['valueId'])->price;
+                    $totalPrice += OptionsValues::find($optionData['valueId'])->price * $product['quantity'];
                 }
             }
         }
@@ -282,10 +287,11 @@ class OrdersService
                 'discount' => $orderData->discount,
                 'total' => $orderData->totalPrice ?? 0,
                 'created_at' => $orderData->created_at,
+                'promoCode' => $orderData->promoCode,
 
                 // بيانات العميل
                 'customer' => [
-                    'name' => $user->customerInfo->firstName . " ". $user->customerInfo->lastName,
+                    'name' => $user->customerInfo->firstName . " " . $user->customerInfo->lastName,
                     'phone' => $user->customerInfo->phonenum,
                 ],
 
@@ -300,6 +306,8 @@ class OrdersService
                         'price' => $product->price ?? 0,
                         'count' => $orderProduct->totalCount,
                         'total' => $orderProduct->totalPrice,
+                        'discount' => $orderProduct->discount,
+                        "offer_rate" => $product->offer_rate,
 
                         // الخيارات الخاصة بالمنتج
                         'options' => $orderProduct->options->flatMap(function ($opt) {
@@ -318,7 +326,8 @@ class OrdersService
                                 'id' => $add->addsOn->id ?? null,
                                 'name' => $add->addsOn->name ?? null,
                                 'price' => $add->addsOn->price ?? 0,
-                                'active' => $add->active ?? 0, // ✅ مش $add->addsOn->active
+                                'active' => $add->active ?? 0,
+                                "quantity" =>   $add->quantity
                             ];
                         }),
                     ];
