@@ -8,7 +8,7 @@ use App\Http\Resources\deliveryRecourse;
 use App\Models\CustomerInfo;
 use App\Models\Delivery;
 use App\Traits\ApiTrait;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class DeliveryController extends Controller
 {
@@ -88,7 +88,7 @@ public function getDeliveryPrice(Request $request)
             'error' => 'لم يتم العثور على بيانات التوصيل لهذا المعرّف'
         ], 404);
     }
-    
+
     return response()->json([
         'price' => $delivery->delivery_price
     ]);

@@ -17,7 +17,7 @@ class SectionsController extends Controller
      */
     public function index()
     {
-        Gate::authorize('view', Section::class);
+
         return view('pages.sections.index');
     }
 

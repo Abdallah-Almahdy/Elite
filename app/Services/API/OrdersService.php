@@ -12,7 +12,7 @@ use App\Models\OrderProduct;
 use App\Models\CustomerInfo;
 use App\Models\Delivery;
 use App\Models\OptionsValues;
-use App\Models\orderTracking;
+use App\Models\OrderTracking;
 use App\Models\OrderProductAddsOn;
 use App\Models\OrderProductOption;
 use App\Services\API\PromocodeService;

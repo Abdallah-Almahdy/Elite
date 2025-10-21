@@ -19,7 +19,7 @@ class ProductsController extends Controller
     public function index()
     {
 
-        Gate::authorize('showProductsSidebar', Product::class);
+
         return view('pages.products.index');
     }
 
@@ -28,7 +28,7 @@ class ProductsController extends Controller
      */
     public function create()
     {
-        Gate::authorize('create', Product::class);
+ 
 
         $sections = SubSection::all();
         $companies = Company::all();
@@ -55,7 +55,7 @@ class ProductsController extends Controller
     public function show(product $product)
     {
         $options = $product->options;
-    
+
         return view('pages.products.show', ['product' => $product, 'options' => $options]);
     }
 

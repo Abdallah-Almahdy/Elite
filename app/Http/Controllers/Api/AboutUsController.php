@@ -12,6 +12,8 @@ class AboutUsController extends Controller
     public function index()
     {
         $about = AboutUS::with('images')->first();
+
+        
         //abdallah hiiii
 
         if (!$about) {
