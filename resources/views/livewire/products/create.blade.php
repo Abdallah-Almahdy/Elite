@@ -84,6 +84,75 @@
                 @endcan
             </div>
 
+            <!-- قسم الوحدات المضاف -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                                <span>وحدات المنتج</span>
+                                <button type="button" wire:click="addUnit" class="btn btn-sm btn-light">
+                                    <i class="fa fa-plus me-1"></i>إضافة وحدة
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @if(count($units) > 0)
+                                @foreach($units as $unitIndex => $unit)
+                                <div class="card mb-3 border-secondary">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">وحدة {{ $loop->iteration }}</h6>
+                                        @if($loop->index > 0)
+                                        <button type="button" wire:click="removeUnit({{ $unitIndex }})" class="btn btn-sm btn-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">اسم الوحدة <span class="text-danger">*</span></label>
+                                                    <input type="text" wire:model="units.{{ $unitIndex }}.name"
+                                                           class="form-control" placeholder="مثل: كيلو، علبة، قطعة..." required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">معامل التحويل <span class="text-danger">*</span></label>
+                                                    <input type="number" step="0.001" min="0.001"
+                                                           wire:model="units.{{ $unitIndex }}.conversion_factor"
+                                                           class="form-control" placeholder="1.0" required>
+                                                    <small class="form-text text-muted">كم تساوي هذه الوحدة من الوحدة الأساسية</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">الوحدة الأساسية</label>
+                                                    <div class="form-check mt-4">
+                                                        <input type="radio" wire:model="baseUnit" value="{{ $unitIndex }}"
+                                                               class="form-check-input" id="baseUnit{{ $unitIndex }}"
+                                                               {{ $loop->first ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="baseUnit{{ $unitIndex }}">
+                                                            جعلها الوحدة الأساسية
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="text-center text-muted py-3">
+                                    لا توجد وحدات مضافة حالياً
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- قسم الـ Options والـ Values المضاف -->
             <div class="row mb-3">
                 <div class="col-12">

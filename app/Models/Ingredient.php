@@ -38,11 +38,15 @@ class Ingredient extends Model
     {
         return $query->where('is_active', true);
     }
+    
     public function recipes()
 {
     return $this->belongsToMany(Recipe::class, 'recipe_ingredients')
                 ->withPivot('quantity_needed')
                 ->withTimestamps();
 }
+
+
+
 
 }

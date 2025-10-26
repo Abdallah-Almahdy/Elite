@@ -30,7 +30,37 @@ class create extends Component
     public $options = [];
     public $stockQnt;
     public $companies = [];
+    public $units = [];
+    public $baseUnit = 0;
 
+    public function mounts()
+    {
+        // إضافة وحدة افتراضية عند تحميل المكون
+        $this->addUnit();
+    }
+
+    public function addUnit()
+    {
+        $this->units[] = [
+            'name' => '',
+            'conversion_factor' => 1.0
+        ];
+    }
+
+    public function removeUnit($index)
+    {
+        if (count($this->units) > 1 && isset($this->units[$index])) {
+            unset($this->units[$index]);
+            $this->units = array_values($this->units);
+
+            // إذا كانت الوحدة المحذوفة هي الأساسية، اجعل الوحدة الأولى أساسية
+            if ($this->baseUnit == $index) {
+                $this->baseUnit = 0;
+            } elseif ($this->baseUnit > $index) {
+                $this->baseUnit--;
+            }
+        }
+    }
     protected $rules = [
         'name' => 'required',
         'price' => 'required|numeric',
