@@ -12,18 +12,23 @@
             <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
             @error('name') <small class="text-danger">{{ $message }}</small> @enderror
         </div>
+            <div class="mb-3">
+            <label class="form-label">الكمية في المخزون</label>
+            <input type="text" name="quantity_in_stock" class="form-control" value="{{ old('quantity_in_stock') }}" required>
+            @error('quantity_in_stock') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
 
         <div class="mb-3">
             <label class="form-label">الوحدة</label>
-            <select name="unit_id" class="form-select">
+            <select name="measurement_unit_id" class="form-select">
                 <option value="">اختر الوحدة</option>
                 @foreach($units as $unit)
-                    <option value="{{ $unit->id }}" {{ old('unit_id', $ingredient->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
-                        {{ $unit->name }} ({{ $unit->unit_code }})
+                    <option value="{{ $unit->id }}" {{ old('measurement_unit_id', $ingredient->measurement_unit_id ?? '') == $unit->id ? 'selected' : '' }}>
+                        {{ $unit->name }} 
                     </option>
                 @endforeach
             </select>
-            @error('unit_id') <small class="text-danger">{{ $message }}</small> @enderror
+            @error('measurement_unit_id') <small class="text-danger">{{ $message }}</small> @enderror
         </div>
 
 

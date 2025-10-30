@@ -11,7 +11,7 @@ class Ingredient extends Model
 
     protected $fillable = [
         'name',
-        'unit_id',
+        'measurement_unit_id',
         'quantity_in_stock',
         'derived_quantity',
         'is_active'
@@ -24,9 +24,9 @@ class Ingredient extends Model
     ];
 
 
-    public function unit()
+    public function MeasurementUnit()
     {
-        return $this->belongsTo(Unit::class);
+        return $this->belongsTo(MeasurementUnit::class);
     }
 
     public function recipe()
@@ -38,7 +38,7 @@ class Ingredient extends Model
     {
         return $query->where('is_active', true);
     }
-    
+
     public function recipes()
 {
     return $this->belongsToMany(Recipe::class, 'recipe_ingredients')

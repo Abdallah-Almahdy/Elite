@@ -3,18 +3,12 @@
 namespace App\Livewire\Products;
 
 use Livewire\Component;
-use App\Models\Company;
-use App\Models\Options;
-use App\Models\OptionsValues;
-use App\Models\OrderProductOptionValue;
-use App\Models\Product;
-use App\Models\Section;
 use Livewire\WithFileUploads;
+use App\Models\Company;
 use App\Models\SubSection;
-use App\Models\ProductOption;
-use App\Models\ProductOptionValue;
+use App\Models\Product;
 
-class create extends Component
+class Create extends Component
 {
     use WithFileUploads;
 
@@ -22,28 +16,38 @@ class create extends Component
     public $price;
     public $photo;
     public $section;
-    public $stock;
-    public $enableStock = false;
     public $bar_code;
     public $description;
-    public $hasRecipe = false;
-    public $options = [];
+
+    public $enableStock = false;
     public $stockQnt;
-    public $companies = [];
+
     public $units = [];
     public $baseUnit = 0;
 
-    public function mounts()
+    public $companies = [];
+    public $options = [];
+    public $hasRecipe = false;
+
+    public $allProducts = []; // لاختيار المكونات
+
+    public function mount()
     {
-        // إضافة وحدة افتراضية عند تحميل المكون
-        $this->addUnit();
+        $this->companies = Company::all();
+        $this->allProducts = Product::all();
+        $this->addUnit(); // إضافة وحدة افتراضية
     }
 
+    /***** إدارة الوحدات *****/
     public function addUnit()
     {
         $this->units[] = [
             'name' => '',
-            'conversion_factor' => 1.0
+            'price' => 0,
+            'conversion_factor' => 1.0,
+            'isComposite' => false,
+            'bar_codes' => [''],
+            'components' => [],
         ];
     }
 
@@ -52,35 +56,48 @@ class create extends Component
         if (count($this->units) > 1 && isset($this->units[$index])) {
             unset($this->units[$index]);
             $this->units = array_values($this->units);
-
-            // إذا كانت الوحدة المحذوفة هي الأساسية، اجعل الوحدة الأولى أساسية
-            if ($this->baseUnit == $index) {
-                $this->baseUnit = 0;
-            } elseif ($this->baseUnit > $index) {
-                $this->baseUnit--;
-            }
+            if ($this->baseUnit == $index) $this->baseUnit = 0;
+            elseif ($this->baseUnit > $index) $this->baseUnit--;
         }
     }
-    protected $rules = [
-        'name' => 'required',
-        'price' => 'required|numeric',
-        'section' => 'required',
-        'photo' => 'nullable|image|max:1024',
-        'hasRecipe' => 'boolean',
-        'stockQnt' => 'nullable|integer|min:0',
-        'options.*.name' => 'required|string|max:255',
-        'options.*.active' => 'boolean',
-        'options.*.values.*.name' => 'required|string|max:255',
-        'options.*.values.*.price' => 'nullable|numeric|min:0',
-    ];
 
-    public function mount()
+    /***** إدارة البركود *****/
+    public function addBarCode($unitIndex)
     {
-        // التهيئة الأولية
-        $this->companies = Company::all();
+        $this->units[$unitIndex]['bar_codes'][] = '';
     }
 
-    // إضافة خيار جديد
+    public function removeBarCode($unitIndex, $barcodeIndex)
+    {
+        if (isset($this->units[$unitIndex]['bar_codes'][$barcodeIndex])) {
+            unset($this->units[$unitIndex]['bar_codes'][$barcodeIndex]);
+            $this->units[$unitIndex]['bar_codes'] = array_values($this->units[$unitIndex]['bar_codes']);
+        }
+    }
+
+    /***** إدارة المكونات للوحدة المركبة *****/
+    public function addComponent($unitIndex)
+    {
+        if (!isset($this->units[$unitIndex]['components']) || !is_array($this->units[$unitIndex]['components'])) {
+            $this->units[$unitIndex]['components'] = [];
+        }
+
+        $this->units[$unitIndex]['components'][] = [
+            'product_id' => null,
+            'quantity' => 0,
+            'unit_id' => null,
+        ];
+    }
+
+    public function removeComponent($unitIndex, $compIndex)
+    {
+        if (isset($this->units[$unitIndex]['components'][$compIndex])) {
+            unset($this->units[$unitIndex]['components'][$compIndex]);
+            $this->units[$unitIndex]['components'] = array_values($this->units[$unitIndex]['components']);
+        }
+    }
+
+    /***** إدارة الخيارات *****/
     public function addOption()
     {
         $this->options[] = [
@@ -90,7 +107,6 @@ class create extends Component
         ];
     }
 
-    // إزالة خيار
     public function removeOption($index)
     {
         if (isset($this->options[$index])) {
@@ -99,7 +115,6 @@ class create extends Component
         }
     }
 
-    // إضافة قيمة لخيار
     public function addValue($optionIndex)
     {
         if (isset($this->options[$optionIndex])) {
@@ -110,7 +125,6 @@ class create extends Component
         }
     }
 
-    // إزالة قيمة من خيار
     public function removeValue($optionIndex, $valueIndex)
     {
         if (isset($this->options[$optionIndex]['values'][$valueIndex])) {
@@ -119,83 +133,17 @@ class create extends Component
         }
     }
 
+    /***** فقط التحقق بدون حفظ *****/
     public function create()
     {
-        $this->validate();
-
-        // تحضير بيانات المنتج
-        $productData = [
-            'name' => $this->name,
-            'price' => $this->price,
-            'section_id' => $this->section,
-            'active' => $this->stock ?? true,
-            'qnt' => $this->enableStock ? ($this->stockQnt ?? 0) : 0,
-            'bar_code' => $this->bar_code,
-            'description' => $this->description,
-            'uses_recipe' => $this->hasRecipe,
-        ];
-
-        // حفظ الصورة إذا وجدت
-        if ($this->photo) {
-            $productData['photo'] = $this->photo->storeAs('products', rand() . '.jpg', 'my_public');
-        }
-
-        // إنشاء المنتج
-        $product = Product::create($productData);
-
-        // حفظ الـ Options والـ Values إذا وجدت
-        if (!empty($this->options)) {
-            foreach ($this->options as $optionData) {
-                // إنشاء الـ Option
-                $option = Options::create([
-                    'name' => $optionData['name'],
-                    'active' => $optionData['active'] ?? true,
-                ]);
-
-                ProductOption::create([
-                    'product_id' => $product->id,
-                    'option_id' => $option->id,
-                ]);
-
-                // حفظ الـ Values الخاصة بالـ Option
-                if (!empty($optionData['values'])) {
-                    foreach ($optionData['values'] as $valueData) {
-                        $v =  OptionsValues::create([
-                            'option_id' => $option->id,
-                            'name' => $valueData['name'],
-                            'price' => $valueData['price'] ?? 0,
-                        ]);
-                    }
-                }
-            }
-        }
-        // إنشاء وصفة إذا كان المنتج يحتوي على وصفة
-        if ($this->hasRecipe) {
-            $product->recipe()->create([
-                'name' => $product->name
-            ]);
-        }
-
-        session()->flash('done', 'تم إضافة منتج جديد بنجاح');
-        $this->resetForm();
-    }
-
-    // إعادة تعيين النموذج
-    public function resetForm()
-    {
-        $this->reset([
-            'name',
-            'price',
-            'photo',
-            'section',
-            'stock',
-            'enableStock',
-            'bar_code',
-            'description',
-            'hasRecipe',
-            'options',
-            'stockQnt',
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'section' => 'required',
+            'units.*.name' => 'required|string|max:255',
         ]);
+
+        session()->flash('done', '✅ تم التحقق من البيانات بنجاح (بدون حفظ)');
     }
 
     public function render()
@@ -204,6 +152,8 @@ class create extends Component
         return view('livewire.products.create', [
             'sections' => $sections,
             'companies' => $this->companies,
+            'allProducts' => $this->allProducts,
+            
         ]);
     }
 }

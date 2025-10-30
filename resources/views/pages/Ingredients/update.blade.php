@@ -16,10 +16,10 @@
 
         <div class="mb-3">
             <label class="form-label">الوحدة</label>
-            <select name="unit_id" class="form-control" required>
+            <select name="measurement_unit_id" class="form-control" required>
                 @foreach($units as $unit)
-                    <option value="{{ $unit->id }}" {{ $ingredient->unit_id == $unit->id ? 'selected' : '' }}>
-                        {{ $unit->name }} ({{ $unit->unit_code }})
+                    <option value="{{ $unit->id }}" {{ $ingredient->measurement_unit_id == $unit->id ? 'selected' : '' }}>
+                        {{ $unit->name }}
                     </option>
                 @endforeach
             </select>
@@ -43,7 +43,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">تحديث</button>
-        
+
         <a href="{{ route('ingredients.index') }}" class="btn btn-secondary">رجوع</a>
     </form>
 </div>

@@ -25,7 +25,7 @@
             @forelse($ingredients as $ingredient)
                 <tr>
                     <td>{{ $ingredient->name }}</td>
-                    <td>{{ $ingredient->unit->unit_code ?? '-' }}</td>
+                    <td>{{ $ingredient->MeasurementUnit->name?? '-' }}</td>
                     <td>{{ $ingredient->quantity_in_stock }}</td>
                     <td>
                         <div class="flex justify-center items-center">
