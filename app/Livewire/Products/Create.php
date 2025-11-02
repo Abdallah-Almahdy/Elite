@@ -33,23 +33,74 @@ class Create extends Component
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
 
-    public $productSearch = '';
-    public $searchResults = [];
-
-    public function updatedProductSearch()
+    public function updated($propertyName)
     {
-        $this->searchResults = Product::where('name', 'like', '%' . $this->productSearch . '%')
-            ->take(10)
-            ->get();
+        // لو المستخدم بيكتب في خانة بحث المنتج
+        if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
+            $this->handleProductSearch($propertyName);
+        }
     }
-    public function selectProduct($productId, $index, $cIndex)
-    {
-        $this->units[$index]['components'][$cIndex]['product_id'] = $productId;
 
+    public function handleProductSearch($propertyName)
+    {
+        // استخراج الـ indexات باستخدام regex
+        if (!preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches)) {
+            return;
+        }
+
+        $unitIndex = (int) $matches[1];
+        $componentIndex = (int) $matches[2];
+
+        // التحقق من وجود المسار داخل المصفوفة
+        if (
+            !isset($this->units[$unitIndex]) ||
+            !isset($this->units[$unitIndex]['components'][$componentIndex])
+        ) {
+            return;
+        }
+
+        $query = trim($this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '');
+
+        // لو المستخدم كتب أقل من حرفين → امسح النتائج
+        if (strlen($query) < 2) {
+            $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
+            return;
+        }
+
+        // جلب المنتجات المطابقة من قاعدة البيانات
+        $results = Product::query()
+            ->where('name', 'like', "%{$query}%")
+            ->limit(10)
+            ->get(['id', 'name'])
+            ->toArray();
+
+        // حفظ النتائج في المصفوفة
+        $this->units[$unitIndex]['components'][$componentIndex]['results'] = $results;
+    }
+
+    public function selectProduct($unitIndex, $componentIndex, $productId)
+    {
         $product = Product::find($productId);
-        $this->productSearch = $product->name; // عرض الاسم في مربع البحث
-        $this->searchResults = []; // إخفاء القائمة بعد الاختيار
+        if (!$product) return;
+
+        // تأكد أن المسار موجود
+        if (!isset($this->units[$unitIndex]['components'][$componentIndex])) {
+            return;
+        }
+
+        // تعيين القيم
+        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
+        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
+
+        // تحديث حقل البحث ليعرض الاسم فقط بعد الاختيار
+        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
+
+        // إخفاء النتائج بعد الاختيار
+        $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }
+
+
+
 
     public function mount()
     {

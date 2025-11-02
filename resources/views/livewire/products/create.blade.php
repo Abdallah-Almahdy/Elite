@@ -203,29 +203,57 @@
                                                             @if (count($components) > 0)
                                                                 @foreach ($components as $cIndex => $comp)
                                                                     <div class="row mb-2 align-items-center">
-                                                                        <div class="col-md-4" wire:ignore.self>
-    <div class="form-group position-relative">
-        <label class="form-label">المنتج</label>
+                                                                        <div class="col-md-4 position-relative">
+                                                                            <div class="form-group">
+                                                                                <label
+                                                                                    class="form-label">المنتج</label>
 
-        <!-- مربع البحث -->
-        <input type="text" wire:model.debounce.400ms="productSearch"
-               class="form-control" placeholder="ابحث عن منتج...">
+                                                                                @if (empty($unit['components'][$cIndex]['product_id']))
+                                                                                    <!-- مربع البحث -->
+                                                                                    <input type="text"
+                                                                                        wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
+                                                                                        class="form-control"
+                                                                                        placeholder="ابحث عن منتج...">
 
-        <!-- النتائج -->
-        @if(!empty($productSearch))
-            <ul class="list-group position-absolute w-100" style="z-index: 999; max-height:200px; overflow:auto;">
-                @forelse($searchResults as $product)
-                    <li class="list-group-item list-group-item-action"
-                        wire:click="selectProduct({{ $product->id }}, {{ $index }}, {{ $cIndex }})">
-                        {{ $product->name }}
-                    </li>
-                @empty
-                    <li class="list-group-item text-muted">لا توجد نتائج</li>
-                @endforelse
-            </ul>
-        @endif
-    </div>
-</div>
+                                                                                    <!-- قائمة النتائج -->
+                                                                                    @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
+                                                                                        <ul class="list-group position-absolute w-100"
+                                                                                            style="z-index: 999;">
+                                                                                            @forelse ($unit['components'][$cIndex]['results'] as $result)
+                                                                                                <li class="list-group-item list-group-item-action"
+                                                                                                    wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
+                                                                                                    {{ $result['name'] }}
+                                                                                                </li>
+                                                                                            @empty
+                                                                                                <li
+                                                                                                    class="list-group-item text-muted">
+                                                                                                    لا توجد نتائج</li>
+                                                                                            @endforelse
+                                                                                        </ul>
+                                                                                    @endif
+                                                                                @else
+                                                                                    <!-- قائمة select بعد الاختيار -->
+                                                                                    <select
+                                                                                        wire:model="units.{{ $index }}.components.{{ $cIndex }}.product_id"
+                                                                                        class="form-select">
+                                                                                        <option value="">اختر
+                                                                                            المنتج</option>
+                                                                                        @foreach ($allProducts as $p)
+                                                                                            <option
+                                                                                                value="{{ $p->id }}">
+                                                                                                {{ $p->name }}
+                                                                                            </option>
+                                                                                        @endforeach
+                                                                                    </select>
+
+                                                                                    <small
+                                                                                        class="text-success d-block mt-1">
+                                                                                        تم اختيار:
+                                                                                        {{ $unit['components'][$cIndex]['product_name'] ?? '' }}
+                                                                                    </small>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
 
 
 
@@ -427,43 +455,44 @@
     </form>
 
     <!-- Modal لإضافة وحدة -->
-<div wire:ignore.self class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold" id="addUnitModalLabel">إضافة وحدة جديدة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form wire:submit.prevent="storeUnit">
-                    <div class="form-group mb-3">
-                        <label class="form-label">اسم الوحدة</label>
-                        <input type="text" wire:model="newUnit.name" class="form-control"
-                            placeholder="مثل: كيلو، لتر...">
-                        @error('newUnit.name') <div class="text-danger small">{{ $message }}</div> @enderror
-                    </div>
+    <div wire:ignore.self class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="addUnitModalLabel">إضافة وحدة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form wire:submit.prevent="storeUnit">
+                        <div class="form-group mb-3">
+                            <label class="form-label">اسم الوحدة</label>
+                            <input type="text" wire:model="newUnit.name" class="form-control"
+                                placeholder="مثل: كيلو، لتر...">
+                            @error('newUnit.name')
+                                <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                    <div class="form-check mb-3">
-                        <input type="checkbox" wire:model="newUnit.is_active" class="form-check-input" id="isActive">
-                        <label class="form-check-label" for="isActive">نشطة</label>
-                    </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" wire:model="newUnit.is_active" class="form-check-input"
+                                id="isActive">
+                            <label class="form-check-label" for="isActive">نشطة</label>
+                        </div>
 
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">
-                            حفظ
-                        </button>
-                    </div>
-                </form>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                حفظ
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 </div>
 
 @push('scripts')
-<script>
-
-</script>
+    <script></script>
 @endpush
