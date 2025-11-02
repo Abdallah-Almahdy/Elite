@@ -7,6 +7,7 @@ use Livewire\WithFileUploads;
 use App\Models\Company;
 use App\Models\SubSection;
 use App\Models\Product;
+use App\Models\Unit;
 
 class Create extends Component
 {
@@ -30,12 +31,87 @@ class Create extends Component
     public $hasRecipe = false;
 
     public $allProducts = []; // لاختيار المكونات
-
+    public $MeasureUnits = [];
     public function mount()
     {
         $this->companies = Company::all();
         $this->allProducts = Product::all();
+        $this->MeasureUnits = Unit::all();
         $this->addUnit(); // إضافة وحدة افتراضية
+    }
+    public function updated($propertyName)
+    {
+        // لو المستخدم بيكتب في خانة بحث منتج
+        if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
+            $this->handleProductSearch($propertyName);
+        }
+    }
+
+    public function handleProductSearch($propertyName)
+    {
+        // استخراج الـ indexات
+        preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches);
+        if (!$matches) return;
+
+        [$full, $unitIndex, $componentIndex] = $matches;
+
+        $query = $this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '';
+
+        if (strlen($query) < 2) {
+            $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
+            return;
+        }
+
+        $results = Product::where('name', 'like', "%{$query}%")
+            ->take(10)
+            ->get(['id', 'name'])
+            ->toArray();
+
+        $this->units[$unitIndex]['components'][$componentIndex]['results'] = $results;
+    }
+    public function selectProduct($unitIndex, $componentIndex, $productId)
+    {
+        $product = Product::find($productId);
+        if (!$product) return;
+
+        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
+        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
+        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
+        $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
+    }
+
+
+
+    public $newUnit = [
+        'name' => '',
+        'is_active' => true,
+    ];
+
+    public function storeUnit()
+    {
+        $this->validate([
+            'newUnit.name' => 'required|string|max:255',
+        ]);
+
+        $unit = Unit::create([
+            'name' => $this->newUnit['name'],
+            'is_active' => $this->newUnit['is_active'] ?? true,
+        ]);
+
+        // تحدّث القائمة
+        $this->MeasureUnits = Unit::all();
+
+        // خلي آخر وحدة مختارة
+        $lastIndex = count($this->units) - 1;
+        if ($lastIndex >= 0) {
+            $this->units[$lastIndex]['measure_unit_id'] = $unit->id;
+        }
+
+        // تنظيف المودال
+        $this->newUnit = ['name' => '', 'is_active' => true];
+
+        // إغلاق المودال من الواجهة
+        $this->dispatch('close-modal', id: 'addUnitModal');
     }
 
     /***** إدارة الوحدات *****/
@@ -44,10 +120,12 @@ class Create extends Component
         $this->units[] = [
             'name' => '',
             'price' => 0,
+            'sallPrice' => 0,
             'conversion_factor' => 1.0,
             'isComposite' => false,
             'bar_codes' => [''],
-            'components' => [],
+            'components' => [] ?? [],
+
         ];
     }
 
@@ -85,7 +163,7 @@ class Create extends Component
         $this->units[$unitIndex]['components'][] = [
             'product_id' => null,
             'quantity' => 0,
-            'unit_id' => null,
+            'product_unit_id' => null,
         ];
     }
 
@@ -153,7 +231,8 @@ class Create extends Component
             'sections' => $sections,
             'companies' => $this->companies,
             'allProducts' => $this->allProducts,
-            
+            'MeasureUnits' => $this->MeasureUnits,
+
         ]);
     }
 }

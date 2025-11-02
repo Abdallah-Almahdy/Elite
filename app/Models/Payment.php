@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
+    protected $table = 'paymentsPaymop';
+
     protected $fillable = [
         'order_id',
         'provider',
@@ -25,7 +27,4 @@ class Payment extends Model
     {
         return $this->belongsTo(Order::class);
     }
-
-
-
 }

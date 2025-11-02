@@ -60,8 +60,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {{-- @vite('resources/css/app.css') --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -74,7 +74,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </style>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -109,7 +109,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- /.control-sidebar -->
 
         <!-- Main Footer -->
-      
+
     </div>
     <!-- ./wrapper -->
 
@@ -135,7 +135,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 theme: 'bootstrap4'
             })
         })
+
+            window.addEventListener('close-modal', event => {
+        const modalId = event.detail.id;
+        $('#' + modalId).modal('hide');
+    });
     </script>
+    @stack('scripts')
 </body>
 
 </html>

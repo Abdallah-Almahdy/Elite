@@ -196,14 +196,6 @@
                 @endcan
 
                 <!-- الوصفات -->
-                @can('showRecips')
-                <li class="nav-item mb-1">
-                    <a href="{{ route('recipes.index') }}" class="nav-link {{ Request::is('recipes*') ? 'bg-success' : '' }}">
-                        <i class="nav-icon fas fa-book ml-2"></i>
-                        <p>الوصفات</p>
-                    </a>
-                </li>
-                @endcan
 
                 <!-- الوحدات -->
                 @can('showUnits')
@@ -215,15 +207,7 @@
                 </li>
                 @endcan
 
-                <!-- المكونات -->
-                @can('showGredients')
-                <li class="nav-item mb-1">
-                    <a href="{{ route('ingredients.index') }}" class="nav-link {{ Request::is('dashboard/ingredients*') ? 'bg-success' : '' }}">
-                        <i class="nav-icon fas fa-lemon ml-2"></i>
-                        <p>المكونات</p>
-                    </a>
-                </li>
-                @endcan
+
 
                 <!-- الموردين -->
                 @can('showSuppliers')
@@ -345,99 +329,3 @@
 
 
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.querySelector('.main-sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    const toggleBtn = document.getElementById('sidebarToggle');
-
-    // دالة إغلاق الـ sidebar
-    function closeSidebar() {
-        if (window.innerWidth < 992) {
-            sidebar.classList.add('d-none', 'translateX-full');
-            sidebar.classList.remove('translateX-zero');
-            overlay.classList.add('d-none', 'opacity-0');
-            overlay.classList.remove('opacity-50');
-        }
-    }
-
-    // دالة فتح الـ sidebar
-    function openSidebar() {
-        if (window.innerWidth < 992) {
-            sidebar.classList.remove('d-none', 'translateX-full');
-            sidebar.classList.add('translateX-zero');
-            overlay.classList.remove('d-none', 'opacity-0');
-            overlay.classList.add('opacity-50');
-        }
-    }
-
-    // دالة toggle
-    function toggleSidebar() {
-        if (window.innerWidth < 992) {
-            if (sidebar.classList.contains('d-none')) {
-                openSidebar();
-            } else {
-                closeSidebar();
-            }
-        }
-    }
-
-    // setup أولي للعناصر
-    function setupMobileSidebar() {
-        if (window.innerWidth < 992) {
-            // إعداد الـ sidebar للموبايل
-            sidebar.classList.add('position-fixed', 'end-0', 'top-0', 'h-100', 'd-none', 'translateX-full');
-            sidebar.style.zIndex = '1035';
-            sidebar.style.width = '280px';
-            sidebar.style.marginRight = '-20px';
-
-            // إعداد الـ overlay
-            overlay.classList.add('position-fixed', 'top-0', 'start-0', 'w-100', 'h-100', 'bg-dark', 'd-none', 'opacity-0');
-            overlay.style.zIndex = '1034';
-        } else {
-            // في الديسكتوب: نرجع كل حاجة لطبيعتها
-            sidebar.classList.remove('position-fixed', 'end-0', 'top-0', 'h-100', 'd-none', 'translateX-full', 'translateX-zero');
-            overlay.classList.add('d-none');
-        }
-    }
-
-    // event listeners
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation(); // نمنع انتشار الحدث
-            toggleSidebar();
-        });
-    }
-
-    if (overlay) {
-        overlay.addEventListener('click', closeSidebar);
-    }
-
-    // إغلاق الـ sidebar عند الضغط على أي رابط فيه
-    const sidebarLinks = document.querySelectorAll('.nav-sidebar .nav-link');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', closeSidebar);
-    });
-
-    // إغلاق الـ sidebar عند الضغط في أي مكان في الصفحة
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth < 992 && !sidebar.classList.contains('d-none')) {
-            // إذا كان الـ sidebar مفتوح والضغط خارج الـ sidebar والزر
-            if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
-                closeSidebar();
-            }
-        }
-    });
-
-    // إغلاق الـ sidebar عند الضغط على زر Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && window.innerWidth < 992 && !sidebar.classList.contains('d-none')) {
-            closeSidebar();
-        }
-    });
-
-    // setup أولي وتحديث عند resize
-    setupMobileSidebar();
-    window.addEventListener('resize', setupMobileSidebar);
-});
-</script>

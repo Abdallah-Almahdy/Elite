@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('recipe_units', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('recipe_id');
-            $table->unsignedBigInteger('unit_id')->index('recipe_units_unit_id_foreign');
+        Schema::create('units', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
-
-            $table->unique(['recipe_id', 'unit_id']);
         });
     }
 
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('recipe_units');
+        Schema::dropIfExists('units');
     }
 };

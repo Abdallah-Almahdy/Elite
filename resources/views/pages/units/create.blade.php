@@ -1,142 +1,73 @@
 @extends('admin.app')
 
 @section('content')
-    <div class="card card-primary">
-        <div class="card-header">
-            <h5 class="text-center">إضافة وحدة جديدة</h5>
+    <div class="card card-primary h-100">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title text-center mb-0">
+                <i class="fas fa-plus-circle me-2"></i>
+                إضافة وحدة جديدة
+            </h5>
         </div>
-        <form method="POST" action="{{ route('units.store') }}" role="form">
+
+        <form method="POST" action="{{ route('units.store') }}" role="form" class="h-100 d-flex flex-column">
             @csrf
-            <div class="card-body">
+            <div class="card-body flex-grow-1">
                 <div class="row">
                     {{-- الاسم --}}
-                    <div class="col-sm-6">
+                    <div class="col-md-6 mb-4">
                         <div class="form-group">
-                            <label for="name">الاسم</label>
-                            <input type="text" class="form-control" id="name" name="name"
-                                   value="{{ old('name') }}" required>
-                            @error('name') <div class="text-danger">{{ $message }}</div> @enderror
+                            <label for="name" class="form-label fw-semibold">
+                                اسم الوحدة
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                   value="{{ old('name') }}" required
+                                   placeholder="أدخل اسم الوحدة">
+                            @error('name')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
                     </div>
 
-                    {{-- الرمز --}}
-                    <div class="col-sm-6">
+                    {{-- الحالة --}}
+                    <div class="col-md-6 mb-4">
                         <div class="form-group">
-                            <label for="short_code">الرمز</label>
-                            <input type="text" class="form-control" id="short_code" name="short_code"
-                                   value="{{ old('short_code') }}" required>
-                            @error('short_code') <div class="text-danger">{{ $message }}</div> @enderror
+                            <label for="active" class="form-label fw-semibold">
+                                حالة الوحدة
+                            </label>
+                            <select class="form-control form-select form-control-lg" id="active" name="is_active">
+                                <option value="1" {{ old('active', 1) == 1 ? 'selected' : '' }}>
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle me-2"></i>مفعل
+                                    </span>
+                                </option>
+                                <option value="0" {{ old('active') == 0 ? 'selected' : '' }}>
+                                    <span class="text-danger">
+                                        <i class="fas fa-times-circle me-2"></i>غير مفعل
+                                    </span>
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {{-- نوع الوحدة (أساسية / مشتقة) --}}
-                <div class="form-group">
-                    <label for="is_base_unit">نوع الوحدة</label>
-                    <select class="form-control" id="is_base_unit" name="is_base_unit" required>
-                        <option value="1" {{ old('is_base_unit') == 1 ? 'selected' : '' }}>وحدة أساسية</option>
-                        <option value="0" {{ old('is_base_unit') == 0 ? 'selected' : '' }}>وحدة مشتقة</option>
-                    </select>
-                    @error('is_base_unit') <div class="text-danger">{{ $message }}</div> @enderror
-                </div>
-
-                {{-- النوع --}}
-                <div class="form-group">
-                    <label for="type">النوع</label>
-                    <select name="type" id="type" class="form-control" required>
-                        <option value="">اختر النوع</option>
-                        <option value="weight" {{ old('type') == 'weight' ? 'selected' : '' }}>وزن</option>
-                        <option value="volume" {{ old('type') == 'volume' ? 'selected' : '' }}>حجم</option>
-                        <option value="count" {{ old('type') == 'count' ? 'selected' : '' }}>قطعة</option>
-                    </select>
-                    @error('type') <div class="text-danger">{{ $message }}</div> @enderror
-                </div>
-
-                {{-- حقول المشتقة --}}
-                <div id="derived_fields">
-                    <div class="row">
-                        {{-- الوحدة الأساسية --}}
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="base_unit_id">الوحدة الأساسية</label>
-                                <select class="form-control" id="base_unit_id" name="base_unit_id">
-                                    <option value="">اختر الوحدة الأساسية</option>
-                                    @foreach ($baseUnits as $baseUnit)
-                                        <option value="{{ $baseUnit->id }}"
-                                            {{ old('base_unit_id') == $baseUnit->id ? 'selected' : '' }}>
-                                            {{ $baseUnit->name }} ({{ $baseUnit->short_code }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('base_unit_id') <div class="text-danger">{{ $message }}</div> @enderror
-                            </div>
-                        </div>
-
-                        {{-- معامل التحويل --}}
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="conversion_factor">معامل التحويل</label>
-                                <input type="number" step="0.0001" class="form-control" id="conversion_factor"
-                                       name="conversion_factor" value="{{ old('conversion_factor', 1) }}">
-                                @error('conversion_factor') <div class="text-danger">{{ $message }}</div> @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- رمز الوحدة (للمشتقة فقط) --}}
-                    <div class="form-group">
-                        <label for="unit_code">رمز الوحدة</label>
-                        <select name="unit_code" id="unit_code" class="form-control">
-                            <option value="">اختر الوحدة</option>
-                            <option value="kg" {{ old('unit_code') == 'kg' ? 'selected' : '' }}>كيلو</option>
-                            <option value="g" {{ old('unit_code') == 'g' ? 'selected' : '' }}>جرام</option>
-                            <option value="mg" {{ old('unit_code') == 'mg' ? 'selected' : '' }}>مليجرام</option>
-                            <option value="ton" {{ old('unit_code') == 'ton' ? 'selected' : '' }}>طن</option>
-                            <option value="l" {{ old('unit_code') == 'l' ? 'selected' : '' }}>لتر</option>
-                            <option value="ml" {{ old('unit_code') == 'ml' ? 'selected' : '' }}>مليلتر</option>
-                            <option value="piece" {{ old('unit_code') == 'piece' ? 'selected' : '' }}>قطعة</option>
-                        </select>
-                        @error('unit_code') <div class="text-danger">{{ $message }}</div> @enderror
-                    </div>
-                </div>
-
-                {{-- الحالة --}}
-                <div class="form-group">
-                    <label for="active">الحالة</label>
-                    <select class="form-control" id="active" name="active">
-                        <option value="1" {{ old('active', 1) == 1 ? 'selected' : '' }}>مفعل</option>
-                        <option value="0" {{ old('active') == 0 ? 'selected' : '' }}>غير مفعل</option>
-                    </select>
-                </div>
-
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-primary">إضافة</button>
+            {{-- زر الإرسال --}}
+            <div class="card-footer bg-light py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ route('units.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-right me-1"></i>
+                        رجوع للقائمة
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-save me-2"></i>
+                        إضافة الوحدة
+                    </button>
                 </div>
             </div>
         </form>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const isBaseUnitSelect = document.getElementById('is_base_unit');
-            const derivedFields = document.getElementById('derived_fields');
-            const conversionFactor = document.getElementById('conversion_factor');
-            const unitCode = document.getElementById('unit_code');
-
-            function toggleFields() {
-                if (isBaseUnitSelect.value === '1') {
-                    // وحدة أساسية
-                    derivedFields.style.display = 'none';
-                    conversionFactor.value = 1;
-                    unitCode.value = '';
-                } else {
-                    // وحدة مشتقة
-                    derivedFields.style.display = 'block';
-                }
-            }
-
-            toggleFields();
-            isBaseUnitSelect.addEventListener('change', toggleFields);
-        });
-    </script>
 @endsection

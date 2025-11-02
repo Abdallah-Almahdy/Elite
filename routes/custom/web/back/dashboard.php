@@ -8,7 +8,7 @@ use App\Livewire\Orders\OrderDetails;
 
 // Backend Controllers
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Back\UnitController;
+
 use App\Http\Controllers\Back\WarehouseController;
 use App\Livewire\Orders\Index as OrdersIndex;
 use App\Http\Controllers\Back\OrdersController;
@@ -41,6 +41,7 @@ use App\Livewire\Statices\StaticesController as StaticesIndex;
 use App\Http\Controllers\Back\Statics\RatingsStaticsController;
 use App\Http\Controllers\Back\Statics\SectionsStaticsController;
 use App\Http\Controllers\Back\WarehouseTransactionsController;
+use App\Http\Controllers\UnitController;
 use App\Livewire\WarehouseTransactions\Create as WarehouseTransactionsCreate;
 use App\Models\Config;
 
@@ -78,10 +79,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::resource('representatives', RepresentativeController::class);
     Route::resource('units', UnitController::class);
-    Route::resource('recipes', RecipeController::class);
     Route::resource('about', AboutUsController::class);
     Route::resource('ingredients', IngredientController::class);
-    Route::resource('recipes', RecipeController::class)->except(['show']);
     Route::get('configs',[ConfigController::class,'update'])->name('config.update');
     Route::post('configs/edit',[ConfigController::class,'edit'])->name('admin.configs.edit');
 
