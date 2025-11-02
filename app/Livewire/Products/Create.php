@@ -98,6 +98,15 @@ class Create extends Component
         // إخفاء النتائج بعد الاختيار
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }
+    public function clearProductSelection($unitIndex, $componentIndex)
+    {
+        if (!isset($this->units[$unitIndex]['components'][$componentIndex])) return;
+
+        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = null;
+        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = null;
+        $this->units[$unitIndex]['components'][$componentIndex]['search'] = '';
+        $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
+    }
 
 
 
