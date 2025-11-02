@@ -203,23 +203,21 @@
                                                             @if (count($components) > 0)
                                                                 @foreach ($components as $cIndex => $comp)
                                                                     <div class="row mb-2 align-items-center">
-                                                                        <div class="col-md-4 position-relative">
-    <div class="form-group">
+                                                                        <div class="col-md-4" wire:ignore.self>
+    <div class="form-group position-relative">
         <label class="form-label">المنتج</label>
 
         <!-- مربع البحث -->
-        <input type="text"
-               wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
-               class="form-control"
-               placeholder="ابحث عن منتج...">
+        <input type="text" wire:model.debounce.400ms="productSearch"
+               class="form-control" placeholder="ابحث عن منتج...">
 
-        <!-- قائمة النتائج -->
-        @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
-            <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                @forelse ($unit['components'][$cIndex]['results'] as $result)
+        <!-- النتائج -->
+        @if(!empty($productSearch))
+            <ul class="list-group position-absolute w-100" style="z-index: 999; max-height:200px; overflow:auto;">
+                @forelse($searchResults as $product)
                     <li class="list-group-item list-group-item-action"
-                        wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
-                        {{ $result['name'] }}
+                        wire:click="selectProduct({{ $product->id }}, {{ $index }}, {{ $cIndex }})">
+                        {{ $product->name }}
                     </li>
                 @empty
                     <li class="list-group-item text-muted">لا توجد نتائج</li>
@@ -227,10 +225,6 @@
             </ul>
         @endif
     </div>
-
-    @if(isset($unit['components'][$cIndex]['product_name']))
-        <small class="text-success">تم اختيار: {{ $unit['components'][$cIndex]['product_name'] }}</small>
-    @endif
 </div>
 
 

@@ -32,6 +32,25 @@ class Create extends Component
 
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
+
+    public $productSearch = '';
+    public $searchResults = [];
+
+    public function updatedProductSearch()
+    {
+        $this->searchResults = Product::where('name', 'like', '%' . $this->productSearch . '%')
+            ->take(10)
+            ->get();
+    }
+    public function selectProduct($productId, $index, $cIndex)
+    {
+        $this->units[$index]['components'][$cIndex]['product_id'] = $productId;
+
+        $product = Product::find($productId);
+        $this->productSearch = $product->name; // عرض الاسم في مربع البحث
+        $this->searchResults = []; // إخفاء القائمة بعد الاختيار
+    }
+
     public function mount()
     {
         $this->companies = Company::all();
@@ -39,46 +58,8 @@ class Create extends Component
         $this->MeasureUnits = Unit::all();
         $this->addUnit(); // إضافة وحدة افتراضية
     }
-    public function updated($propertyName)
-    {
-        // لو المستخدم بيكتب في خانة بحث منتج
-        if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
-            $this->handleProductSearch($propertyName);
-        }
-    }
 
-    public function handleProductSearch($propertyName)
-    {
-        // استخراج الـ indexات
-        preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches);
-        if (!$matches) return;
 
-        [$full, $unitIndex, $componentIndex] = $matches;
-
-        $query = $this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '';
-
-        if (strlen($query) < 2) {
-            $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
-            return;
-        }
-
-        $results = Product::where('name', 'like', "%{$query}%")
-            ->take(10)
-            ->get(['id', 'name'])
-            ->toArray();
-
-        $this->units[$unitIndex]['components'][$componentIndex]['results'] = $results;
-    }
-    public function selectProduct($unitIndex, $componentIndex, $productId)
-    {
-        $product = Product::find($productId);
-        if (!$product) return;
-
-        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
-        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
-        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
-        $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
-    }
 
 
 
