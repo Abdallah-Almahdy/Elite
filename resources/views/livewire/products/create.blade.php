@@ -203,58 +203,52 @@
                                                             @if (count($components) > 0)
                                                                 @foreach ($components as $cIndex => $comp)
                                                                     <div class="row mb-2 align-items-center">
-     <div class="col-md-4 position-relative">
-    <div class="form-group">
-        <label class="form-label">المنتج</label>
+                                                                        <div class="col-md-4 position-relative">
+                                                                            <div class="form-group">
+                                                                                <label
+                                                                                    class="form-label">المنتج</label>
 
-        <!-- الـ select الرئيسي -->
-        <select
-            wire:model="units.{{ $index }}.components.{{ $cIndex }}.product_id"
-            class="form-select mb-2"
-        >
-            <option value="">اختر المنتج</option>
-            @foreach ($allProducts as $p)
-                <option value="{{ $p->id }}">{{ $p->name }}</option>
-            @endforeach
-        </select>
+                                                                                <!-- لو المنتج لسه متختارش -->
+                                                                                @if (empty($unit['components'][$cIndex]['product_id']))
+                                                                                    <input type="text"
+                                                                                        wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
+                                                                                        class="form-control"
+                                                                                        placeholder="ابحث عن منتج...">
 
-        <!-- مربع البحث -->
-        <div class="input-group">
-            <input type="text"
-                wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
-                class="form-control"
-                placeholder="ابحث عن منتج...">
+                                                                                    <!-- نتائج البحث -->
+                                                                                    @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
+                                                                                        <ul class="list-group position-absolute w-100"
+                                                                                            style="z-index: 999;">
+                                                                                            @forelse ($unit['components'][$cIndex]['results'] as $result)
+                                                                                                <li class="list-group-item list-group-item-action"
+                                                                                                    wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
+                                                                                                    {{ $result['name'] }}
+                                                                                                </li>
+                                                                                            @empty
+                                                                                                <li
+                                                                                                    class="list-group-item text-muted">
+                                                                                                    لا توجد نتائج</li>
+                                                                                            @endforelse
+                                                                                        </ul>
+                                                                                    @endif
+                                                                                @else
+                                                                                    <!-- لو تم اختيار المنتج -->
+                                                                                    <div
+                                                                                        class="d-flex align-items-center justify-content-between border rounded p-2 bg-light">
+                                                                                        <span class="text-success">
+                                                                                            ✅
+                                                                                            {{ $unit['components'][$cIndex]['product_name'] }}
+                                                                                        </span>
+                                                                                        <button type="button"
+                                                                                            class="btn btn-sm btn-outline-danger"
+                                                                                            wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
+                                                                                            ❌ إلغاء
+                                                                                        </button>
+                                                                                    </div>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
 
-            @if(!empty($unit['components'][$cIndex]['product_id']))
-                <button type="button"
-                    class="btn btn-outline-danger"
-                    wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
-                    ❌
-                </button>
-            @endif
-        </div>
-
-        <!-- نتائج البحث -->
-        @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
-            <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                @forelse ($unit['components'][$cIndex]['results'] as $result)
-                    <li class="list-group-item list-group-item-action"
-                        wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
-                        {{ $result['name'] }}
-                    </li>
-                @empty
-                    <li class="list-group-item text-muted">لا توجد نتائج</li>
-                @endforelse
-            </ul>
-        @endif
-    </div>
-
-    @if(isset($unit['components'][$cIndex]['product_name']))
-        <small class="text-success">
-            تم اختيار: {{ $unit['components'][$cIndex]['product_name'] }}
-        </small>
-    @endif
-</div>
 
 
 

@@ -32,10 +32,8 @@ class Create extends Component
 
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
-
     public function updated($propertyName)
     {
-        // لو المستخدم بيكتب في خانة البحث
         if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
             $this->handleProductSearch($propertyName);
         }
@@ -47,7 +45,6 @@ class Create extends Component
         if (!$matches) return;
 
         [$full, $unitIndex, $componentIndex] = $matches;
-
         $query = $this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '';
 
         if (strlen($query) < 2) {
@@ -68,14 +65,9 @@ class Create extends Component
         $product = Product::find($productId);
         if (!$product) return;
 
-        // نحط المنتج في الـ select
         $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
-
-        // نعرض اسمه في البحث (لو حبيت)
-        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
         $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
-
-        // نخفي نتائج البحث بعد الاختيار
+        $this->units[$unitIndex]['components'][$componentIndex]['search'] = '';
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }
 
@@ -88,6 +80,7 @@ class Create extends Component
         $this->units[$unitIndex]['components'][$componentIndex]['search'] = '';
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }
+
 
 
 
