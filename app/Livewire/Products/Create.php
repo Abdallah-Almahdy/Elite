@@ -35,7 +35,7 @@ class Create extends Component
 
     public function updated($propertyName)
     {
-        // لو المستخدم بيكتب في خانة بحث المنتج
+        // لو المستخدم بيكتب في خانة البحث
         if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
             $this->handleProductSearch($propertyName);
         }
@@ -43,38 +43,23 @@ class Create extends Component
 
     public function handleProductSearch($propertyName)
     {
-        // استخراج الـ indexات باستخدام regex
-        if (!preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches)) {
-            return;
-        }
+        preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches);
+        if (!$matches) return;
 
-        $unitIndex = (int) $matches[1];
-        $componentIndex = (int) $matches[2];
+        [$full, $unitIndex, $componentIndex] = $matches;
 
-        // التحقق من وجود المسار داخل المصفوفة
-        if (
-            !isset($this->units[$unitIndex]) ||
-            !isset($this->units[$unitIndex]['components'][$componentIndex])
-        ) {
-            return;
-        }
+        $query = $this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '';
 
-        $query = trim($this->units[$unitIndex]['components'][$componentIndex]['search'] ?? '');
-
-        // لو المستخدم كتب أقل من حرفين → امسح النتائج
         if (strlen($query) < 2) {
             $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
             return;
         }
 
-        // جلب المنتجات المطابقة من قاعدة البيانات
-        $results = Product::query()
-            ->where('name', 'like', "%{$query}%")
-            ->limit(10)
+        $results = Product::where('name', 'like', "%{$query}%")
+            ->take(10)
             ->get(['id', 'name'])
             ->toArray();
 
-        // حفظ النتائج في المصفوفة
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = $results;
     }
 
@@ -83,27 +68,23 @@ class Create extends Component
         $product = Product::find($productId);
         if (!$product) return;
 
-        // تأكد أن المسار موجود
-        if (!isset($this->units[$unitIndex]['components'][$componentIndex])) {
-            return;
-        }
-
-        // تعيين القيم
+        // نحط المنتج في الـ select
         $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
+
+        // نعرض اسمه في البحث (لو حبيت)
+        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
         $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
 
-        // تحديث حقل البحث ليعرض الاسم فقط بعد الاختيار
-        $this->units[$unitIndex]['components'][$componentIndex]['search'] = $product->name;
-
-        // إخفاء النتائج بعد الاختيار
+        // نخفي نتائج البحث بعد الاختيار
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }
+
     public function clearProductSelection($unitIndex, $componentIndex)
     {
         if (!isset($this->units[$unitIndex]['components'][$componentIndex])) return;
 
-        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = null;
-        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = null;
+        $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = '';
+        $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = '';
         $this->units[$unitIndex]['components'][$componentIndex]['search'] = '';
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
     }

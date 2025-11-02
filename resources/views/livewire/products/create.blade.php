@@ -203,10 +203,22 @@
                                                             @if (count($components) > 0)
                                                                 @foreach ($components as $cIndex => $comp)
                                                                     <div class="row mb-2 align-items-center">
-                                                                        <div class="col-md-4 position-relative">
+     <div class="col-md-4 position-relative">
     <div class="form-group">
         <label class="form-label">المنتج</label>
 
+        <!-- الـ select الرئيسي -->
+        <select
+            wire:model="units.{{ $index }}.components.{{ $cIndex }}.product_id"
+            class="form-select mb-2"
+        >
+            <option value="">اختر المنتج</option>
+            @foreach ($allProducts as $p)
+                <option value="{{ $p->id }}">{{ $p->name }}</option>
+            @endforeach
+        </select>
+
+        <!-- مربع البحث -->
         <div class="input-group">
             <input type="text"
                 wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
@@ -214,15 +226,15 @@
                 placeholder="ابحث عن منتج...">
 
             @if(!empty($unit['components'][$cIndex]['product_id']))
-                <button class="btn btn-outline-danger"
-                        type="button"
-                        wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
+                <button type="button"
+                    class="btn btn-outline-danger"
+                    wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
                     ❌
                 </button>
             @endif
         </div>
 
-        <!-- قائمة النتائج -->
+        <!-- نتائج البحث -->
         @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
             <ul class="list-group position-absolute w-100" style="z-index: 999;">
                 @forelse ($unit['components'][$cIndex]['results'] as $result)
@@ -243,6 +255,7 @@
         </small>
     @endif
 </div>
+
 
 
 
