@@ -14,14 +14,14 @@ class PermissionsController extends Controller
         $permissions = Permission::all();
         $selectedUser = $request->user_id ? User::find($request->user_id) : null;
 
-        return view('pages.permissions.index', compact('users', 'permissions', 'selectedUser'));
+        return view('pages.Permissions.index', compact('users', 'permissions', 'selectedUser'));
     }
 
     public function update(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
 
-   
+
         // syncPermissions يستبدل الصلاحيات القديمة با  لجديدة
         $user->syncPermissions($request->permissions ?? []);
 
