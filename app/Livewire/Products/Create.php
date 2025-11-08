@@ -85,25 +85,14 @@ class Create extends Component
                     $this->units[$i]['sallPrice'] = round($prevSell * $factor, 2);
                 }
             }
-
-            // --------- 2) تحديث سعر الشراء (price) ---------
-            // if ($changedIndex !== null && $changedField === 'price') {
-            //     // تحديث الوحدات فوق الوحدة المعدلة بالقسمة
-            //     for ($i = $changedIndex - 1; $i >= 0; $i--) {
-            //         $nextPrice = $getFloat($this->units[$i + 1]['price']);
-            //         $factorNext = $getFloat($this->units[$i + 1]['conversion_factor']);
-            //         if ($factorNext <= 0) $factorNext = 1;
-            //         $this->units[$i]['price'] = round($nextPrice / $factorNext, 2);
-            //     }
-
-            //     // تحديث الوحدة المعدلة وما بعدها بالضرب
-            //     for ($i = $changedIndex + 1; $i < $count; $i++) {
-            //         $prevPrice = $getFloat($this->units[$i - 1]['price']);
-            //         $factor = $getFloat($this->units[$i]['conversion_factor']);
-            //         if ($factor <= 0) $factor = 1;
-            //         $this->units[$i]['price'] = round($prevPrice * $factor, 2);
-            //     }
-            // }
+            if ($changedIndex === 0 && $changedField === 'price') {
+                for ($i = 1; $i < $count; $i++) {
+                    $prevPrice = $getFloat($this->units[$i - 1]['price']);
+                    $factor = $getFloat($this->units[$i]['conversion_factor']);
+                    if ($factor <= 0) $factor = 1;
+                    $this->units[$i]['price'] = round($prevPrice * $factor, 2);
+                }
+            }
 
             // --------- 3) تحديث الوحدة عند تغيير conversion_factor ---------
             if ($changedField === 'conversion_factor' && $changedIndex !== null && $changedIndex > 0) {
