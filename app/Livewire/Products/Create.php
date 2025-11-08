@@ -32,12 +32,103 @@ class Create extends Component
 
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
-    public function updated($propertyName)
+    public $showRecipes = [];
+    public function toggleRecipeVisibility($index)
     {
+        $this->showRecipes[$index] = !($this->showRecipes[$index] ?? false);
+    }
+
+    protected bool $updatingPrices = false;
+
+    public function updated($propertyName, $value)
+    {
+        logger("Updated: " . $propertyName);
+
+        // product search updated
         if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
             $this->handleProductSearch($propertyName);
         }
+
+        // units price/conversion changed -> recalc dependent prices
+        if (
+            str_contains($propertyName, 'units') &&
+            (str_ends_with($propertyName, 'price') || str_ends_with($propertyName, 'sallPrice') || str_ends_with($propertyName, 'conversion_factor'))
+        ) {
+
+            // استخراج index والوحدة المعدلة من اسم الخاصية
+            preg_match('/units\.(\d+)\.(price|sallPrice|conversion_factor)/', $propertyName, $matches);
+            $changedIndex = isset($matches[1]) ? (int) $matches[1] : null;
+            $changedField = $matches[2] ?? null;
+
+            $this->updateDependentPrices($changedIndex, $changedField);
+        }
     }
+
+    public function updateDependentPrices($changedIndex = null, $changedField = null)
+    {
+        if ($this->updatingPrices) return;
+        $this->updatingPrices = true;
+
+        try {
+            if (empty($this->units) || !isset($this->units[0])) return;
+
+            $count = count($this->units);
+            $getFloat = fn($v) => (float) ($v ?? 0);
+
+            // --------- 1) تحديث سعر البيع (sallPrice) ---------
+            if (($changedIndex === 0 && $changedField === 'sallPrice') || $changedField === 'conversion_factor') {
+                for ($i = 1; $i < $count; $i++) {
+                    $prevSell = $getFloat($this->units[$i - 1]['sallPrice']);
+                    $factor = $getFloat($this->units[$i]['conversion_factor']);
+                    // السماح بعوامل <1 ولكن منع الصفر
+                    if ($factor <= 0) $factor = 1;
+                    $this->units[$i]['sallPrice'] = round($prevSell * $factor, 2);
+                }
+            }
+
+            // --------- 2) تحديث سعر الشراء (price) ---------
+            // if ($changedIndex !== null && $changedField === 'price') {
+            //     // تحديث الوحدات فوق الوحدة المعدلة بالقسمة
+            //     for ($i = $changedIndex - 1; $i >= 0; $i--) {
+            //         $nextPrice = $getFloat($this->units[$i + 1]['price']);
+            //         $factorNext = $getFloat($this->units[$i + 1]['conversion_factor']);
+            //         if ($factorNext <= 0) $factorNext = 1;
+            //         $this->units[$i]['price'] = round($nextPrice / $factorNext, 2);
+            //     }
+
+            //     // تحديث الوحدة المعدلة وما بعدها بالضرب
+            //     for ($i = $changedIndex + 1; $i < $count; $i++) {
+            //         $prevPrice = $getFloat($this->units[$i - 1]['price']);
+            //         $factor = $getFloat($this->units[$i]['conversion_factor']);
+            //         if ($factor <= 0) $factor = 1;
+            //         $this->units[$i]['price'] = round($prevPrice * $factor, 2);
+            //     }
+            // }
+
+            // --------- 3) تحديث الوحدة عند تغيير conversion_factor ---------
+            if ($changedField === 'conversion_factor' && $changedIndex !== null && $changedIndex > 0) {
+                $prevPrice = $getFloat($this->units[$changedIndex - 1]['price']);
+                $factor = $getFloat($this->units[$changedIndex]['conversion_factor']);
+                if ($factor <= 0) $factor = 1;
+                $this->units[$changedIndex]['price'] = round($prevPrice * $factor, 2);
+            }
+
+            // --------- 4) إعادة ترتيب المصفوفة لالتقاط Livewire للتغيير -----
+            $this->units = array_values($this->units);
+
+            // --------- 5) إرسال الحدث لتحديث الواجهة (JS) -----
+            $this->dispatch('prices-updated', units: $this->units);
+        } finally {
+            $this->updatingPrices = false;
+        }
+    }
+
+
+
+
+
+
+
 
     public function handleProductSearch($propertyName)
     {
@@ -132,17 +223,49 @@ class Create extends Component
     /***** إدارة الوحدات *****/
     public function addUnit()
     {
-        $this->units[] = [
+        // لو أول مرة نضيف وحدة
+        if (empty($this->units)) {
+            $this->units[] = [
+                'name' => '',
+                'price' => 0,
+                'sallPrice' => 0,
+                'conversion_factor' => 1.0,
+                'bar_codes' => [''],
+                'components' => [],
+            ];
+            return;
+        }
+
+        // أول وحدة كأساس
+        $baseUnit = $this->units[0];
+        $baseBuy = (float) ($baseUnit['price'] ?? 0);
+        $baseSell = (float) ($baseUnit['sallPrice'] ?? 0);
+
+        // الوحدة الجديدة الافتراضية
+        $newUnit = [
             'name' => '',
+            'conversion_factor' => 1.0,
+            'bar_codes' => [''],
+            'components' => [],
             'price' => 0,
             'sallPrice' => 0,
-            'conversion_factor' => 1.0,
-            'isComposite' => false,
-            'bar_codes' => [''],
-            'components' => [] ?? [],
-
         ];
+        $factor = 1.0;
+        // نحسب السعر لو في وحدات سابقة ومعامل معروف
+        foreach ($this->units as $unit) {
+            if (!empty($unit['conversion_factor'])) {
+                $factor = $unit['conversion_factor'] * $factor;
+            }
+        }
+
+
+        // السعر هنا يعتمد على أول وحدة وليس السابقة
+        $newUnit['price'] = round($baseBuy * $factor, 2);
+        $newUnit['sallPrice'] = round($baseSell * $factor, 2);
+
+        $this->units[] = $newUnit;
     }
+
 
     public function removeUnit($index)
     {

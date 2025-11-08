@@ -30,22 +30,30 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="section" class="form-label fw-semibold">القسم <span
-                                class="text-danger">*</span></label>
-                        <select wire:model="section" id="section" class="form-control ">
-                            <option value="" class="text-muted">اختر القسم...</option>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
-                            @endforeach
-                        </select>
+                        <label for="section" class="form-label fw-semibold">
+                            القسم <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="input-group">
+                            <select wire:model="section" id="section" class="form-select">
+                                <option value="" class="text-muted">اختر القسم...</option>
+                                @foreach ($sections as $section)
+                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                @endforeach
+                            </select>
+
+                            <!-- زر الإضافة -->
+                            <a href="{{ route('sections.create') }}" class="btn btn-success btn-sm">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </div>
+
                         @error('section_id')
                             <div class="text-danger small mt-1">الرجاء اختيار القسم</div>
                         @enderror
                     </div>
-                    <a type="button " href="{{ route('sections.create') }}" class="btn btn-sm btn-outline-primary mt-1">
-                        <i class="fa fa-plus me-1"></i>إضافة قسم
-                    </a>
                 </div>
+
             </div>
 
             <!-- الصف الثاني: المنتج المركب والصورة وإضافة قسم -->
@@ -78,239 +86,264 @@
             </div>
 
             <!-- قسم الوحدات -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card border-primary">
-                        <div
-                            class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 fw-bold"><i class="fas fa-balance-scale me-2"></i>الوحدات</h6>
-                            <button type="button" wire:click="addUnit" class="btn btn-sm btn-light">
-                                <i class="fa fa-plus me-1"></i>إضافة وحدة
-                            </button>
-                        </div>
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-balance-scale me-2"></i>الوحدات</h6>
+                    <button type="button" wire:click="addUnit" class="btn btn-sm btn-light">
+                        <i class="fa fa-plus me-1"></i>إضافة وحدة
+                    </button>
+                </div>
 
-                        <div class="card-body">
+                <div class="card-body">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الوحدة</th>
+                                @if (!$hasRecipe)
+                                    <th>معامل التحويل</th>
+                                @endif
+                                <th>سعر البيع</th>
+                                <th> سعر الشرا</th>
+                                <th>الباركود</th>
+                                @if ($hasRecipe)
+                                    <th>إجمالي التكلفة</th>
+                                @endif
+                                <th>خيارات</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
                             @foreach ($units as $index => $unit)
-                                <div class="card mb-4 border-secondary">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0 fw-semibold">الوحدة {{ $loop->iteration }}</h6>
-                                        @if ($loop->index > 0)
-                                            <button type="button" wire:click="removeUnit({{ $index }})"
-                                                class="btn btn-sm btn-danger">
-                                                <i class="fa fa-times me-1"></i>حذف
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+
+                                    <!-- اسم الوحدة -->
+                                    <td>
+                                        <div class="input-group">
+                                            <select wire:model="units.{{ $index }}.measure_unit_id"
+                                                class="form-select" required>
+                                                <option value="">اختر الوحدة</option>
+                                                @foreach ($MeasureUnits as $measure)
+                                                    <option value="{{ $measure->id }}">{{ $measure->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#addUnitModal">
+                                                <i class="fa fa-plus"></i>
                                             </button>
-                                        @endif
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-2 mt-4">
-                                                <div class="form-group">
-                                                    <label class="form-label fw-semibold">اسم الوحدة</label>
-                                                    <select wire:model="units.{{ $index }}.measure_unit_id"
-                                                        class="form-select" required>
-                                                        <option value="">اختر الوحدة</option>
-                                                        @foreach ($MeasureUnits as $measure)
-                                                            <option value="{{ $measure->id }}">{{ $measure->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('units.' . $index . '.measure_unit_id')
-                                                        <div class="text-danger small">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                        </div>
+                                        @error('units.' . $index . '.measure_unit_id')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </td>
 
-                                                <button type="button" class="btn btn-sm btn-outline-primary mt-1"
-                                                    data-bs-toggle="modal" data-bs-target="#addUnitModal">
-                                                    <i class="fa fa-plus me-1"></i>إضافة وحدة
-                                                </button>
-                                            </div>
+                                    <!-- معامل التحويل -->
+                                    @if (!$hasRecipe)
+                                        <td>
+                                            <input type="text" step="0.001"
+                                                wire:model.lazy="units.{{ $index }}.conversion_factor"
+                                                class="form-control text-center"
+                                                @if ($index == 0) disabled @endif>
+                                        </td>
+                                    @endif
 
+                                    <!-- السعر -->
+                                    <td>
+                                        <input type="number" wire:model.lazy="units.{{ $index }}.sallPrice"
+                                            class="form-control text-center">
+                                    </td>
 
+                                    <!-- سعر البيع -->
+                                    <td>
+                                        <input type="number" wire:model.lazy="units.{{ $index }}.price"
+                                            class="form-control text-center">
+                                    </td>
 
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label class="form-label fw-semibold">السعر</label>
-                                                    <input type="number"
-                                                        wire:model="units.{{ $index }}.price"
-                                                        class="form-control">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label class="form-label fw-semibold">سعر البيع</label>
-                                                    <input type="number"
-                                                        wire:model="units.{{ $index }}.sallPrice"
-                                                        class="form-control">
-                                                </div>
-                                            </div>
+                                    <!-- الباركود -->
+                                    <td>
+                                        @foreach ($unit['bar_codes'] as $bIndex => $barcode)
+                                            <div class="input-group mb-2">
 
-                                            @if (!$hasRecipe)
-                                                <div class="col-md-2">
-                                                    <div class="form-group">
-                                                        <label class="form-label fw-semibold">معامل التحويل</label>
-                                                        <input type="number"
-                                                            wire:model="units.{{ $index }}.conversion_factor"
-                                                            class="form-control" step="0.001">
-                                                    </div>
-                                                </div>
-                                            @endif
+                                                <input type="text"
+                                                    wire:model="units.{{ $index }}.bar_codes.{{ $bIndex }}"
+                                                    class="form-control text-center" placeholder="barcode">
 
-                                            <div class="col-md-2 mt-4">
-                                                <div class="form-group">
-                                                    <label class="form-label fw-semibold">Barcodes</label>
-                                                    @foreach ($unit['bar_codes'] as $bIndex => $barcode)
-                                                        <div class="input-group mb-1">
-                                                            <input type="text"
-                                                                wire:model="units.{{ $index }}.bar_codes.{{ $bIndex }}"
-                                                                class="form-control" placeholder="barcode">
-                                                            <button type="button"
-                                                                wire:click="removeBarCode({{ $index }}, {{ $bIndex }})"
-                                                                class="btn btn-danger btn-sm">×</button>
-                                                        </div>
-                                                    @endforeach
+                                                @if ($bIndex != 0)
+                                                    <button type="button"
+                                                        wire:click="removeBarCode({{ $index }}, {{ $bIndex }})"
+                                                        class="btn btn-danger btn-sm"><i
+                                                            class="fa fa-times"></i></button>
+                                                @endif
+                                                @if ($bIndex == 0)
                                                     <button type="button"
                                                         wire:click="addBarCode({{ $index }})"
-                                                        class="btn btn-sm btn-outline-primary mt-1">
-                                                        <i class="fa fa-plus me-1"></i>إضافة barcode
-                                                    </button>
-                                                </div>
+                                                        class="btn btn-success btn-sm"><i
+                                                            class="fa fa-plus"></i></button>
+                                                @endif
                                             </div>
+                                        @endforeach
+                                    </td>
+
+                                    <!-- إجمالي التكلفة -->
+                                    @if ($hasRecipe)
+                                        <td>
+                                            <div class="p-2 bg-light rounded">
+                                                <span class="fw-bold text-primary">
+                                                    {{ number_format($unit['total_cost'] ?? 0, 2) }} ج.م
+                                                </span>
+                                            </div>
+                                        </td>
+                                    @endif
+
+                                    <!-- خيارات -->
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            @if ($loop->index > 0)
+                                                <button type="button" wire:click="removeUnit({{ $index }})"
+                                                    class="btn btn-danger btn-sm">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                            @endif
 
                                             @if ($hasRecipe)
-                                                <div class="col-md-2">
-                                                    <div class="form-group">
-                                                        <label class="form-label fw-semibold">إجمالي التكلفة</label>
-                                                        <div class="p-2 bg-light rounded text-center">
-                                                            <span class="fw-bold text-primary">
-                                                                {{ number_format($unit['total_cost'] ?? 0, 2) }} ج.م
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <button type="button"
+                                                    wire:click="toggleRecipeVisibility({{ $index }})"
+                                                    class="btn btn-outline-secondary btn-sm">
+                                                    @if (!empty($showRecipes[$index]) && $showRecipes[$index])
+                                                        <i class="fa fa-chevron-up"></i>
+                                                    @else
+                                                        <i class="fa fa-chevron-down"></i>
+                                                    @endif
+                                                </button>
                                             @endif
                                         </div>
+                                    </td>
 
-                                        @if ($hasRecipe)
-                                            <div class="row mt-3">
-                                                <div class="col-12">
-                                                    <div class="card card-light">
-                                                        <div class="card-header bg-light fw-semibold">الوصفة</div>
-                                                        <div class="card-body">
-                                                            @php
-                                                                $components = $unit['components'] ?? [];
-                                                            @endphp
 
-                                                            @if (count($components) > 0)
-                                                                @foreach ($components as $cIndex => $comp)
-                                                                    <div class="row mb-2 align-items-center">
-                                                                        <div class="col-md-4 position-relative">
-                                                                            <div class="form-group">
-                                                                                <label
-                                                                                    class="form-label">المنتج</label>
+                                </tr>
 
-                                                                                <!-- لو المنتج لسه متختارش -->
-                                                                                @if (empty($unit['components'][$cIndex]['product_id']))
-                                                                                    <input type="text"
-                                                                                        wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
-                                                                                        class="form-control"
-                                                                                        placeholder="ابحث عن منتج...">
+                                <!-- جدول الوصفة الداخلي -->
+                                @if ($hasRecipe && !empty($showRecipes[$index]) && $showRecipes[$index])
+                                    <tr class="bg-light">
+                                        <td colspan="8">
+                                            <div class="border rounded p-3 mt-2">
+                                                <h6 class="fw-semibold text-secondary mb-3">
+                                                    <i class="fa fa-utensils me-1"></i>الوصفة
+                                                </h6>
 
-                                                                                    <!-- نتائج البحث -->
-                                                                                    @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
-                                                                                        <ul class="list-group position-absolute w-100"
-                                                                                            style="z-index: 999;">
-                                                                                            @forelse ($unit['components'][$cIndex]['results'] as $result)
-                                                                                                <li class="list-group-item list-group-item-action"
-                                                                                                    wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
-                                                                                                    {{ $result['name'] }}
-                                                                                                </li>
-                                                                                            @empty
-                                                                                                <li
-                                                                                                    class="list-group-item text-muted">
-                                                                                                    لا توجد نتائج</li>
-                                                                                            @endforelse
-                                                                                        </ul>
-                                                                                    @endif
-                                                                                @else
-                                                                                    <!-- لو تم اختيار المنتج -->
-                                                                                    <div
-                                                                                        class="d-flex align-items-center justify-content-between border rounded p-2 bg-light">
-                                                                                        <span class="text-success">
-                                                                                            ✅
-                                                                                            {{ $unit['components'][$cIndex]['product_name'] }}
-                                                                                        </span>
-                                                                                        <button type="button"
-                                                                                            class="btn btn-sm btn-outline-danger"
-                                                                                            wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
-                                                                                            ❌ إلغاء
-                                                                                        </button>
-                                                                                    </div>
-                                                                                @endif
-                                                                            </div>
+                                                <table
+                                                    class="table table-sm table-bordered align-middle text-center mb-0">
+                                                    <thead class="table-secondary">
+                                                        <tr>
+                                                            <th>المنتج</th>
+                                                            <th>الكمية</th>
+                                                            <th>الوحدة</th>
+                                                            <th>التحكم</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                            $components = $unit['components'] ?? [];
+                                                        @endphp
+
+                                                        @foreach ($components as $cIndex => $comp)
+                                                            <tr>
+                                                                <!-- البحث عن المنتج -->
+                                                                <td class="position-relative">
+                                                                    @if (empty($unit['components'][$cIndex]['product_id']))
+                                                                        <input type="text"
+                                                                            wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
+                                                                            class="form-control form-control-sm"
+                                                                            placeholder="ابحث عن منتج...">
+
+                                                                        @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
+                                                                            <ul class="list-group position-absolute w-100"
+                                                                                style="z-index: 999;">
+                                                                                @forelse ($unit['components'][$cIndex]['results'] as $result)
+                                                                                    <li class="list-group-item list-group-item-action"
+                                                                                        wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
+                                                                                        {{ $result['name'] }}
+                                                                                    </li>
+                                                                                @empty
+                                                                                    <li
+                                                                                        class="list-group-item text-muted">
+                                                                                        لا توجد نتائج</li>
+                                                                                @endforelse
+                                                                            </ul>
+                                                                        @endif
+                                                                    @else
+                                                                        <div
+                                                                            class="d-flex justify-content-between align-items-center bg-white p-1 rounded">
+                                                                            <span class="text-success small">
+                                                                                ✅
+                                                                                {{ $unit['components'][$cIndex]['product_name'] }}
+                                                                            </span>
+                                                                            <button type="button"
+                                                                                class="btn btn-sm btn-outline-danger"
+                                                                                wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
+                                                                                ❌
+                                                                            </button>
                                                                         </div>
+                                                                    @endif
+                                                                </td>
 
+                                                                <!-- الكمية -->
+                                                                <td>
+                                                                    <input type="number"
+                                                                        wire:model="units.{{ $index }}.components.{{ $cIndex }}.quantity"
+                                                                        class="form-control form-control-sm text-center"
+                                                                        placeholder="الكمية">
+                                                                </td>
 
+                                                                <!-- الوحدة -->
+                                                                <td>
+                                                                    <select
+                                                                        wire:model="units.{{ $index }}.components.{{ $cIndex }}.unit_id"
+                                                                        class="form-select form-select-sm">
+                                                                        <option value="">اختر</option>
+                                                                        @foreach ($allProducts as $p)
+                                                                            @foreach ($p->units ?? [] as $uIndex => $u)
+                                                                                <option
+                                                                                    value="{{ $u['id'] ?? $uIndex }}">
+                                                                                    {{ $u['name'] }}
+                                                                                </option>
+                                                                            @endforeach
+                                                                        @endforeach
+                                                                    </select>
+                                                                </td>
 
+                                                                <!-- التحكم -->
+                                                                <td>
+                                                                    <button type="button"
+                                                                        wire:click="removeComponent({{ $index }}, {{ $cIndex }})"
+                                                                        class="btn btn-danger btn-sm">
+                                                                        <i class="fa fa-times"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
 
-
-                                                                        <div class="col-md-3">
-                                                                            <div class="form-group">
-                                                                                <label
-                                                                                    class="form-label">الكمية</label>
-                                                                                <input type="number"
-                                                                                    wire:model="units.{{ $index }}.components.{{ $cIndex }}.quantity"
-                                                                                    class="form-control"
-                                                                                    placeholder="الكمية">
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-md-3">
-                                                                            <div class="form-group">
-                                                                                <label
-                                                                                    class="form-label">الوحدة</label>
-                                                                                <select
-                                                                                    wire:model="units.{{ $index }}.components.{{ $cIndex }}.unit_id"
-                                                                                    class="form-select">
-                                                                                    <option value="">اختر الوحدة
-                                                                                    </option>
-                                                                                    @foreach ($allProducts as $p)
-                                                                                        @foreach ($p->units ?? [] as $uIndex => $u)
-                                                                                            <option
-                                                                                                value="{{ $u['id'] ?? $uIndex }}">
-                                                                                                {{ $u['name'] }}
-                                                                                            </option>
-                                                                                        @endforeach
-                                                                                    @endforeach
-                                                                                </select>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-md-2">
-                                                                            <div class="form-group">
-                                                                                <label
-                                                                                    class="form-label d-block">&nbsp;</label>
-                                                                                <button type="button"
-                                                                                    wire:click="removeComponent({{ $index }}, {{ $cIndex }})"
-                                                                                    class="btn btn-danger btn-sm w-100">×</button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
-                                                            @endif
-
-                                                            <button type="button"
-                                                                wire:click="addComponent({{ $index }})"
-                                                                class="btn btn-sm btn-outline-primary">
-                                                                <i class="fa fa-plus me-1"></i>إضافة مكون
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                        <tr>
+                                                            <td colspan="4" class="text-start">
+                                                                <button type="button"
+                                                                    wire:click="addComponent({{ $index }})"
+                                                                    class="btn btn-sm btn-outline-primary">
+                                                                    <i class="fa fa-plus me-1"></i>إضافة مكون
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
-                                        @endif
-                                    </div>
-                                </div>
+                                        </td>
+                                    </tr>
+                                @endif
+
+
                             @endforeach
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -487,8 +520,36 @@
         </div>
     </div>
 
+
 </div>
 
 @push('scripts')
-    <script></script>
+<script>
+document.addEventListener('livewire:init', () => {
+    // استماع للـ event من Livewire
+    Livewire.on('prices-updated', (data) => {
+        if (!data.units) return;
+
+        data.units.forEach((unit, index) => {
+            // نجيب input سعر الشراء
+            const priceInput = document.querySelector(`[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
+            // نجيب input سعر البيع
+            const sellInput = document.querySelector(`[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
+            
+            if (priceInput) {
+                // نحدّث القيمة يدوياً
+                priceInput.value = unit.price;
+                // نرسل حدث input عشان Livewire يعرف التغيير
+                priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            if (sellInput) {
+                sellInput.value = unit.sallPrice;
+                sellInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+    });
+});
+</script>
+
 @endpush

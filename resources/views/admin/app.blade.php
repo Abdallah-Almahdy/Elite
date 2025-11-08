@@ -74,7 +74,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </style>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -136,10 +136,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
             })
         })
 
-            window.addEventListener('close-modal', event => {
-        const modalId = event.detail.id;
-        $('#' + modalId).modal('hide');
-    });
+        window.addEventListener('close-modal', event => {
+            const modalId = event.detail.id;
+            $('#' + modalId).modal('hide');
+        });
+
+
     </script>
     @stack('scripts')
 </body>
