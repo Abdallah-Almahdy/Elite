@@ -86,7 +86,8 @@
                         <input type="checkbox" wire:model.live="isActive" id="isActive" class="form-check-input">
                         <label for="isActive" class="form-check-label fw-semibold">مفعل</label>
                     </div>
-          
+
+                    
                 </div>
 
                 <div class="col-md-4">
