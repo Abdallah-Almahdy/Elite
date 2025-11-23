@@ -31,10 +31,10 @@ class  Product extends Model
     ];
 
 
-public function promoCodes()
-{
-    return $this->belongsToMany(PromoCode::class, 'promo_code_products', 'product_id', 'promo_code_id');
-}
+    public function promoCodes()
+    {
+        return $this->belongsToMany(PromoCode::class, 'promo_code_products', 'product_id', 'promo_code_id');
+    }
 
 
     public function invoiceProducts()
@@ -89,4 +89,13 @@ public function promoCodes()
     {
         return $this->uses_recipe;
     }
+
+
+    public function units()
+    {
+        return $this->belongsToMany(Unit::class, 'product_units', 'product_id', 'unit_id')
+            ->withPivot('conversion_factor', 'price', 'sallprice', 'is_base')
+            ->withTimestamps();
+    }
+
 }

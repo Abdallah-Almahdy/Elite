@@ -7,6 +7,7 @@ use Livewire\WithFileUploads;
 use App\Models\Company;
 use App\Models\SubSection;
 use App\Models\Product;
+use App\Models\ProductUnits;
 use App\Models\Unit;
 
 class Create extends Component
@@ -14,35 +15,48 @@ class Create extends Component
     use WithFileUploads;
 
     public $name;
-    public $price;
     public $photo;
     public $section;
-    public $bar_code;
     public $description;
+    public $hasRecipe = false;
+    public $isActive = true;
+    public $company;
 
     public $enableStock = false;
-    public $stockQnt;
+    public $stockQnt = 0;
+
+
 
     public $units = [];
     public $baseUnit = 0;
+    public $sallPrice;
+    public $price;
+    public $bar_codes;
 
     public $companies = [];
     public $options = [];
-    public $hasRecipe = false;
 
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
     public $showRecipes = [];
+    protected bool $updatingPrices = false;
+    public $newUnit = [
+        'name' => '',
+        'is_active' => true,
+    ];
+
+
+
     public function toggleRecipeVisibility($index)
     {
         $this->showRecipes[$index] = !($this->showRecipes[$index] ?? false);
     }
 
-    protected bool $updatingPrices = false;
+
 
     public function updated($propertyName, $value)
     {
-        logger("Updated: " . $propertyName);
+
 
         // product search updated
         if (str_contains($propertyName, 'components') && str_ends_with($propertyName, 'search')) {
@@ -62,7 +76,58 @@ class Create extends Component
 
             $this->updateDependentPrices($changedIndex, $changedField);
         }
+
+        // نتأكد أن اللي اتغير quantity لأي component
+        if (preg_match('/units\.(\d+)\.components\.(\d+)\.(quantity|component_unit_id)/', $propertyName, $matches)) {
+            $unitIndex = $matches[1];
+            $componentIndex = $matches[2];
+
+            $component = $this->units[$unitIndex]['components'][$componentIndex] ?? null;
+
+            // نتحقق من وجود المنتج والوحدة والكمية
+            if (
+                $component
+                && !empty($component['product_id'])
+                && !empty($component['component_unit_id'])
+                && !empty($component['quantity'])
+            ) {
+                $this->calculateTotalCost($unitIndex);
+            }
+        }
     }
+
+    public function calculateTotalCost($unitIndex)
+    {
+        $unit = &$this->units[$unitIndex];
+        $total = 0;
+
+        if (!empty($unit['components'])) {
+            foreach ($unit['components'] as $component) {
+
+                if (
+                    !empty($component['product_id'])
+                    && !empty($component['component_unit_id'])
+                    && !empty($component['quantity'])
+                ) {
+                    // جلب سعر الوحدة من قاعدة البيانات
+                    $productUnit = ProductUnits::where('product_id', $component['product_id'])
+                        ->where('unit_id', $component['component_unit_id'])
+                        ->first();
+
+
+
+                    if ($productUnit)
+                    {
+                        $total += $productUnit->price * $component['quantity'] * $productUnit->conversion_factor;
+                    }
+                }
+            }
+        }
+
+        $unit['total_cost'] = $total;
+
+    }
+
 
     public function updateDependentPrices($changedIndex = null, $changedField = null)
     {
@@ -114,11 +179,6 @@ class Create extends Component
 
 
 
-
-
-
-
-
     public function handleProductSearch($propertyName)
     {
         preg_match('/units\.(\d+)\.components\.(\d+)\.search/', $propertyName, $matches);
@@ -142,14 +202,27 @@ class Create extends Component
 
     public function selectProduct($unitIndex, $componentIndex, $productId)
     {
-        $product = Product::find($productId);
+        $product = Product::with('units')->find($productId); // جيب الـ units معاه
         if (!$product) return;
 
+        // حفظ بيانات المنتج
         $this->units[$unitIndex]['components'][$componentIndex]['product_id'] = $product->id;
         $this->units[$unitIndex]['components'][$componentIndex]['product_name'] = $product->name;
         $this->units[$unitIndex]['components'][$componentIndex]['search'] = '';
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = [];
+
+        // هنا نحدث الـ units الخاصة بالـ select
+        $this->units[$unitIndex]['components'][$componentIndex]['available_units'] = $product->units->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+            ];
+        })->toArray();
+
+        // اختياري: إعادة تعيين الـ unit_id لو كان موجود
+        $this->units[$unitIndex]['components'][$componentIndex]['unit_id'] = null;
     }
+
 
     public function clearProductSelection($unitIndex, $componentIndex)
     {
@@ -175,12 +248,6 @@ class Create extends Component
 
 
 
-
-
-    public $newUnit = [
-        'name' => '',
-        'is_active' => true,
-    ];
 
     public function storeUnit()
     {
@@ -300,6 +367,8 @@ class Create extends Component
             unset($this->units[$unitIndex]['components'][$compIndex]);
             $this->units[$unitIndex]['components'] = array_values($this->units[$unitIndex]['components']);
         }
+
+       $this->calculateTotalCost($unitIndex);
     }
 
     /***** إدارة الخيارات *****/
@@ -343,17 +412,98 @@ class Create extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
             'section' => 'required',
-            'units.*.name' => 'required|string|max:255',
+            "description" => 'nullable|string',
+            'photo' => 'nullable|image',
+            'units' => 'required|array|min:1',
+            'units.*.price' => 'required|numeric|min:0',
+            'units.*.sallPrice' => 'required|numeric|min:0',
+            'units.*.conversion_factor' => 'required|numeric|min:0.0001',
+            'units.*.measure_unit_id' => 'required|exists:units,id',
+            'units.*.bar_codes' => 'nullable|array',
+            'units.*.bar_codes.*' => 'nullable|string|max:255',
+            'units.*.components' => 'nullable|array',
+            'units.*.components.*.product_id' => 'required|exists:products,id',
+            'units.*.components.*.quantity' => 'required|numeric|min:0',
+            'units.*.components.*.component_unit_id' => 'required|exists:units,id',
+
+            // 'options' => 'nullable|array',
+            // 'options.*.name' => 'required|string|max:255',
+            // 'options.*.active' => 'boolean',
+            // 'options.*.values' => 'nullable|array',
+            // 'options.*.values.*.name' => 'required|string|max:255',
+            // 'options.*.values.*.price' => 'required|numeric|min:0',
+
+        ]);
+        $path = null;
+        if ($this->photo) {
+            $path = $this->photo->store('products', 'public');
+        }
+
+
+        $product = Product::create([
+            'name' => $this->name,
+            'section_id' => $this->section,
+            'description' => $this->description,
+            'photo' =>  $path ?: null,
+            'uses_recipe' => $this->hasRecipe,
+            'company_id' => null, // مؤقتاً
+            'active'   => $this->isActive,
+            'qtn' => $this->stockQnt,
+            'offer_rate'    => 0,
+            'company_id' => $this->company_id ?? null,
         ]);
 
-        session()->flash('done', '✅ تم التحقق من البيانات بنجاح (بدون حفظ)');
-    }
+        foreach ($this->units as $index => $unitData) {
+            $conversionFactor = 1;
 
+            for ($i = $index; $i >= 0; $i--) {
+                if ($i == 0) {
+                    $conversionFactor = 1;
+                } else {
+                    $conversionFactor = $unitData['conversion_factor'] * $conversionFactor;
+                }
+            }
+
+            $productUnit = ProductUnits::create([
+                'product_id' => $product->id,
+                'unit_id' => $unitData['measure_unit_id'],
+                'conversion_factor' => $conversionFactor,
+                'price' => $unitData['price'],
+                'sallprice' => $unitData['sallPrice'],
+                'is_base' => ($index == 0) ? true : false,
+            ]);
+
+            foreach ($unitData['bar_codes'] as $barcode) {
+                if (!empty($barcode)) {
+                    $productUnit->barcodes()->create([
+                        'code' => $barcode,
+                    ]);
+                }
+            }
+
+
+            foreach ($unitData['components'] as $component)
+            {
+                $productUnit->components()->create([
+                    // المنتج الاساسي اللي الوحدة دي بتتكون منه
+                    'product_id' => $component['product_id'],
+                    // الوحدة بتاعة المكون
+                    'component_unit_id' => $component['component_unit_id'],
+
+                    'quantity' => $component['quantity'],
+                ]);
+            }
+
+
+
+            session()->flash('done', '✅ تم التحقق من البيانات بنجاح (بدون حفظ)');
+        }
+    }
     public function render()
     {
         $sections = SubSection::all();
+
         return view('livewire.products.create', [
             'sections' => $sections,
             'companies' => $this->companies,

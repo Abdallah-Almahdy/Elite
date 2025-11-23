@@ -224,7 +224,7 @@
                                     <td class="px-3 py-2 border border-gray-200">
                                         <div class="relative w-12 h-12">
                                             <img class="w-12 h-12 rounded-full object-cover border border-gray-300"
-                                                src="{{ asset('uploads/' . $product->photo) ?? asset('products/img.png') }}"
+                                                src="{{  asset('storage/' . $product->photo)   ?? asset('products/img.png') }}"
                                                 alt="img">
 
                                             @if (empty($product->photo))

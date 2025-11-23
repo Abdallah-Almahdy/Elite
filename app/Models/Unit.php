@@ -11,5 +11,13 @@ class Unit extends Model
         'is_active',
     ];
 
+  
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_units', 'unit_id', 'product_id')
+                    ->withPivot('conversion_factor', 'price', 'sallprice', 'is_base')
+                    ->withTimestamps();
+    }
+
 
 }

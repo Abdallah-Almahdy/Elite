@@ -1,4 +1,23 @@
 <div class="card card-primary h-100 d-flex flex-column">
+    {{-- All Validation Errors at top --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+
+    {{-- Success Message --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="card-header bg-primary text-white py-3">
         <h5 class="text-center mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>إضافة صنف جديد</h5>
     </div>
@@ -61,8 +80,13 @@
                 <div class="col-md-4">
                     <div class="form-check mt-3">
                         <input type="checkbox" wire:model.live="hasRecipe" id="hasRecipe" class="form-check-input">
-                        <label for="isComposite" class="form-check-label fw-semibold">منتج مركب</label>
+                        <label for="hasRecipe" class="form-check-label fw-semibold">منتج مركب</label>
                     </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" wire:model.live="isActive" id="isActive" class="form-check-input">
+                        <label for="isActive" class="form-check-label fw-semibold">مفعل</label>
+                    </div>
+          
                 </div>
 
                 <div class="col-md-4">
@@ -81,8 +105,27 @@
                         @endif
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="company" class="form-label fw-semibold">
+                            الشركة التابع لها المنتج <span class="text-danger">*</span>
+                        </label>
 
+                        <div class="input-group">
+                            <select wire:model="company" id="company" class="form-select">
+                                <option value="" class="text-muted">اختر الشركة...</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}">{{ $company->name }}</option>
+                                @endforeach
+                            </select>
 
+                            <!-- زر الإضافة -->
+                            <a href="{{ route('companies.create') }}" class="btn btn-success btn-sm">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- قسم الوحدات -->
@@ -125,11 +168,12 @@
                                                 class="form-select" required>
                                                 <option value="">اختر الوحدة</option>
                                                 @foreach ($MeasureUnits as $measure)
-                                                    <option value="{{ $measure->id }}">{{ $measure->name }}</option>
+                                                    <option value="{{ $measure->id }}">{{ $measure->name }}
+                                                    </option>
                                                 @endforeach
                                             </select>
-                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#addUnitModal">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                data-bs-toggle="modal" data-bs-target="#addUnitModal">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
@@ -196,6 +240,7 @@
                                         </td>
                                     @endif
 
+
                                     <!-- خيارات -->
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
@@ -237,8 +282,8 @@
                                                     <thead class="table-secondary">
                                                         <tr>
                                                             <th>المنتج</th>
-                                                            <th>الكمية</th>
                                                             <th>الوحدة</th>
+                                                            <th>الكمية</th>
                                                             <th>التحكم</th>
                                                         </tr>
                                                     </thead>
@@ -287,31 +332,28 @@
                                                                         </div>
                                                                     @endif
                                                                 </td>
+                                                                <td>
+                                                                    <select
+                                                                        wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.component_unit_id"
+                                                                        class="form-select form-select-sm">
+                                                                        <option value="">اختر الوحدة</option>
+                                                                        @foreach ($units[$index]['components'][$cIndex]['available_units'] ?? [] as $u)
+                                                                            <option value="{{ $u['id'] }}">
+                                                                                {{ $u['name'] }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </td>
 
                                                                 <!-- الكمية -->
                                                                 <td>
                                                                     <input type="number"
-                                                                        wire:model="units.{{ $index }}.components.{{ $cIndex }}.quantity"
+                                                                        wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.quantity"
                                                                         class="form-control form-control-sm text-center"
                                                                         placeholder="الكمية">
                                                                 </td>
 
                                                                 <!-- الوحدة -->
-                                                                <td>
-                                                                    <select
-                                                                        wire:model="units.{{ $index }}.components.{{ $cIndex }}.unit_id"
-                                                                        class="form-select form-select-sm">
-                                                                        <option value="">اختر</option>
-                                                                        @foreach ($allProducts as $p)
-                                                                            @foreach ($p->units ?? [] as $uIndex => $u)
-                                                                                <option
-                                                                                    value="{{ $u['id'] ?? $uIndex }}">
-                                                                                    {{ $u['name'] }}
-                                                                                </option>
-                                                                            @endforeach
-                                                                        @endforeach
-                                                                    </select>
-                                                                </td>
+
 
                                                                 <!-- التحكم -->
                                                                 <td>
@@ -429,6 +471,8 @@
                                                                                 class="form-control"
                                                                                 placeholder="0.00" step="0.01"
                                                                                 value="0">
+
+
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-4">
@@ -448,7 +492,8 @@
                                                     @endforeach
                                                 @else
                                                     <div class="text-center text-muted py-3">
-                                                        <i class="fas fa-info-circle me-1"></i>لا توجد قيم مضافة لهذا
+                                                        <i class="fas fa-info-circle me-1"></i>لا توجد قيم مضافة
+                                                        لهذا
                                                         الخيار
                                                     </div>
                                                 @endif
@@ -524,32 +569,37 @@
 </div>
 
 @push('scripts')
-<script>
-document.addEventListener('livewire:init', () => {
-    // استماع للـ event من Livewire
-    Livewire.on('prices-updated', (data) => {
-        if (!data.units) return;
+    <script>
+        document.addEventListener('livewire:init', () => {
+            // استماع للـ event من Livewire
+            Livewire.on('prices-updated', (data) => {
+                if (!data.units) return;
 
-        data.units.forEach((unit, index) => {
-            // نجيب input سعر الشراء
-            const priceInput = document.querySelector(`[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
-            // نجيب input سعر البيع
-            const sellInput = document.querySelector(`[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
-            
-            if (priceInput) {
-                // نحدّث القيمة يدوياً
-                priceInput.value = unit.price;
-                // نرسل حدث input عشان Livewire يعرف التغيير
-                priceInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+                data.units.forEach((unit, index) => {
+                    // نجيب input سعر الشراء
+                    const priceInput = document.querySelector(
+                        `[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
+                    // نجيب input سعر البيع
+                    const sellInput = document.querySelector(
+                        `[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
 
-            if (sellInput) {
-                sellInput.value = unit.sallPrice;
-                sellInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+                    if (priceInput) {
+                        // نحدّث القيمة يدوياً
+                        priceInput.value = unit.price;
+                        // نرسل حدث input عشان Livewire يعرف التغيير
+                        priceInput.dispatchEvent(new Event('input', {
+                            bubbles: true
+                        }));
+                    }
+
+                    if (sellInput) {
+                        sellInput.value = unit.sallPrice;
+                        sellInput.dispatchEvent(new Event('input', {
+                            bubbles: true
+                        }));
+                    }
+                });
+            });
         });
-    });
-});
-</script>
-
+    </script>
 @endpush
