@@ -9,6 +9,7 @@ use App\Models\SubSection;
 use App\Models\Product;
 use App\Models\ProductUnits;
 use App\Models\Unit;
+use Illuminate\Support\Facades\DB;
 
 class Create extends Component
 {
@@ -39,12 +40,76 @@ class Create extends Component
     public $allProducts = []; // لاختيار المكونات
     public $MeasureUnits = [];
     public $showRecipes = [];
+    public $addons = [];
+
     protected bool $updatingPrices = false;
     public $newUnit = [
         'name' => '',
         'is_active' => true,
     ];
 
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'section' => 'required',
+        'photo' => 'nullable|image|max:1024',
+        'hasRecipe' => 'boolean',
+        'stockQnt' => 'nullable|integer|min:0',
+        'isActive' => 'boolean',
+
+        // Units
+        'units.*.measure_unit_id' => 'required|exists:units,id',
+        'units.*.price' => 'required|numeric|min:0',
+        'units.*.sallPrice' => 'required|numeric|min:0',
+        'units.*.conversion_factor' => 'required|numeric|min:0.01',
+
+        // Components داخل الوحدة
+        'units.*.components.*.product_id' => 'required|exists:products,id',
+        'units.*.components.*.component_unit_id' => 'required|exists:units,id',
+        'units.*.components.*.quantity' => 'required|numeric|min:0.01',
+
+        // Options
+        'options.*.name' => 'required|string|max:255',
+        'options.*.active' => 'boolean',
+        'options.*.values.*.name' => 'required|string|max:255',
+        'options.*.values.*.price' => 'nullable|numeric|min:0',
+
+        // Addons
+        'addons.*.name' => 'required|string|max:255',
+        'addons.*.price' => 'required|numeric|min:0',
+        'addons.*.active' => 'boolean',
+    ];
+
+
+    protected $validationAttributes = [
+        'name' => 'اسم المنتج',
+        'price' => 'سعر المنتج',
+        'section' => 'القسم',
+        'photo' => 'صورة المنتج',
+        'hasRecipe' => 'استخدام وصفة',
+        'stockQnt' => 'الكمية في المخزن',
+        'isActive' => 'حالة المنتج',
+
+        // Units
+        'units.*.measure_unit_id' => 'الوحدة',
+        'units.*.price' => 'سعر الشراء',
+        'units.*.sallPrice' => 'سعر البيع',
+        'units.*.conversion_factor' => 'معامل التحويل',
+
+        // Components
+        'units.*.components.*.product_id' => 'المنتج المكوّن',
+        'units.*.components.*.component_unit_id' => 'وحدة المكوّن',
+        'units.*.components.*.quantity' => 'كمية المكوّن',
+
+        // Options
+        'options.*.name' => 'اسم الخيار',
+        'options.*.values.*.name' => 'اسم قيمة الخيار',
+        'options.*.values.*.price' => 'سعر قيمة الخيار',
+
+        // Addons
+        'addons.*.name' => 'اسم الإضافة',
+        'addons.*.price' => 'سعر الإضافة',
+        'addons.*.active' => 'حالة الإضافة',
+    ];
 
 
     public function toggleRecipeVisibility($index)
@@ -116,8 +181,7 @@ class Create extends Component
 
 
 
-                    if ($productUnit)
-                    {
+                    if ($productUnit) {
                         $total += $productUnit->price * $component['quantity'] * $productUnit->conversion_factor;
                     }
                 }
@@ -125,7 +189,6 @@ class Create extends Component
         }
 
         $unit['total_cost'] = $total;
-
     }
 
 
@@ -246,6 +309,17 @@ class Create extends Component
         $this->addUnit(); // إضافة وحدة افتراضية
     }
 
+
+    public function addAddon()
+    {
+        $this->addons[] = ['name' => '', 'price' => 0, 'active' => true];
+    }
+
+    public function removeAddon($index)
+    {
+        unset($this->addons[$index]);
+        $this->addons = array_values($this->addons);
+    }
 
 
 
@@ -368,7 +442,7 @@ class Create extends Component
             $this->units[$unitIndex]['components'] = array_values($this->units[$unitIndex]['components']);
         }
 
-       $this->calculateTotalCost($unitIndex);
+        $this->calculateTotalCost($unitIndex);
     }
 
     /***** إدارة الخيارات *****/
@@ -410,94 +484,110 @@ class Create extends Component
     /***** فقط التحقق بدون حفظ *****/
     public function create()
     {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'section' => 'required',
-            "description" => 'nullable|string',
-            'photo' => 'nullable|image',
-            'units' => 'required|array|min:1',
-            'units.*.price' => 'required|numeric|min:0',
-            'units.*.sallPrice' => 'required|numeric|min:0',
-            'units.*.conversion_factor' => 'required|numeric|min:0.0001',
-            'units.*.measure_unit_id' => 'required|exists:units,id',
-            'units.*.bar_codes' => 'nullable|array',
-            'units.*.bar_codes.*' => 'nullable|string|max:255',
-            'units.*.components' => 'nullable|array',
-            'units.*.components.*.product_id' => 'required|exists:products,id',
-            'units.*.components.*.quantity' => 'required|numeric|min:0',
-            'units.*.components.*.component_unit_id' => 'required|exists:units,id',
-
-            // 'options' => 'nullable|array',
-            // 'options.*.name' => 'required|string|max:255',
-            // 'options.*.active' => 'boolean',
-            // 'options.*.values' => 'nullable|array',
-            // 'options.*.values.*.name' => 'required|string|max:255',
-            // 'options.*.values.*.price' => 'required|numeric|min:0',
-
-        ]);
-        $path = null;
-        if ($this->photo) {
-            $path = $this->photo->store('products', 'public');
-        }
+        $this->validate();
+        try {
+            DB::beginTransaction();
 
 
-        $product = Product::create([
-            'name' => $this->name,
-            'section_id' => $this->section,
-            'description' => $this->description,
-            'photo' =>  $path ?: null,
-            'uses_recipe' => $this->hasRecipe,
-            'company_id' => null, // مؤقتاً
-            'active'   => $this->isActive,
-            'qtn' => $this->stockQnt,
-            'offer_rate'    => 0,
-            'company_id' => $this->company_id ?? null,
-        ]);
+            $path = null;
+            if ($this->photo) {
+                $path = $this->photo->store('products', 'public');
+            }
 
-        foreach ($this->units as $index => $unitData) {
-            $conversionFactor = 1;
+            $product = Product::create([
+                'name' => $this->name,
+                'section_id' => $this->section,
+                'description' => $this->description,
+                'photo' =>  $path ?: null,
+                'uses_recipe' => $this->hasRecipe,
+                'company_id' => null, // مؤقتاً
+                'active'   => $this->isActive,
+                'qtn' => $this->stockQnt,
+                'offer_rate'    => 0,
+                'company_id' => $this->company_id ?? null,
+            ]);
 
-            for ($i = $index; $i >= 0; $i--) {
-                if ($i == 0) {
-                    $conversionFactor = 1;
-                } else {
-                    $conversionFactor = $unitData['conversion_factor'] * $conversionFactor;
+            foreach ($this->units as $index => $unitData) {
+
+                $conversionFactor = 1;
+                for ($i = $index; $i > 0; $i--) {
+                    if ($index == 0) {
+                        $conversionFactor = 1;
+                    } else {
+                        $conversionFactor = $unitData['conversion_factor'] * $conversionFactor;
+                    }
+                }
+
+                $productUnit = ProductUnits::create([
+                    'product_id' => $product->id,
+                    'unit_id' => $unitData['measure_unit_id'],
+                    'conversion_factor' => $conversionFactor,
+                    'price' => $product->uses_recipe ? $unitData['total_cost'] : $unitData['price'],
+                    'sallprice' => $unitData['sallPrice'],
+                    'is_base' => ($index == 0) ? true : false,
+                ]);
+                $productUnit->refresh();
+
+                foreach ($unitData['bar_codes'] as $barcode) {
+                    
+                    if (!empty($barcode)) {
+                        $productUnit->barcodes()->create([
+                            'code' => $barcode,
+                            'product_unit_id' => $productUnit->id,
+                        ]);
+                    }
+                }
+
+                if ($product->uses_recipe) {
+
+                    foreach ($unitData['components'] as $component) {
+                        $productUnit->components()->create([
+                            // المنتج الاساسي اللي الوحدة دي بتتكون منه
+                            'product_id' => $component['product_id'],
+                            // الوحدة بتاعة المكون
+                            'component_unit_id' => $component['component_unit_id'],
+
+                            'quantity' => $component['quantity'],
+                        ]);
+                    }
                 }
             }
 
-            $productUnit = ProductUnits::create([
-                'product_id' => $product->id,
-                'unit_id' => $unitData['measure_unit_id'],
-                'conversion_factor' => $conversionFactor,
-                'price' => $unitData['price'],
-                'sallprice' => $unitData['sallPrice'],
-                'is_base' => ($index == 0) ? true : false,
-            ]);
 
-            foreach ($unitData['bar_codes'] as $barcode) {
-                if (!empty($barcode)) {
-                    $productUnit->barcodes()->create([
-                        'code' => $barcode,
+            foreach ($this->options as $optionData) {
+                $option = $product->options()->create([
+                    'name' => $optionData['name'],
+                    'active' => $optionData['active'] ?? true,
+                ]);
+                foreach ($optionData['values'] as $valueData) {
+                    $option->values()->create([
+                        'name' => $valueData['name'],
+                        'price' => $valueData['price'],
+                    ]);
+                }
+            }
+
+            if (!empty($this->addons)) {
+                foreach ($this->addons as $addonData) {
+                    $product->addsOn()->create([
+                        'name' => $addonData['name'],
+                        'price' => $addonData['price'] ?? 0,
+                        'active' => $addonData['active'] ?? true,
                     ]);
                 }
             }
 
 
-            foreach ($unitData['components'] as $component)
-            {
-                $productUnit->components()->create([
-                    // المنتج الاساسي اللي الوحدة دي بتتكون منه
-                    'product_id' => $component['product_id'],
-                    // الوحدة بتاعة المكون
-                    'component_unit_id' => $component['component_unit_id'],
-
-                    'quantity' => $component['quantity'],
-                ]);
-            }
 
 
-
+            DB::commit();
             session()->flash('done', '✅ تم التحقق من البيانات بنجاح (بدون حفظ)');
+            return redirect()->route('products.create');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            session()->flash('error', '❌ حدث خطأ أثناء التحقق: ' . $e->getMessage());
+            return redirect()->route('products.create');
         }
     }
     public function render()

@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class  Product extends Model
 {
     use HasFactory;
-
+    protected $casts = [
+        'uses_recipe' => 'boolean',
+    ];
     protected $table = 'products';
     protected $fillable = [
         'name',
@@ -28,6 +30,7 @@ class  Product extends Model
         'purchase_count',
         'offer_rate',
         'bar_code',
+        'uses_recipe'
     ];
 
 
@@ -60,19 +63,16 @@ class  Product extends Model
         return $this->hasMany(Favorit::class);
     }
 
+
     public function options()
     {
-        return $this->belongsToMany(Options::class, 'product_options', 'product_id', 'option_id');
+        return $this->hasMany(Options::class, 'product_id');
     }
-
-
-
-
 
 
     public function addsOn()
     {
-        return $this->belongsToMany(AddsOn::class, 'product_adds_on', 'product_id', 'adds_on_id');
+        return $this->hasMany(AddsOn::class);
     }
 
     public function recipeOverrides()
@@ -94,6 +94,7 @@ class  Product extends Model
     public function units()
     {
         return $this->belongsToMany(Unit::class, 'product_units', 'product_id', 'unit_id')
+            ->using(ProductUnits::class)
             ->withPivot('conversion_factor', 'price', 'sallprice', 'is_base')
             ->withTimestamps();
     }

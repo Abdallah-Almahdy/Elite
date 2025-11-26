@@ -87,7 +87,7 @@
                         <label for="isActive" class="form-check-label fw-semibold">مفعل</label>
                     </div>
 
-                    
+
 
                 </div>
 
@@ -298,41 +298,44 @@
                                                             <tr>
                                                                 <!-- البحث عن المنتج -->
                                                                 <td class="position-relative">
-                                                                    @if (empty($unit['components'][$cIndex]['product_id']))
-                                                                        <input type="text"
-                                                                            wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
-                                                                            class="form-control form-control-sm"
-                                                                            placeholder="ابحث عن منتج...">
+                                                                    <div class="position-relative">
+                                                                        @if (empty($unit['components'][$cIndex]['product_id']))
+                                                                            <input type="text"
+                                                                                wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.search"
+                                                                                class="form-control form-control-sm"
+                                                                                placeholder="ابحث عن منتج...">
 
-                                                                        @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
-                                                                            <ul class="list-group position-absolute w-100"
-                                                                                style="z-index: 999;">
-                                                                                @forelse ($unit['components'][$cIndex]['results'] as $result)
-                                                                                    <li class="list-group-item list-group-item-action"
-                                                                                        wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
-                                                                                        {{ $result['name'] }}
-                                                                                    </li>
-                                                                                @empty
-                                                                                    <li
-                                                                                        class="list-group-item text-muted">
-                                                                                        لا توجد نتائج</li>
-                                                                                @endforelse
-                                                                            </ul>
+                                                                            @if (!empty($unit['components'][$cIndex]['search']) && isset($unit['components'][$cIndex]['results']))
+                                                                                <ul class="list-group position-absolute w-100"
+                                                                                    style="z-index: 999;">
+                                                                                    @forelse ($unit['components'][$cIndex]['results'] as $result)
+                                                                                        <li class="list-group-item list-group-item-action"
+                                                                                            wire:key="result-{{ $result['id'] }}-{{ $index }}-{{ $cIndex }}"
+                                                                                            wire:click="selectProduct({{ $index }}, {{ $cIndex }}, {{ $result['id'] }})">
+                                                                                            {{ $result['name'] }}
+                                                                                        </li>
+                                                                                    @empty
+                                                                                        <li
+                                                                                            class="list-group-item text-muted">
+                                                                                            لا توجد نتائج</li>
+                                                                                    @endforelse
+                                                                                </ul>
+                                                                            @endif
+                                                                        @else
+                                                                            <div
+                                                                                class="d-flex justify-content-between align-items-center bg-white p-1 rounded">
+                                                                                <span class="text-success small">
+                                                                                    ✅
+                                                                                    {{ $unit['components'][$cIndex]['product_name'] }}
+                                                                                </span>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-danger"
+                                                                                    wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
+                                                                                    ❌
+                                                                                </button>
+                                                                            </div>
                                                                         @endif
-                                                                    @else
-                                                                        <div
-                                                                            class="d-flex justify-content-between align-items-center bg-white p-1 rounded">
-                                                                            <span class="text-success small">
-                                                                                ✅
-                                                                                {{ $unit['components'][$cIndex]['product_name'] }}
-                                                                            </span>
-                                                                            <button type="button"
-                                                                                class="btn btn-sm btn-outline-danger"
-                                                                                wire:click="clearProductSelection({{ $index }}, {{ $cIndex }})">
-                                                                                ❌
-                                                                            </button>
-                                                                        </div>
-                                                                    @endif
+                                                                    </div>
                                                                 </td>
                                                                 <td>
                                                                     <select
@@ -395,6 +398,7 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card border-primary">
+
                         <div
                             class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold"><i class="fas fa-cogs me-2"></i>خيارات المنتج</h6>
@@ -404,114 +408,169 @@
                         </div>
 
                         <div class="card-body">
-                            @if (count($options) > 0)
-                                @foreach ($options as $optionIndex => $option)
-                                    <div class="card mb-3 border-secondary">
-                                        <div
-                                            class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0 fw-semibold">خيار {{ $loop->iteration }}</h6>
-                                            <button type="button" wire:click="removeOption({{ $optionIndex }})"
-                                                class="btn btn-sm btn-danger">
-                                                <i class="fa fa-times me-1"></i>حذف
-                                            </button>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label class="form-label fw-semibold">اسم الخيار</label>
-                                                        <input type="text"
-                                                            wire:model="options.{{ $optionIndex }}.name"
-                                                            class="form-control"
-                                                            placeholder="مثل: المقاس، اللون، الخ..." required>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <div class="form-check mt-4">
-                                                            <input type="checkbox"
-                                                                wire:model="options.{{ $optionIndex }}.active"
-                                                                class="form-check-input" checked>
-                                                            <label class="form-check-label fw-semibold">مفعل</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <!-- قيم الخيار -->
-                                            <div class="values-section">
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <h6 class="mb-0 fw-semibold">قيم الخيار</h6>
-                                                    <button type="button" wire:click="addValue({{ $optionIndex }})"
-                                                        class="btn btn-sm btn-outline-primary">
+                            @if (count($options) > 0)
+
+                                <table class="table table-bordered table-striped align-middle text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>اسم الخيار</th>
+                                            <th>مفعل</th>
+                                            <th>قيم الخيار</th>
+                                            <th>إجراء</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach ($options as $optionIndex => $option)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+
+                                                <td>
+                                                    <input type="text"
+                                                        wire:model="options.{{ $optionIndex }}.name"
+                                                        class="form-control" placeholder="مثل: اللون ، المقاس">
+                                                </td>
+
+                                                <td>
+                                                    <input type="checkbox"
+                                                        wire:model="options.{{ $optionIndex }}.active"
+                                                        class="form-check-input">
+                                                </td>
+
+                                                <td>
+
+                                                    <!-- زر إضافة قيمة -->
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mb-2"
+                                                        wire:click="addValue({{ $optionIndex }})">
                                                         <i class="fa fa-plus me-1"></i>إضافة قيمة
                                                     </button>
-                                                </div>
 
-                                                @if (isset($option['values']) && count($option['values']) > 0)
-                                                    @foreach ($option['values'] as $valueIndex => $value)
-                                                        <div class="card mb-2 border-light">
-                                                            <div class="card-body">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-md-4">
-                                                                        <div class="form-group">
-                                                                            <label class="form-label fw-semibold">اسم
-                                                                                القيمة</label>
+                                                    <!-- جدول القيم -->
+                                                    @if (isset($option['values']) && count($option['values']) > 0)
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead class="table-secondary">
+                                                                <tr>
+                                                                    <th>اسم القيمة</th>
+                                                                    <th>السعر الإضافي</th>
+                                                                    <th>حذف</th>
+                                                                </tr>
+                                                            </thead>
+
+                                                            <tbody>
+                                                                @foreach ($option['values'] as $valueIndex => $value)
+                                                                    <tr>
+                                                                        <td>
                                                                             <input type="text"
                                                                                 wire:model="options.{{ $optionIndex }}.values.{{ $valueIndex }}.name"
                                                                                 class="form-control"
-                                                                                placeholder="مثل: كبير، أحمر، الخ..."
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-4">
-                                                                        <div class="form-group">
-                                                                            <label class="form-label fw-semibold">السعر
-                                                                                الإضافي</label>
+                                                                                placeholder="أحمر، كبير، ...">
+                                                                        </td>
+
+                                                                        <td>
                                                                             <input type="number"
                                                                                 wire:model="options.{{ $optionIndex }}.values.{{ $valueIndex }}.price"
-                                                                                class="form-control"
-                                                                                placeholder="0.00" step="0.01"
-                                                                                value="0">
+                                                                                class="form-control" step="0.01"
+                                                                                placeholder="0.00">
+                                                                        </td>
 
-
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-4">
-                                                                        <div class="form-group">
-                                                                            <label
-                                                                                class="form-label d-block">&nbsp;</label>
+                                                                        <td>
                                                                             <button type="button"
-                                                                                wire:click="removeValue({{ $optionIndex }}, {{ $valueIndex }})"
-                                                                                class="btn btn-sm btn-outline-danger w-100">
-                                                                                <i class="fa fa-times me-1"></i>حذف
+                                                                                class="btn btn-sm btn-outline-danger w-100"
+                                                                                wire:click="removeValue({{ $optionIndex }}, {{ $valueIndex }})">
+                                                                                <i class="fa fa-times"></i>
                                                                             </button>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                @else
-                                                    <div class="text-center text-muted py-3">
-                                                        <i class="fas fa-info-circle me-1"></i>لا توجد قيم مضافة
-                                                        لهذا
-                                                        الخيار
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+
+                                                        </table>
+                                                    @else
+                                                        <div class="text-muted small">لا توجد قيم مضافة</div>
+                                                    @endif
+
+                                                </td>
+
+                                                <td>
+                                                    <button type="button"
+                                                        wire:click="removeOption({{ $optionIndex }})"
+                                                        class="btn btn-sm btn-danger w-100">
+                                                        <i class="fa fa-times"></i> حذف
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+
+                                </table>
                             @else
                                 <div class="text-center text-muted py-3">
                                     <i class="fas fa-info-circle me-1"></i>لا توجد خيارات مضافة حالياً
                                 </div>
+
                             @endif
+
                         </div>
+
                     </div>
                 </div>
             </div>
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>الإضافات (Addons)</h6>
+                    <button type="button" wire:click="addAddon" class="btn btn-sm btn-light">
+                        <i class="fa fa-plus me-1"></i>إضافة إضافة
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    @if (count($addons) > 0)
+                        <table class="table table-bordered table-striped align-middle text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>اسم الإضافة</th>
+                                    <th>السعر</th>
+                                    <th>مفعّل</th>
+                                    <th>إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($addons as $index => $addon)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <input type="text" wire:model="addons.{{ $index }}.name"
+                                                class="form-control" placeholder="اسم الإضافة">
+                                        </td>
+                                        <td>
+                                            <input type="number" wire:model="addons.{{ $index }}.price"
+                                                class="form-control" step="0.01" placeholder="0.00">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" wire:model="addons.{{ $index }}.active"
+                                                class="form-check-input">
+                                        </td>
+                                        <td>
+                                            <button type="button" wire:click="removeAddon({{ $index }})"
+                                                class="btn btn-sm btn-danger w-100">
+                                                <i class="fa fa-times"></i> حذف
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-info-circle me-1"></i>لا توجد إضافات مضافة حالياً
+                        </div>
+                    @endif
+                </div>
+            </div>
+
 
             <!-- رسالة النجاح -->
             @if (session('done'))
@@ -602,6 +661,12 @@
                     }
                 });
             });
+        });
+
+
+
+        window.addEventListener('reload-page', () => {
+            location.reload();
         });
     </script>
 @endpush

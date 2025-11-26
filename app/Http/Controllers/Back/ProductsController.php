@@ -28,7 +28,7 @@ class ProductsController extends Controller
      */
     public function create()
     {
- 
+
 
         $sections = SubSection::all();
         $companies = Company::all();
@@ -52,8 +52,10 @@ class ProductsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(product $product)
+    public function show($id)
     {
+        $product = Product::with('units')->find($id);
+
         $options = $product->options;
 
         return view('pages.products.show', ['product' => $product, 'options' => $options]);

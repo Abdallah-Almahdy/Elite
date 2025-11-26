@@ -1,366 +1,319 @@
 @extends('admin.app')
 
 @section('content')
-<div class="row">
-    <div class="col-md-8">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h4 class="card-title">
-                    <i class="fas fa-box me-2"></i>معلومات المنتج
-                </h4>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- الصورة -->
-                    <div class="col-md-4 text-center mb-4">
-                        <div class="product-image-container">
-                            <img class="img-fluid rounded shadow"
-                                 src="{{ asset('uploads/' . $product->photo) }}"
-                                 alt="{{ $product->name }}"
-                                 style="max-height: 250px; object-fit: contain;">
-                        </div>
-                    </div>
-
-                    <!-- المعلومات الأساسية -->
-                    <div class="col-md-8">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-tag me-2 text-primary"></i>اسم الصنف
-                                </div>
-                                <div class="info-value">{{ $product->name }}</div>
-                            </div>
-
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-dollar-sign me-2 text-success"></i>السعر
-                                </div>
-                                <div class="info-value">
-                                    <span class="price-badge">{{ number_format($product->price, 2) }} جنيه</span>
-                                </div>
-                            </div>
-
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-align-right me-2 text-info"></i>الوصف
-                                </div>
-                                <div class="info-value">{{ $product->description ?? 'لا يوجد وصف' }}</div>
-                            </div>
-
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-folder me-2 text-warning"></i>القسم
-                                </div>
-                                <div class="info-value">
-                                    <span class="badge bg-warning text-dark">{{ $product->section->name }}</span>
-                                </div>
-                            </div>
-
-                            @if ($product->active)
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-boxes me-2 text-danger"></i>الكمية المتاحة
-                                </div>
-                                <div class="info-value">
-                                    <span class="badge bg-danger">{{ $product->qnt }} وحدة</span>
-                                </div>
-                            </div>
-                            @endif
-
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-barcode me-2 text-secondary"></i>باركود
-                                </div>
-                                <div class="info-value">{{ $product->bar_code ?? 'غير محدد' }}</div>
-                            </div>
-
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-utensils me-2 text-success"></i>يحتوي على وصفة
-                                </div>
-                                <div class="info-value">
-                                    <span class="badge {{ $product->uses_recipe ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $product->uses_recipe ? 'نعم' : 'لا' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="card card-primary h-100 d-flex flex-column">
+    <div class="card-header bg-primary text-white py-3">
+        <h5 class="text-center mb-0 fw-bold"><i class="fas fa-eye me-2"></i>عرض الصنف</h5>
     </div>
 
-    <div class="col-md-4">
-        <!-- حالة المنتج -->
-        <div class="card card-info mb-4">
-            <div class="card-header">
-                <h5 class="card-title">
-                    <i class="fas fa-info-circle me-2"></i>حالة المنتج
-                </h5>
+    <div class="card-body flex-grow-1" style="overflow-y: auto; max-height: calc(100vh - 200px);">
+        <!-- الصف الأول: الاسم والوصف والقسم -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الاسم</label>
+                    <div class="form-control bg-light">{{ $product->name }}</div>
+                </div>
             </div>
-            <div class="card-body text-center">
-                <div class="status-indicator {{ $product->active ? 'status-active' : 'status-inactive' }}">
-                    <i class="fas {{ $product->active ? 'fa-check-circle' : 'fa-times-circle' }} fa-3x mb-3"></i>
-                    <h5>{{ $product->active ? 'نشط' : 'غير نشط' }}</h5>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الوصف</label>
+                    <div class="form-control bg-light">{{ $product->description ?? 'لا يوجد وصف' }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">القسم</label>
+                    <div class="form-control bg-light">{{ $product->section->name ?? 'غير محدد' }}</div>
                 </div>
             </div>
         </div>
 
-        <!-- إحصائيات سريعة -->
-        <div class="card card-success">
-            <div class="card-header">
-                <h5 class="card-title">
-                    <i class="fas fa-chart-bar me-2"></i>معلومات سريعة
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="quick-stats">
-                    <div class="stat-item">
-                        <div class="stat-icon text-primary">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number">{{ $options->count() }}</div>
-                            <div class="stat-label">خيارات</div>
-                        </div>
+        <!-- الصف الثاني: الحالة والصورة والشركة -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الحالة</label>
+                    <div>
+                        <span class="badge {{ $product->active ? 'bg-success' : 'bg-danger' }}">
+                            {{ $product->active ? 'مفعل' : 'غير مفعل' }}
+                        </span>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-icon text-success">
-                            <i class="fas fa-list"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number">
-                                {{ $options->sum(function($option) { return $option->values->count(); }) }}
-                            </div>
-                            <div class="stat-label">قيم</div>
-                        </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label class="form-label fw-semibold">نوع المنتج</label>
+                    <div>
+                        <span class="badge {{ $product->uses_recipe ? 'bg-info' : 'bg-secondary' }}">
+                            {{ $product->uses_recipe ? 'منتج مركب' : 'منتج عادي' }}
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- قسم الـ Options -->
-@if($options->count() > 0)
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-warning">
-            <div class="card-header">
-                <h4 class="card-title">
-                    <i class="fas fa-cogs me-2"></i>خيارات المنتج
-                </h4>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الصورة</label>
+                    <div class="text-center">
+                        <img class="img-thumbnail"
+                             src="{{ $product->photo ? asset('uploads/' . $product->photo) : asset('admin/photo/seo.png') }}"
+                             style="max-height: 150px;">
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الشركة</label>
+                    <div class="form-control bg-light">{{ $product->company->name ?? 'غير محدد' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم الوحدات -->
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-balance-scale me-2"></i>الوحدات</h6>
+                <span class="badge bg-light text-primary">{{ $product->units->count() }} وحدة</span>
+            </div>
+
             <div class="card-body">
-                <div class="row">
-                    @foreach($options as $option)
-                    <div class="col-md-6 mb-4">
-                        <div class="option-card card h-100">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-cog me-2"></i>{{ $option->name }}
-                                </h6>
-                                <span class="badge {{ $option->active ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $option->active ? 'مفعل' : 'غير مفعل' }}
-                                </span>
-                            </div>
-                            <div class="card-body">
-                                @if($option->values->count() > 0)
-                                    <div class="values-list">
-                                        @foreach($option->values as $value)
-                                        <div class="value-item d-flex justify-content-between align-items-center p-2 border-bottom">
-                                            <div class="value-info">
-                                                <span class="value-name">{{ $value->name }}</span>
-                                                @if($value->price_adjustment > 0)
-                                                <small class="text-success d-block">
-                                                    + {{ number_format($value->price_adjustment, 2) }} جنيه
-                                                </small>
-                                                @endif
-                                            </div>
-                                            <span class="badge bg-light text-dark">
-                                                {{ $loop->iteration }}
-                                            </span>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="text-center text-muted py-3">
-                                        <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
-                                        <p>لا توجد قيم لهذا الخيار</p>
-                                    </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الوحدة</th>
+                                @if (!$product->uses_recipe)
+                                    <th>معامل التحويل</th>
                                 @endif
-                            </div>
-                            <div class="card-footer">
-                                <small class="text-muted">
-                                    <i class="fas fa-list me-1"></i>
-                                    {{ $option->values->count() }} قيم
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
+                                <th>سعر البيع</th>
+                                <th>سعر الشراء</th>
+                                <th>الباركود</th>
+                                @if ($product->uses_recipe)
+                                    <th>إجمالي التكلفة</th>
+                                @endif
+                                <th>الوحدة الأساسية</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($product->units as $unit)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+
+                                    <!-- اسم الوحدة -->
+                                    <td>
+                                        <span class="fw-bold text-primary">{{ $unit->name }}</span>
+                                    </td>
+
+                                    <!-- معامل التحويل -->
+                                    @if (!$product->uses_recipe)
+                                        <td>
+                                            <span class="badge bg-info">{{ $unit->pivot->conversion_factor }}</span>
+                                        </td>
+                                    @endif
+
+                                    <!-- الأسعار -->
+                                    <td>
+                                        <span class="fw-bold text-success">{{ number_format($unit->pivot->sallprice, 2) }} ج.م</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="fw-bold text-primary">{{ number_format($unit->pivot->price, 2) }} ج.م</span>
+                                    </td>
+
+                                    <!-- الباركود -->
+                                    <td>
+                                        @php
+                                        $pivot = $unit->pivot;
+                                        $pivot->refresh();
+                                        @endphp
+                                        @if($pivot->barcodes->count() > 0)
+                                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+
+                                                @foreach ($pivot->barcodes as $barcode)
+                                                    <span class="badge bg-dark">{{ $barcode->code }}</span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-muted">لا يوجد</span>
+                                        @endif
+                                    </td>
+
+                                    <!-- إجمالي التكلفة -->
+                                    @if ($product->uses_recipe)
+                                        <td>
+                                            {{-- @php
+                                                $totalCost = 0;
+                                                foreach($unit->pivot->components as $component) {
+                                                    $totalCost += ($component->product->units->first()->pivot->price ?? 0) * $component->quantity;
+                                                }
+                                            @endphp --}}
+
+                                            <span class="fw-bold text-info">{{ number_format($unit->pivot->price, 2) }} ج.م</span>
+                                        </td>
+                                    @endif
+
+                                    <!-- الوحدة الأساسية -->
+                                    <td>
+                                        @if($unit->pivot->is_base)
+                                            <span class="badge bg-success">نعم</span>
+                                        @else
+                                            <span class="badge bg-secondary">لا</span>
+                                        @endif
+                                    </td>
+                                </tr>
+
+                                <!-- عرض المكونات للمنتج المركب -->
+                                @if ($product->uses_recipe && $unit->pivot->components->count() > 0)
+                                    <tr class="bg-light">
+                                        <td colspan="{{ $product->uses_recipe ? 7 : 6 }}">
+                                            <div class="border rounded p-3 mt-2">
+                                                <h6 class="fw-semibold text-secondary mb-3">
+                                                    <i class="fa fa-utensils me-1"></i>مكونات الوحدة
+                                                </h6>
+
+                                                <table class="table table-sm table-bordered align-middle text-center mb-0">
+                                                    <thead class="table-secondary">
+                                                        <tr>
+                                                            <th>المنتج</th>
+                                                            <th>الكمية</th>
+                                                            <th>الوحدة</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($unit->pivot->components as $component)
+                                                            <tr>
+                                                                <td>{{ $component->product->name ?? 'غير محدد' }}</td>
+                                                                <td>{{ $component->quantity }}</td>
+                                                                <td>{{ $component->componentUnit->name ?? 'غير محدد' }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-@else
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-secondary">
-            <div class="card-body text-center py-5">
-                <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">لا توجد خيارات لهذا المنتج</h5>
-                <p class="text-muted">يمكنك إضافة خيارات من خلال تعديل المنتج</p>
+
+        <!-- قسم الخيارات -->
+        @if($product->options->count() > 0)
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-cogs me-2"></i>خيارات المنتج</h6>
+                <span class="badge bg-light text-primary">{{ $product->options->count() }} خيار</span>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الخيار</th>
+                                <th>الحالة</th>
+                                <th>قيم الخيار</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($product->options as $option)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $option->name }}</td>
+                                    <td>
+                                        <span class="badge {{ $option->active ? 'bg-success' : 'bg-danger' }}">
+                                            {{ $option->active ? 'مفعل' : 'غير مفعل' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($option->values->count() > 0)
+                                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                                @foreach ($option->values as $value)
+                                                    <span class="badge bg-secondary">
+                                                        {{ $value->name }} ({{ number_format($value->price, 2) }} ج.م)
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-muted">لا توجد قيم</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-@endif
+        @endif
 
-<!-- أزرار التحكم -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body text-center">
-                <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning mx-2">
+        <!-- قسم الإضافات -->
+        @if($product->addsOn->count() > 0)
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>الإضافات</h6>
+                <span class="badge bg-light text-success">{{ $product->addsOn->count() }} إضافة</span>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الإضافة</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($product->addsOn as $addon)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $addon->name }}</td>
+                                    <td class="text-success fw-bold">{{ number_format($addon->price, 2) }} ج.م</td>
+                                    <td>
+                                        <span class="badge {{ $addon->active ? 'bg-success' : 'bg-danger' }}">
+                                            {{ $addon->active ? 'مفعل' : 'غير مفعل' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    <!-- أزرار التحكم -->
+    <div class="card-footer bg-light py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
+            </a>
+
+            <div>
+                @can('product.edit')
+                <a href="{{ route('products.edit', $product->id) }}" class="btn btn-primary me-2">
                     <i class="fas fa-edit me-2"></i>تعديل المنتج
                 </a>
-                <a href="{{ route('products.index') }}" class="btn btn-secondary mx-2">
-                    <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
-                </a>
+                @endcan
+
+
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.info-grid {
-    display: grid;
-    gap: 1rem;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    border-bottom: 1px solid #eee;
-}
-
-.info-label {
-    font-weight: bold;
-    color: #555;
-}
-
-.info-value {
-    color: #333;
-}
-
-.price-badge {
-    background: linear-gradient(45deg, #28a745, #20c997);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-weight: bold;
-}
-
-.status-indicator {
-    padding: 1.5rem;
-    border-radius: 10px;
-}
-
-.status-active {
-    background: linear-gradient(45deg, #d4edda, #c3e6cb);
-    color: #155724;
-}
-
-.status-inactive {
-    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
-    color: #721c24;
-}
-
-.quick-stats {
-    display: grid;
-    gap: 1rem;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.stat-icon {
-    font-size: 2rem;
-    margin-left: 1rem;
-}
-
-.stat-number {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.option-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid #dee2e6;
-}
-
-.option-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.values-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.value-item {
-    transition: background-color 0.2s ease;
-}
-
-.value-item:hover {
-    background-color: #f8f9fa;
-}
-
-.value-name {
-    font-weight: 500;
-}
-
-.product-image-container {
-    border: 3px solid #f8f9fa;
-    border-radius: 10px;
-    padding: 10px;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-@media (max-width: 768px) {
-    .info-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .stat-item {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .stat-icon {
-        margin-left: 0;
-        margin-bottom: 0.5rem;
-    }
-}
-</style>
 @endsection

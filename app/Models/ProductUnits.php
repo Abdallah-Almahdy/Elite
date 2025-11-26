@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 
-class ProductUnits extends Model
+
+class ProductUnits extends Pivot
 {
     protected $table = 'product_units';
-
+    public $incrementing = true;
     protected $fillable = [
         'product_id',
         'unit_id',
@@ -16,6 +17,7 @@ class ProductUnits extends Model
         'price',
         'sallprice',
         'is_base',
+
     ];
 
     public function barcodes()
@@ -27,5 +29,9 @@ class ProductUnits extends Model
     {
         return $this->hasMany(productUintComponent::class, 'product_unit_id');
     }
+
+
+
+
 
 }
