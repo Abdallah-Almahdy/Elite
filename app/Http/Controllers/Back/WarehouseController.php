@@ -52,13 +52,14 @@ class WarehouseController extends Controller
         return view('pages.warehouses.create');
     }
 
-    public function store(NewWarehouseRequest $request)
+    public function store(Request $request)
     {
+           
         try {
             $this->warehouseService->create($request);
 
             return redirect()
-                ->route('warehouses.index')
+                ->route('warehouses.create')
                 ->with('success', 'تم إنشاء المستودع بنجاح');
         } catch (\Exception $e) {
 

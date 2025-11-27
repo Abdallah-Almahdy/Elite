@@ -33,7 +33,7 @@ class Index extends Component
     public function deleteSelected()
     {
         if (empty($this->selectedProducts)) {
-            session()->flash('error', 'No products selected!');
+            session()->flash('error', 'اختر منتجات للحذف!');
             return;
         }
 
@@ -54,7 +54,7 @@ class Index extends Component
         // Clear the selected products after deletion
         $this->selectedProducts = [];
 
-        session()->flash('success', 'Selected products deleted successfully!');
+        session()->flash('success', 'تم حذف المنتجات المحددة بنجاح!');
     }
 
 

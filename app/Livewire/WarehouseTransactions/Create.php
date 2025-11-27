@@ -2,7 +2,9 @@
 
 namespace App\Livewire\WarehouseTransactions;
 
+use App\Models\Barcode;
 use App\Models\product;
+use App\Models\ProductUnits;
 use Livewire\Component;
 use App\Models\Warehouse;
 use App\Models\WarehouseTransactionType;
@@ -45,7 +47,9 @@ class Create extends Component
         ]);
 
         // Search for product by barcode
-        $product = product::where('bar_code', $this->bar_code)->first();
+        $barcode = Barcode::where('code', $this->bar_code)->first();
+        $product = $barcode->productUnit->product;
+
 
         if ($product) {
             // Check if product already exists in the list

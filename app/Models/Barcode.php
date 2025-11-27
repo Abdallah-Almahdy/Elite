@@ -10,4 +10,9 @@ class Barcode extends Model
         'code',
         'product_unit_id'
     ];
+
+    public function productUnit()
+    {
+        return $this->belongsTo(ProductUnits::class, 'product_unit_id');
+    }
 }

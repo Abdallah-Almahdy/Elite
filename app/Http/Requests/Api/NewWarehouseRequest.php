@@ -21,6 +21,7 @@ class NewWarehouseRequest extends FormRequest
      */
     public function rules(): array
     {
+dd($this->all());
         return [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:warehouses,code',
