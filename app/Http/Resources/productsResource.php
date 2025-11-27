@@ -30,6 +30,7 @@ class productsResource extends JsonResource
             'active' => $this->active,
             'company' => $this->company->name ?? null,
             'section' => $this->section->name ?? null,
+            'number'=>1,
             'Units' => ProductUnitResource::collection($this->units),
             'options' => OptionsResource::collection($this->options),
             'addsOn' =>  AddsOnsResource::collection($this->addsOn),
