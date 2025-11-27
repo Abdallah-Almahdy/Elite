@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\productsResource;
+use App\Http\Resources\sectionsAndproductsResource;
 //use App\Http\Resources\ProductPaginationResource;
 // use App\Http\Resources\productCollection;
 use App\Models\Product;
+use App\Models\SubSection;
 use Illuminate\Http\Request;
 use App\Traits\ApiTrait;
 
@@ -14,10 +16,18 @@ class ProductsController extends Controller
 {
     use ApiTrait;
 
+
+    public function GetAllProducts()
+    {
+
+
+        return  sectionsAndproductsResource::collection(SubSection::get());
+    }
+
     public function get_product($id)
     {
         $data = Product::find($id);
-        
+
 
         return $this->success($data);
     }

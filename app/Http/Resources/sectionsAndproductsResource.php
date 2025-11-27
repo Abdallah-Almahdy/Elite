@@ -19,8 +19,12 @@ class sectionsAndproductsResource extends JsonResource
     {
         return [
 
-            'sections' => sectionsResource::collection($this->sub_sections),
-            'products' => productsResource::collection($this->products),
+            'id' => $this->id,
+            'name' => $this->name,
+            'products' => productsResource::collection(
+               $this->products()->where('active', 1)->get()
+            ),
+
         ];
     }
 }

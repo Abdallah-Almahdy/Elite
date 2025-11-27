@@ -17,22 +17,23 @@ class productsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'prod_id' => $this->id,
             'id' => $this->id,
             'name' => $this->name,
-            'detail' => $this->description,
-            // 'options' =>  $this->options,
-            'options' => OptionsResource::collection($this->options),
-            'addsOn' =>  AddsOnsResource::collection($this->addsOn),
-            'price' => $this->price,
+            'description' => $this->description,
             'image' => config('app.img_base_link') . $this->photo,
-            'product_quantity' => $this->qnt,
+            'quantity' => $this->qnt,
             'nutritionWeight' => 0,
-            'cat_id' => $this->section_id,
             'unit_name' => 'ج.م',
             'purchase_count' => $this->purchase_count,
             'offer_rate' => $this->offer_rate,
-            'bar_code' => $this->bar_code,
+            'uses_recipe' => $this->uses_recipe,
+            'active' => $this->active,
+            'company' => $this->company->name ?? null,
+            'section' => $this->section->name ?? null,
+            'Units' => ProductUnitResource::collection($this->units),
+            'options' => OptionsResource::collection($this->options),
+            'addsOn' =>  AddsOnsResource::collection($this->addsOn),
+
         ];
     }
 }
