@@ -10,6 +10,11 @@
         </div>
     @endif
 
+    @if (session()->has('error'))
+        <div class="alert alert-success">
+            {{ session('error') }}
+        </div>
+    @endif
 
     {{-- Success Message --}}
     @if (session()->has('success'))

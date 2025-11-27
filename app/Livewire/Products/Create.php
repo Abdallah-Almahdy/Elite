@@ -529,7 +529,7 @@ class Create extends Component
                 $productUnit->refresh();
 
                 foreach ($unitData['bar_codes'] as $barcode) {
-                    
+
                     if (!empty($barcode)) {
                         $productUnit->barcodes()->create([
                             'code' => $barcode,
@@ -581,9 +581,12 @@ class Create extends Component
 
 
             DB::commit();
-            session()->flash('done', '✅ تم التحقق من البيانات بنجاح (بدون حفظ)');
+
+            session()->flash('success', '✅ تم  إنشاء المنتج بنجاح!');
+
             return redirect()->route('products.create');
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             DB::rollBack();
 
             session()->flash('error', '❌ حدث خطأ أثناء التحقق: ' . $e->getMessage());
