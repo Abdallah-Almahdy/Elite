@@ -181,6 +181,7 @@
                                                                 <td>{{ $component->product->name ?? 'غير محدد' }}</td>
                                                                 <td>{{ $component->quantity }}</td>
                                                                 <td>{{ $unit->name ?? 'غير محدد' }}</td>
+                                                                
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
