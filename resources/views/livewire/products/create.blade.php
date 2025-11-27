@@ -196,13 +196,13 @@
 
                                     <!-- السعر -->
                                     <td>
-                                        <input type="number" wire:model.lazy="units.{{ $index }}.sallPrice"
+                                        <input type="number" step="0.001" wire:model.lazy="units.{{ $index }}.sallPrice"
                                             class="form-control text-center">
                                     </td>
 
                                     <!-- سعر البيع -->
                                     <td>
-                                        <input type="number" wire:model.lazy="units.{{ $index }}.price"
+                                        <input type="number" step="0.001"  wire:model.lazy="units.{{ $index }}.price"
                                             class="form-control text-center">
                                     </td>
 
