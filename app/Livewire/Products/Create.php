@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Products;
 
+use App\Models\Barcode;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Company;
@@ -410,6 +411,7 @@ class Create extends Component
     /***** إدارة البركود *****/
     public function addBarCode($unitIndex)
     {
+
         $this->units[$unitIndex]['bar_codes'][] = '';
     }
 
@@ -419,6 +421,15 @@ class Create extends Component
             unset($this->units[$unitIndex]['bar_codes'][$barcodeIndex]);
             $this->units[$unitIndex]['bar_codes'] = array_values($this->units[$unitIndex]['bar_codes']);
         }
+    }
+    public function addBarcodeOnEnter($unitIndex)
+    {
+        // إضافة input جديد
+        $this->units[$unitIndex]['bar_codes'][] = '';
+
+        // ابعت event للـ JS عشان يعمل focus
+        $this->dispatch('focus-last-barcode', unitIndex: $unitIndex);
+
     }
 
     /***** إدارة المكونات للوحدة المركبة *****/
@@ -535,6 +546,20 @@ class Create extends Component
                             'code' => $barcode,
                             'product_unit_id' => $productUnit->id,
                         ]);
+                    } else {
+                        // نتخطى البركود الفارغ
+                        $barcode = Barcode::where('is_default', true)->latest('id')->first();
+
+                        if ($barcode) {
+                            $code = $barcode->code;
+
+                            $code = (int) $code + 1;
+                            $productUnit->barcodes()->create([
+                                'code' => $code,
+                                'product_unit_id' => $productUnit->id,
+                                'is_default' => true,
+                            ]);
+                        }
                     }
                 }
 
@@ -585,8 +610,7 @@ class Create extends Component
             session()->flash('success', '✅ تم  إنشاء المنتج بنجاح!');
 
             return redirect()->route('products.create');
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::rollBack();
 
             session()->flash('error', '❌ حدث خطأ أثناء التحقق: ' . $e->getMessage());

@@ -48,6 +48,10 @@ class Create extends Component
 
         // Search for product by barcode
         $barcode = Barcode::where('code', $this->bar_code)->first();
+        if (!$barcode) {
+            session()->flash('error', 'لم يتم إيجاد المنتج');
+            return;
+        }
         $product = $barcode->productUnit->product;
 
 
@@ -105,6 +109,7 @@ class Create extends Component
     public function save(
         WarehouseTransactionsService $warehouseTransactionsService,
     ) {
+       
 
         try {
             $warehouseTransactionsService->create(

@@ -2,6 +2,7 @@
 
 namespace App\Services\Dashboard;
 
+use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\warehouseProduct;
 use App\Models\warehouseProductTransaction;
@@ -178,6 +179,7 @@ class WarehouseTransactionsService
                 }
 
                 $inventory->decrement('quantity', $product['quantity']);
+               
                 $inventory->save();
 
                 // Log the transaction
@@ -217,6 +219,7 @@ class WarehouseTransactionsService
 
                 // Log the adjustment difference
                 $difference = $product['quantity'] - $oldQuantity;
+
                 $this->logTransaction(
                     warehouseTransactionType::STOCKTAKE,
                     $warehouse_id,

@@ -201,38 +201,34 @@
 
                                     <!-- السعر -->
                                     <td>
-                                        <input type="number" step="0.001" wire:model.lazy="units.{{ $index }}.sallPrice"
+                                        <input type="number" step="0.001"
+                                            wire:model.lazy="units.{{ $index }}.sallPrice"
                                             class="form-control text-center">
                                     </td>
 
                                     <!-- سعر البيع -->
                                     <td>
-                                        <input type="number" step="0.001"  wire:model.lazy="units.{{ $index }}.price"
+                                        <input type="number" step="0.001"
+                                            wire:model.lazy="units.{{ $index }}.price"
                                             class="form-control text-center">
                                     </td>
 
                                     <!-- الباركود -->
                                     <td>
                                         @foreach ($unit['bar_codes'] as $bIndex => $barcode)
-                                            <div class="input-group mb-2">
-
-                                                <input type="text"
-                                                    wire:model="units.{{ $index }}.bar_codes.{{ $bIndex }}"
-                                                    class="form-control text-center" placeholder="barcode">
-
-                                                @if ($bIndex != 0)
-                                                    <button type="button"
-                                                        wire:click="removeBarCode({{ $index }}, {{ $bIndex }})"
-                                                        class="btn btn-danger btn-sm"><i
-                                                            class="fa fa-times"></i></button>
-                                                @endif
-                                                @if ($bIndex == 0)
-                                                    <button type="button"
-                                                        wire:click="addBarCode({{ $index }})"
-                                                        class="btn btn-success btn-sm"><i
-                                                            class="fa fa-plus"></i></button>
-                                                @endif
-                                            </div>
+                                            @if ($index == 0 && $bIndex == 0)
+                                                <div class="input-group mb-2">
+                                                    <input type="text"
+                                                        wire:model.defer="units.{{ $index }}.bar_codes.{{ $bIndex }}"
+                                                        class="form-control text-center"
+                                                        placeholder="الباركود الافتراضي">
+                                                    <button type="button" class="btn btn-success btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#barcodeModal-{{ $index }}">
+                                                        <i class="fa fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         @endforeach
                                     </td>
 
@@ -594,8 +590,11 @@
         </div>
     </form>
 
+
+
+
     <!-- Modal لإضافة وحدة -->
-    <div wire:ignore.self class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModalLabel"
+    <div wire:ignore.self class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModal"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -630,48 +629,116 @@
             </div>
         </div>
     </div>
+    <!-- Modal لإضافة بركود -->
+    @foreach ($units as $index => $unit)
+        <div wire:ignore.self class="modal fade" id="barcodeModal-{{ $index }}" tabindex="-1">
+
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            باركودات {{ $unit['name'] }}
+                        </h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        @foreach ($unit['bar_codes'] as $bIndex => $barcode)
+                            <div class="input-group mb-2"
+                                wire:key="unit-{{ $index }}-barcode-{{ $bIndex }}">
+
+                                <input type="text" id="unit-{{ $index }}-barcode-{{ $bIndex }}"
+                                    name="units[{{ $index }}][bar_codes][{{ $bIndex }}]"
+                                    data-unit="{{ $index }}"
+                                    wire:key="unit-{{ $index }}-barcode-{{ $bIndex }}"
+                                    wire:model.defer="units.{{ $index }}.bar_codes.{{ $bIndex }}"
+                                    wire:keydown.enter.prevent="addBarcodeOnEnter({{ $index }}, {{ $bIndex }})"
+                                    class="form-control text-center" placeholder="ادخل الباركود هنا">
 
 
-</div>
+                                @if (!($index == 0 && $bIndex == 0))
+                                    <button class="btn btn-danger btn-sm"
+                                        wire:click="removeBarCode({{ $index }}, {{ $bIndex }})">
+                                        ✖
+                                    </button>
+                                @endif
+                            </div>
+                        @endforeach
 
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:init', () => {
-            // استماع للـ event من Livewire
-            Livewire.on('prices-updated', (data) => {
-                if (!data.units) return;
+                        <button class="btn btn-outline-success btn-sm w-100"
+                            wire:click="addBarCode({{ $index }})">
+                            + إضافة باركود
+                        </button>
 
-                data.units.forEach((unit, index) => {
-                    // نجيب input سعر الشراء
-                    const priceInput = document.querySelector(
-                        `[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
-                    // نجيب input سعر البيع
-                    const sellInput = document.querySelector(
-                        `[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
+                    </div>
 
-                    if (priceInput) {
-                        // نحدّث القيمة يدوياً
-                        priceInput.value = unit.price;
-                        // نرسل حدث input عشان Livewire يعرف التغيير
-                        priceInput.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    }
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" data-bs-dismiss="modal">
+                            تم
+                        </button>
+                    </div>
 
-                    if (sellInput) {
-                        sellInput.value = unit.sallPrice;
-                        sellInput.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    }
+                </div>
+            </div>
+        </div>
+    @endforeach
+
+
+    @push('scripts')
+        <script>
+            document.addEventListener('livewire:init', () => {
+                // استماع للـ event من Livewire
+                Livewire.on('prices-updated', (data) => {
+                    if (!data.units) return;
+
+                    data.units.forEach((unit, index) => {
+                        // نجيب input سعر الشراء
+                        const priceInput = document.querySelector(
+                            `[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
+                        // نجيب input سعر البيع
+                        const sellInput = document.querySelector(
+                            `[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
+
+                        if (priceInput) {
+                            // نحدّث القيمة يدوياً
+                            priceInput.value = unit.price;
+                            // نرسل حدث input عشان Livewire يعرف التغيير
+                            priceInput.dispatchEvent(new Event('input', {
+                                bubbles: true
+                            }));
+                        }
+
+                        if (sellInput) {
+                            sellInput.value = unit.sallPrice;
+                            sellInput.dispatchEvent(new Event('input', {
+                                bubbles: true
+                            }));
+                        }
+                    });
                 });
             });
-        });
+
+           document.addEventListener('livewire:init', () => {
+    Livewire.on('focus-last-barcode', (data) => {
+        const unitIndex = data.unitIndex;
+        
+        // بعد أن يتم تحديث DOM بواسطة Livewire
+        setTimeout(() => {
+            // اختر آخر input للـ unitIndex
+            const inputs = document.querySelectorAll(`[data-unit="${unitIndex}"]`);
+            if (inputs.length) {
+                const lastInput = inputs[inputs.length - 1];
+                lastInput.focus();
+            }
+        }, 50); // ننتظر تحديث DOM
+    });
+});
 
 
-
-        window.addEventListener('reload-page', () => {
-            location.reload();
-        });
-    </script>
-@endpush
+            window.addEventListener('reload-page', () => {
+                location.reload();
+            });
+        </script>
+    @endpush

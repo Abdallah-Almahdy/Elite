@@ -61,7 +61,13 @@ return [
     'showClients' => "العملاء",
     'showAboutUs' => "عننا",
     'showReviews' => "التقيمات",
-    'showComplaints' => "الشكاوي"
+    'showComplaints' => "الشكاوي",
+    "STOCKTAKE" => "جرد",
+    "STOCK_ISSUE" => "صرف",
+    "STOCK_RECEIPT" => "إضافة",
+    "STOCK_TRANSFER" => "نقل",
+
+
 
 
 ];

@@ -24,7 +24,7 @@
                     wire:change="changeNewWarehouseVisibility()" style="width: 100%;">
                     <option value="" class="text-gray">اختر النوع...</option>
                     @foreach ($transactions_types as $transactions_type)
-                        <option value="{{ $transactions_type->id }}">{{ $transactions_type->name }}</option>
+                        <option value="{{ $transactions_type->id }}">{{ __('lan.' . $transactions_type->name) }}</option>
                     @endforeach
                 </select>
             </div>

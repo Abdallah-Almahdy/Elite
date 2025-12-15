@@ -51,6 +51,15 @@
                         </span>
                     </div>
                 </div>
+
+                <div class="form-group mt-4">
+                    <label class="form-label fw-semibold">الكميه - وحده اساسيه</label>
+                    <div>
+                        <span class="badge {{ $product->qnt ? 'bg-info' : 'bg-secondary' }}">
+                            {{ $product->qnt ?? '0' }}
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div class="col-md-4">

@@ -8,7 +8,8 @@ class Barcode extends Model
 {
     protected $fillable = [
         'code',
-        'product_unit_id'
+        'product_unit_id',
+        'is_default'
     ];
 
     public function productUnit()
