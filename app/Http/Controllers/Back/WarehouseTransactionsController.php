@@ -14,5 +14,6 @@ class WarehouseTransactionsController extends Controller
     {
         $transactions = WarehouseTransaction::all();
         return view('pages.warehouseTransactions.modIndex', ['transactions' => $transactions]);
+        
     }
 }
