@@ -62,6 +62,7 @@ class Create extends Component
         'units.*.price' => 'required|numeric|min:0',
         'units.*.sallPrice' => 'required|numeric|min:0',
         'units.*.conversion_factor' => 'required|numeric|min:0.01',
+        'units.*.bar_codes.*' => 'nullable|string|max:255|unique:barcodes,code',
 
         // Components داخل الوحدة
         'units.*.components.*.product_id' => 'required|exists:products,id',
@@ -100,7 +101,7 @@ class Create extends Component
         'units.*.components.*.product_id' => 'المنتج المكوّن',
         'units.*.components.*.component_unit_id' => 'وحدة المكوّن',
         'units.*.components.*.quantity' => 'كمية المكوّن',
-
+        'units.*.bar_codes.*' => 'الباركود',
         // Options
         'options.*.name' => 'اسم الخيار',
         'options.*.values.*.name' => 'اسم قيمة الخيار',
