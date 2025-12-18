@@ -223,6 +223,7 @@ class Create extends Component
     {
         return collect($this->products)
             ->where('id', $productId)
+            ->where('unit', $this->getUnitName(Product::find($productId), $this->units[$productId] ?? null))
             ->isNotEmpty();
     }
 

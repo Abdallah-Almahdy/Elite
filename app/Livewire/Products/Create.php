@@ -101,7 +101,9 @@ class Create extends Component
         'units.*.components.*.product_id' => 'المنتج المكوّن',
         'units.*.components.*.component_unit_id' => 'وحدة المكوّن',
         'units.*.components.*.quantity' => 'كمية المكوّن',
-        'units.*.bar_codes.*' => 'الباركود',
+        'units.*.bar_codes.*.distinct' => 'الباركود مكرر',
+        'units.*.bar_codes.*.unique'   => 'الباركود مستخدم من قبل',
+        'units.*.bar_codes.*.string'   => 'الباركود يجب أن يكون نصًا',
         // Options
         'options.*.name' => 'اسم الخيار',
         'options.*.values.*.name' => 'اسم قيمة الخيار',
