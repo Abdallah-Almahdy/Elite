@@ -37,5 +37,10 @@ class ProductUnits extends Pivot
         return $this->belongsTo(product::class, 'product_id');
     }
 
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
 
 }

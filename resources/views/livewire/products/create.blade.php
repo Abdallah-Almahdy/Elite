@@ -216,7 +216,7 @@
                                     <!-- الباركود -->
                                     <td>
                                         @foreach ($unit['bar_codes'] as $bIndex => $barcode)
-                                            @if ($index == 0 && $bIndex == 0)
+                                            @if ($bIndex == 0)
                                                 <div class="input-group mb-2">
                                                     <input type="text"
                                                         wire:model.defer="units.{{ $index }}.bar_codes.{{ $bIndex }}"
@@ -723,7 +723,7 @@
            document.addEventListener('livewire:init', () => {
     Livewire.on('focus-last-barcode', (data) => {
         const unitIndex = data.unitIndex;
-        
+
         // بعد أن يتم تحديث DOM بواسطة Livewire
         setTimeout(() => {
             // اختر آخر input للـ unitIndex

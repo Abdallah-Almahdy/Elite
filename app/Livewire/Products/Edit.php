@@ -129,15 +129,26 @@ class Edit extends Component
         $this->section = $product->section_id;
         $this->hasRecipe = $product->uses_recipe;
         $this->isActive =  $product->active ? true : false;
-
-        $this->units = $product->units->map(function ($unit) {
-
+        $index = 0;
+        $conversionFactor = 1;
+        $conversion_factor=[];
+        $this->units = $product->units->map(function ($unit) use (&$index, &$conversionFactor,&$conversion_factor) {
+            $index++;
             $pivot = $unit->pivot;
+            $conversion_factor[$index] = $pivot->conversion_factor;
+            $conversionFactor =  $pivot->conversion_factor;
             $pivot->refresh();
+            for ($i = $index; $i > 1; $i--) {
+
+                $conversionFactor =    $conversionFactor /  $conversion_factor[$i - 1];
+
+            }
+
+
             return [
                 'id' => $pivot->id,
                 'measure_unit_id' =>  $unit->id,
-                'conversion_factor' => $pivot->conversion_factor,
+                'conversion_factor' =>  number_format((float) $conversionFactor, 2, '.', ''),
                 'sallPrice' =>  $pivot->sallprice,
                 'price' =>      $pivot->price,
                 'bar_codes' => $pivot->barcodes->pluck('code')->toArray() ?? [''],
@@ -165,7 +176,7 @@ class Edit extends Component
                             })
                             : [],
 
-                        // علشان السيرش يكمل شغله
+
                         'search' => '',
                         'results' => [],
                     ];
@@ -348,7 +359,7 @@ class Edit extends Component
             ->take(10)
             ->get(['id', 'name'])
             ->toArray();
-            
+
 
         $this->units[$unitIndex]['components'][$componentIndex]['results'] = $results;
     }

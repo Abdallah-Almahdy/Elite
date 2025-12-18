@@ -11,7 +11,8 @@ class WarehouseProduct extends Model
 
     protected $table = 'warehouse_products';
 
-    protected $fillable = [
+    protected $fillable =
+    [
         'product_id',
         'warehouse_id',
         'quantity',

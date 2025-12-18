@@ -39,6 +39,11 @@ class  Product extends Model
         return $this->belongsToMany(PromoCode::class, 'promo_code_products', 'product_id', 'promo_code_id');
     }
 
+    public function warehouseProducts()
+    {
+        return $this->hasMany(WarehouseProduct::class);
+    }
+
 
     public function invoiceProducts()
     {

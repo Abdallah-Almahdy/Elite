@@ -121,7 +121,7 @@
                                     <!-- معامل التحويل -->
                                     @if (!$product->uses_recipe)
                                         <td>
-                                            <span class="badge bg-info">{{ $unit->pivot->conversion_factor }}</span>
+                                            <span class="badge bg-info">{{number_format((float) $unit->pivot->conversion_factor, 2, '.', '')  }}</span>
                                         </td>
                                     @endif
 

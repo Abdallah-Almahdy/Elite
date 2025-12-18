@@ -3,6 +3,7 @@
 namespace App\Services\Dashboard;
 
 use App\Models\Product;
+use App\Models\ProductUnits;
 use App\Models\Warehouse;
 use App\Models\warehouseProduct;
 use App\Models\warehouseProductTransaction;
@@ -143,7 +144,18 @@ class WarehouseTransactionsService
                     ['quantity' => 0]
                 );
 
-                $inventory->increment('quantity', $product['quantity']);
+
+                $productUnit =  ProductUnits::find($product['product_unit_id']);
+
+                if ($productUnit) {
+                    $convertedQuantity = $product['quantity'] * $productUnit->conversion_factor;
+                } else {
+                    $convertedQuantity = $product['quantity'];
+                }
+
+
+
+                $inventory->increment('quantity', $convertedQuantity);
                 $inventory->save();
 
                 // Log the transaction
@@ -178,8 +190,16 @@ class WarehouseTransactionsService
                     throw new \Exception("الكمية غير متوفرة للمنتج: {$product['name']}. المتاح: {$inventory->quantity}");
                 }
 
-                $inventory->decrement('quantity', $product['quantity']);
-               
+                $productUnit =  ProductUnits::find($product['product_unit_id']);
+
+                if ($productUnit) {
+                    $convertedQuantity = $product['quantity'] * $productUnit->conversion_factor;
+                } else {
+                    $convertedQuantity = $product['quantity'];
+                }
+
+                $inventory->decrement('quantity',   $convertedQuantity);
+
                 $inventory->save();
 
                 // Log the transaction
@@ -214,7 +234,15 @@ class WarehouseTransactionsService
                 );
 
                 $oldQuantity = $inventory->quantity;
-                $inventory->quantity = $product['quantity'];
+                $productUnit =  ProductUnits::find($product['product_unit_id']);
+
+                if ($productUnit) {
+                    $convertedQuantity = $product['quantity'] * $productUnit->conversion_factor;
+                } else {
+                    $convertedQuantity = $product['quantity'];
+                }
+
+                $inventory->quantity = $convertedQuantity;
                 $inventory->save();
 
                 // Log the adjustment difference
