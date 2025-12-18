@@ -12,7 +12,7 @@ class WarehouseTransactionsController extends Controller
 {
     public function index()
     {
-        $transactions = warehouseTransaction::all();
+        $transactions = WarehouseTransaction::all();
         return view('pages.warehouseTransactions.modIndex', ['transactions' => $transactions]);
     }
 }
