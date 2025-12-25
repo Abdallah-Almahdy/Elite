@@ -42,7 +42,7 @@ class OrdersApiController extends Controller
 
         $this->checkExists(User::class, 'id', $userId);
 
-        $this->ordersService->createOrder($request, $userId);
+        $this->ordersService->makeOrder($request, $userId);
 
         return $this->success([], 'order done');
     }

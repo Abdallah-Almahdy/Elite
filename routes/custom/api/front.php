@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductsController;
 use Illuminate\Support\Facades\Route;
@@ -18,4 +19,11 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 Route::post('/invoices', [PosController::class, 'makeInvoice']);
 
 
+
+
+
+
+// شاشه الكاشير
 Route::get('/GetAllProducts',[ProductsController::class,'GetAllProducts']);
+Route::get('/users',[AuthController::class, 'getUsersInfo']);
+Route::post('/specialRegister',[AuthController::class, 'speacialRegister']);

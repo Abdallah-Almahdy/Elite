@@ -40,6 +40,7 @@ class  Product extends Model
     }
 
     public function warehouseProducts()
+    
     {
         return $this->hasMany(WarehouseProduct::class);
     }

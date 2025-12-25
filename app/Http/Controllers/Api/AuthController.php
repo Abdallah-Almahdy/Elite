@@ -208,5 +208,66 @@ class AuthController extends Controller
 
 
 
-    public function update_user_photo() {}
+    public function getUsersInfo(Request $request)
+    {
+        $users = User::with('customerInfo')->get();
+
+        return response()->json([
+            'users' => $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'is_admin' => $user->is_admin,
+                    'customer_info' => $user->customerInfo ? [
+                            'phone' => $user->customerInfo->phonenum,
+                            'phone2' => $user->customerInfo->phonenum2,
+                            'address1' => trim($user->customerInfo->addressCountry . ' ' . $user->customerInfo->addresscity . ' ' . $user->customerInfo->addressstreet . ' ' . $user->customerInfo->addressbuildingNumber . ' ' . $user->customerInfo->addressfloorNumber . ' ' . $user->customerInfo->addressApartmentNumber),
+                            'address2' => trim($user->customerInfo->addressCountry2 . ' ' . $user->customerInfo->addresscity2 . ' ' . $user->customerInfo->addressstreet2 . ' ' . $user->customerInfo->addressbuildingNumber2 . ' ' . $user->customerInfo->addressfloorNumber2 . ' ' . $user->customerInfo->addressApartmentNumber2),
+
+                    ] : null,
+                ];
+            }),
+
+            'message' => 'Users fetched successfully',
+            'status' => 'success',
+        ], 200);
+    }
+
+    public function speacialRegister(Request $request)
+    {
+
+        $request->validate([
+            'name' => "required|string|max:255",
+            "phonenum" => "required|string|max:20",
+            "Country" => "required|string|max:255",
+            "city" => "required|string|max:255",
+            "street" => "required|string|max:255",
+        ]);
+
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->phone,
+            'password' => Hash::make($request->phone),
+        ]);
+
+        CustomerInfo::create([
+            'user_id'   => $user->id,
+            'firstName' => $request->name,
+            'phonenum'  => $request->phonenum,
+            'addressCountry' => $request->Country,
+            'addresscity' => $request->city,
+            'addressstreet' => $request->street,
+        ]);
+
+
+        return response()->json([
+            'user' => $user,
+            'message' => 'تم إنشاء الحساب بنجاح',
+            'status' => 'success',
+        ], 200);
+    }
 }
+
+

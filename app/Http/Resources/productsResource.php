@@ -21,7 +21,7 @@ class productsResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'image' => config('app.img_base_link') . $this->photo,
-            'quantity' => $this->qnt,
+            'quantity' => $this->qnt,// 
             'nutritionWeight' => 0,
             'unit_name' => 'ج.م',
             'purchase_count' => $this->purchase_count,
