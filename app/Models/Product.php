@@ -40,7 +40,7 @@ class  Product extends Model
     }
 
     public function warehouseProducts()
-    
+
     {
         return $this->hasMany(WarehouseProduct::class);
     }
@@ -49,6 +49,7 @@ class  Product extends Model
     public function invoiceProducts()
     {
         return $this->hasMany(InvoiceProduct::class);
+        
     }
 
     public function section(): BelongsTo
