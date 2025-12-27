@@ -20,6 +20,7 @@ class ProductUnitResource extends JsonResource
         'id' => $this->id,
         'name' => $this->name,
         'sallprice' => $this->pivot->sallprice,
+        'conversion_factor' => $this->pivot->conversion_factor,
         'barcodes' => $this->pivot->barcodes->map(function($barcode){
             return [
                 'id' => $barcode->id,

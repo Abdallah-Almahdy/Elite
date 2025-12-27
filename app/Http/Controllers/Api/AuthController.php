@@ -237,6 +237,7 @@ class AuthController extends Controller
     public function speacialRegister(Request $request)
     {
 
+
         $request->validate([
             'name' => "required|string|max:255",
             "phonenum" => "required|string|max:20",
@@ -248,14 +249,16 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->phone,
-            'password' => Hash::make($request->phone),
+            'email' => $request->phonenum,
+            'password' => Hash::make($request->phonenum),
         ]);
 
         CustomerInfo::create([
             'user_id'   => $user->id,
             'firstName' => $request->name,
+            'lastName'  => '',
             'phonenum'  => $request->phonenum,
+            'email'    => $request->phonenum,
             'addressCountry' => $request->Country,
             'addresscity' => $request->city,
             'addressstreet' => $request->street,
