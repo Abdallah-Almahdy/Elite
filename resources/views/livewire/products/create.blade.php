@@ -91,7 +91,14 @@
                         <input type="checkbox" wire:model.live="isActive" id="isActive" class="form-check-input">
                         <label for="isActive" class="form-check-label fw-semibold">مفعل</label>
                     </div>
-
+                    <div class="form-check mt-3">
+                        <input type="checkbox" wire:model.live="is_stock" id="is_stock" class="form-check-input">
+                        <label for="is_stock" class="form-check-label fw-semibold">منتج مخزني</label>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" wire:model.live="is_weight" id="is_weight" class="form-check-input">
+                        <label for="is_weight" class="form-check-label fw-semibold">منتج بوزن</label>
+                    </div>
 
 
                 </div>
@@ -720,21 +727,21 @@
                 });
             });
 
-           document.addEventListener('livewire:init', () => {
-    Livewire.on('focus-last-barcode', (data) => {
-        const unitIndex = data.unitIndex;
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('focus-last-barcode', (data) => {
+                    const unitIndex = data.unitIndex;
 
-        // بعد أن يتم تحديث DOM بواسطة Livewire
-        setTimeout(() => {
-            // اختر آخر input للـ unitIndex
-            const inputs = document.querySelectorAll(`[data-unit="${unitIndex}"]`);
-            if (inputs.length) {
-                const lastInput = inputs[inputs.length - 1];
-                lastInput.focus();
-            }
-        }, 50); // ننتظر تحديث DOM
-    });
-});
+                    // بعد أن يتم تحديث DOM بواسطة Livewire
+                    setTimeout(() => {
+                        // اختر آخر input للـ unitIndex
+                        const inputs = document.querySelectorAll(`[data-unit="${unitIndex}"]`);
+                        if (inputs.length) {
+                            const lastInput = inputs[inputs.length - 1];
+                            lastInput.focus();
+                        }
+                    }, 50); // ننتظر تحديث DOM
+                });
+            });
 
 
             window.addEventListener('reload-page', () => {

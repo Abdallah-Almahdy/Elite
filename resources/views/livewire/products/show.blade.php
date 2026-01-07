@@ -39,6 +39,22 @@
                         </span>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label fw-semibold">منتج مخزني</label>
+                    <div>
+                        <span class="badge {{ $product->is_stock ? 'bg-success' : 'bg-danger' }}">
+                            {{ $product->is_stock ? 'مفعل' : 'غير مفعل' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label fw-semibold">الحالة</label>
+                    <div>
+                        <span class="badge {{ $product->active ? 'bg-success' : 'bg-danger' }}">
+                            {{ $product->active ? 'مفعل' : 'غير مفعل' }}
+                        </span>
+                    </div>
+                </div>
 
                 <div class="form-group mt-3">
                     <label class="form-label fw-semibold">نوع المنتج</label>

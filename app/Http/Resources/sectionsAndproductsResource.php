@@ -22,7 +22,7 @@ class sectionsAndproductsResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'products' => productsResource::collection(
-               $this->products()->where('active', 1)->get()
+               $this->products()->where('active', 1)->with('defaultWarehouse')->get()
             ),
 
         ];

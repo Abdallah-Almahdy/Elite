@@ -86,7 +86,14 @@
                         <input type="checkbox" wire:model.live="isActive" id="isActive" class="form-check-input">
                         <label for="isActive" class="form-check-label fw-semibold">مفعل</label>
                     </div>
-
+                    <div class="form-check mt-3">
+                        <input type="checkbox" wire:model.live="is_stock" id="is_stock" class="form-check-input">
+                        <label for="is_stock" class="form-check-label fw-semibold">منتج مخزني</label>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" wire:model.live="is_weight" id="is_weight" class="form-check-input">
+                        <label for="is_weight" class="form-check-label fw-semibold">منتج بوزن</label>
+                    </div>
 
 
                 </div>

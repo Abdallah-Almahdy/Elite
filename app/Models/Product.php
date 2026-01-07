@@ -16,6 +16,8 @@ class  Product extends Model
     use HasFactory;
     protected $casts = [
         'uses_recipe' => 'boolean',
+        'is_stock' => 'boolean',
+        'is_weight' => 'boolean',
     ];
     protected $table = 'products';
     protected $fillable = [
@@ -30,9 +32,17 @@ class  Product extends Model
         'purchase_count',
         'offer_rate',
         'bar_code',
-        'uses_recipe'
+        'uses_recipe',
+        'is_stock',
+        'is_weight',
     ];
 
+    public function defaultWarehouse()
+    {
+        return $this->belongsToMany(Warehouse::class,'warehouse_products','product_id','warehouse_id')
+        ->withPivot(['quantity'])
+        ->where('warehouses.is_default', true);
+    }
 
     public function promoCodes()
     {
@@ -49,7 +59,7 @@ class  Product extends Model
     public function invoiceProducts()
     {
         return $this->hasMany(InvoiceProduct::class);
-        
+
     }
 
     public function section(): BelongsTo

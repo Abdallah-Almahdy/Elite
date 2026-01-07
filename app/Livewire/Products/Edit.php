@@ -29,6 +29,8 @@ class Edit extends Component
     public $productId;
     public $enableStock = false;
     public $stockQnt = 0;
+    public $is_stock;
+    public $is_weight;
 
 
 
@@ -129,6 +131,8 @@ class Edit extends Component
         $this->section = $product->section_id;
         $this->hasRecipe = $product->uses_recipe;
         $this->isActive =  $product->active ? true : false;
+        $this->is_stock =  $product->is_stock  ? true : false ;
+        $this->is_weight =  $product->is_weight ? true : false;
         $index = 0;
         $conversionFactor = 1;
         $conversion_factor=[];
@@ -585,7 +589,10 @@ class Edit extends Component
             'company_id' => $this->company,
             'uses_recipe' => $this->hasRecipe,
             'active' => $this->isActive,
+            'is_stock' => $this->is_stock ? 1 : 0,
+            'is_weight' => $this->is_weight ? 1 : 0,
         ]);
+
 
 
         if ($this->photo) {

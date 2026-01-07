@@ -23,6 +23,9 @@ class Create extends Component
     public $hasRecipe = false;
     public $isActive = true;
     public $company;
+    public $is_stock = true;
+    public $is_weight = false;
+
 
     public $enableStock = false;
     public $stockQnt = 0;
@@ -56,6 +59,8 @@ class Create extends Component
         'hasRecipe' => 'boolean',
         'stockQnt' => 'nullable|integer|min:0',
         'isActive' => 'boolean',
+        'is_stock' => 'boolean',
+        'is_weight' => 'boolean',
 
         // Units
         'units.*.measure_unit_id' => 'required|exists:units,id',
@@ -90,6 +95,8 @@ class Create extends Component
         'hasRecipe' => 'استخدام وصفة',
         'stockQnt' => 'الكمية في المخزن',
         'isActive' => 'حالة المنتج',
+        'is_stock' => 'منتج مخزني',
+        'is_weight' => 'منتج بوزن',
 
         // Units
         'units.*.measure_unit_id' => 'الوحدة',
@@ -519,6 +526,9 @@ class Create extends Component
                 'qtn' => $this->stockQnt,
                 'offer_rate'    => 0,
                 'company_id' => $this->company_id ?? null,
+                'is_stock' => $this->is_stock,
+                'is_weight' => $this->is_weight,
+                
             ]);
 
             foreach ($this->units as $index => $unitData) {
