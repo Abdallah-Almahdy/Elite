@@ -20,7 +20,13 @@ class WarehouseService
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'is_active' => $request->is_active ?? true,
+                'is_default' => $request->is_default ?? false,
             ]);
+
+            if (isset($request->is_default) && $request->is_default) {
+                // Set other warehouses to not default
+                Warehouse::where('id', '!=', $warehouse->id)->update(['is_default' => false]);
+            }
 
             // Create address if line1 provided
             if ($request->filled('line1')) {

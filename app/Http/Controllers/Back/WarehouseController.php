@@ -54,7 +54,7 @@ class WarehouseController extends Controller
 
     public function store(Request $request)
     {
-           
+
         try {
             $this->warehouseService->create($request);
 
@@ -91,6 +91,7 @@ class WarehouseController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'is_active' => 'boolean',
+            'is_default' => 'boolean',
 
             // Address fields
             'line1' => 'nullable|string|max:255',
@@ -113,7 +114,14 @@ class WarehouseController extends Controller
             'phone' => $validated['phone'],
             'email' => $validated['email'],
             'is_active' => $validated['is_active'] ?? true,
+            'is_default' => $validated['is_default'] ?? false,
         ]);
+        
+        if(isset($validated['is_default']) && $validated['is_default']){
+            // Set other warehouses to not default
+            Warehouse::where('id', '!=', $warehouse->id)->update(['is_default' => false]);
+        }
+
 
         // Update or create primary address
         if (!empty($validated['line1'])) {

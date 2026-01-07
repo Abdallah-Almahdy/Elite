@@ -25,24 +25,37 @@
 
         <!-- رجوع -->
         <div class="mb-6">
-            <a href="{{ route('warehouses.index') }}" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+            <a href="{{ route('warehouses.show', $warehouse->id) }}" class="inline-flex items-center text-gray-600 hover:text-gray-900">
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                العودة إلى قائمة المستودعات
+                العودة إلى تفاصيل المستودع
             </a>
         </div>
 
         <!-- العنوان الرئيسي -->
         <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">إضافة مستودع جديد</h1>
-            <p class="text-gray-600 mt-2">أدخل معلومات المستودع الجديد</p>
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mr-4">
+                    <h1 class="text-2xl font-bold text-gray-800">تعديل المستودع</h1>
+                    <p class="text-gray-600 mt-1">{{ $warehouse->name }}</p>
+                </div>
+            </div>
         </div>
 
         <!-- النموذج -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <form action="{{ route('warehouses.store') }}" method="POST" class="p-6">
+            <form action="{{ route('warehouses.update', $warehouse->id) }}" method="POST" class="p-6">
                 @csrf
+                @method('PUT')
 
                 <!-- المعلومات الأساسية -->
                 <div class="mb-10">
@@ -60,7 +73,7 @@
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                                 اسم المستودع <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="name" id="name" value="{{ old('name') }}"
+                            <input type="text" name="name" id="name" value="{{ old('name', $warehouse->name) }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                    required>
                             @error('name')
@@ -73,7 +86,7 @@
                             <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
                                 كود المستودع <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="code" id="code" value="{{ old('code') }}"
+                            <input type="text" name="code" id="code" value="{{ old('code', $warehouse->code) }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono"
                                    required>
                             @error('code')
@@ -86,7 +99,7 @@
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
                                 البريد الإلكتروني
                             </label>
-                            <input type="email" name="email" id="email" value="{{ old('email') }}"
+                            <input type="email" name="email" id="email" value="{{ old('email', $warehouse->email) }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                    dir="ltr">
                             @error('email')
@@ -99,7 +112,7 @@
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
                                 هاتف المستودع
                             </label>
-                            <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $warehouse->phone) }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                    dir="ltr">
                             @error('phone')
@@ -126,7 +139,7 @@
                             عنوان المستودع (عام)
                         </label>
                         <textarea name="address" id="address" rows="2"
-                                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none">{{ old('address') }}</textarea>
+                                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none">{{ old('address', $warehouse->address) }}</textarea>
                         @error('address')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -145,7 +158,8 @@
                             <label for="line1" class="block text-sm font-medium text-gray-700 mb-2">
                                 السطر الأول من العنوان
                             </label>
-                            <input type="text" name="line1" id="line1" value="{{ old('line1') }}"
+                            <input type="text" name="line1" id="line1"
+                                   value="{{ old('line1', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->line1 : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             @error('line1')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -157,7 +171,8 @@
                             <label for="line2" class="block text-sm font-medium text-gray-700 mb-2">
                                 السطر الثاني من العنوان
                             </label>
-                            <input type="text" name="line2" id="line2" value="{{ old('line2') }}"
+                            <input type="text" name="line2" id="line2"
+                                   value="{{ old('line2', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->line2 : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             @error('line2')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -171,7 +186,8 @@
                             <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
                                 المدينة
                             </label>
-                            <input type="text" name="city" id="city" value="{{ old('city') }}"
+                            <input type="text" name="city" id="city"
+                                   value="{{ old('city', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->city : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             @error('city')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -183,7 +199,8 @@
                             <label for="state" class="block text-sm font-medium text-gray-700 mb-2">
                                 المنطقة/الولاية
                             </label>
-                            <input type="text" name="state" id="state" value="{{ old('state') }}"
+                            <input type="text" name="state" id="state"
+                                   value="{{ old('state', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->state : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             @error('state')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -195,7 +212,8 @@
                             <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-2">
                                 الرمز البريدي
                             </label>
-                            <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}"
+                            <input type="text" name="postal_code" id="postal_code"
+                                   value="{{ old('postal_code', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->postal_code : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             @error('postal_code')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -208,7 +226,8 @@
                         <label for="country" class="block text-sm font-medium text-gray-700 mb-2">
                             البلد
                         </label>
-                        <input type="text" name="country" id="country" value="{{ old('country', 'السعودية') }}"
+                        <input type="text" name="country" id="country"
+                               value="{{ old('country', $warehouse->primaryAddress() ? $warehouse->primaryAddress()->country : 'السعودية') }}"
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                         @error('country')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -232,7 +251,8 @@
                             <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-2">
                                 رقم الهاتف
                             </label>
-                            <input type="text" name="phone_number" id="phone_number" value="{{ old('phone_number') }}"
+                            <input type="text" name="phone_number" id="phone_number"
+                                   value="{{ old('phone_number', $warehouse->primaryPhone() ? $warehouse->primaryPhone()->number : '') }}"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                    dir="ltr">
                             @error('phone_number')
@@ -248,9 +268,9 @@
                             <select name="phone_type" id="phone_type"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                 <option value="">اختر نوع الهاتف</option>
-                                <option value="mobile" {{ old('phone_type') == 'mobile' ? 'selected' : '' }}>جوال</option>
-                                <option value="landline" {{ old('phone_type') == 'landline' ? 'selected' : '' }}>هاتف أرضي</option>
-                                <option value="fax" {{ old('phone_type') == 'fax' ? 'selected' : '' }}>فاكس</option>
+                                <option value="mobile" {{ old('phone_type', $warehouse->primaryPhone() ? $warehouse->primaryPhone()->type : '') == 'mobile' ? 'selected' : '' }}>جوال</option>
+                                <option value="landline" {{ old('phone_type', $warehouse->primaryPhone() ? $warehouse->primaryPhone()->type : '') == 'landline' ? 'selected' : '' }}>هاتف أرضي</option>
+                                <option value="fax" {{ old('phone_type', $warehouse->primaryPhone() ? $warehouse->primaryPhone()->type : '') == 'fax' ? 'selected' : '' }}>فاكس</option>
                             </select>
                             @error('phone_type')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -271,31 +291,44 @@
                         الإعدادات
                     </h3>
 
-                    <div class="space-y-4">
+                    <div class="space-y-6">
                         <!-- المستودع الافتراضي -->
-                        <div class="flex items-center">
-                            <input type="checkbox" name="is_default" id="is_default" value="1"
-                                   class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                   {{ old('is_default') ? 'checked' : '' }}>
-                            <label for="is_default" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
-                                تعيين كمستودع افتراضي
-                            </label>
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" name="is_default" id="is_default" value="1"
+                                       class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                       {{ old('is_default', $warehouse->is_default) ? 'checked' : '' }}>
+                            </div>
+                            <div class="mr-3">
+                                <label for="is_default" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                    تعيين كمستودع افتراضي
+                                </label>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    سيتم استخدام هذا المستودع كافتراضي في العمليات المختلفة.
+                                    <span class="text-blue-600 font-medium">ملاحظة: عند تفعيل هذا الخيار، سيتم إلغاء المستودع الافتراضي الحالي.</span>
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-500 mr-8">سيتم استخدام هذا المستودع كافتراضي في العمليات المختلفة</p>
                         @error('is_default')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
 
                         <!-- تفعيل المستودع -->
-                        <div class="flex items-center mt-4">
-                            <input type="checkbox" name="is_active" id="is_active" value="1"
-                                   class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                   {{ old('is_active', true) ? 'checked' : '' }}>
-                            <label for="is_active" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
-                                تفعيل المستودع
-                            </label>
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" name="is_active" id="is_active" value="1"
+                                       class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                       {{ old('is_active', $warehouse->is_active) ? 'checked' : '' }}>
+                            </div>
+                            <div class="mr-3">
+                                <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                    تفعيل المستودع
+                                </label>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    يمكن استخدام المستودع في العمليات المخزنية. إذا كان غير مفعل، فلن يظهر في القوائم المنسدلة.
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-500 mr-8">يمكن استخدام المستودع في العمليات المخزنية</p>
                         @error('is_active')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -304,13 +337,13 @@
 
                 <!-- أزرار الإجراء -->
                 <div class="flex items-center justify-end space-x-4 space-x-reverse pt-6 border-t border-gray-200">
-                    <a href="{{ route('warehouses.index') }}"
+                    <a href="{{ route('warehouses.show', $warehouse->id) }}"
                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                         إلغاء
                     </a>
                     <button type="submit"
-                            class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        حفظ المستودع
+                            class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all">
+                        حفظ التعديلات
                     </button>
                 </div>
             </form>
@@ -321,79 +354,19 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // إضافة دعم للأشياء المطلوبة
-        const requiredFields = document.querySelectorAll('[required]');
-        requiredFields.forEach(field => {
-            const label = document.querySelector(`label[for="${field.id}"]`);
-            if (label) {
-                const requiredSpan = label.querySelector('.text-red-500') || document.createElement('span');
-                if (!requiredSpan.classList.contains('text-red-500')) {
-                    requiredSpan.className = 'text-red-500';
-                    requiredSpan.textContent = ' *';
-                    label.appendChild(requiredSpan);
-                }
-            }
-        });
+        // تلميحات للخيارات
+        const isDefaultCheckbox = document.getElementById('is_default');
+        const isActiveCheckbox = document.getElementById('is_active');
 
-        // تعديل اسم phone_type الذي كان فيه خطأ
-        const phoneTypeInput = document.querySelector('[name="ph2one_type"]');
-        if (phoneTypeInput) {
-            phoneTypeInput.name = 'phone_type';
-        }
-
-        // إنشاء كود تلقائي إذا لم يتم إدخاله
-        const codeInput = document.getElementById('code');
-        const nameInput = document.getElementById('name');
-
-        if (codeInput && nameInput) {
-            nameInput.addEventListener('blur', function() {
-                if (!codeInput.value && nameInput.value) {
-                    // إنشاء كود من الاسم (أول 3 أحرف + رقم عشوائي)
-                    const nameCode = nameInput.value.substring(0, 3).toUpperCase();
-                    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-                    codeInput.value = nameCode + randomNum;
+        if (isDefaultCheckbox) {
+            isDefaultCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    if (!confirm('سيتم تعيين هذا المستودع كافتراضي وسيتم إلغاء المستودع الافتراضي الحالي. هل أنت متأكد؟')) {
+                        this.checked = false;
+                    }
                 }
             });
         }
     });
 </script>
-
-<style>
-    /* تحسينات للشكل */
-    input:focus, textarea:focus, select:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    /* تخصيصات للتحقق من الصحة */
-    input:invalid:not(:focus):not(:placeholder-shown) {
-        border-color: #f87171;
-    }
-
-    input:valid:not(:focus):not(:placeholder-shown) {
-        border-color: #10b981;
-    }
-
-    /* تحسين شكل checkboxes */
-    input[type="checkbox"] {
-        transition: all 0.2s;
-    }
-
-    /* تحسين شكل select */
-    select {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-        background-position: left 1rem center;
-        background-repeat: no-repeat;
-        background-size: 1.5em 1.5em;
-        padding-right: 1rem;
-        padding-left: 3rem;
-    }
-
-    /* تحسين لـ RTL */
-    [dir="rtl"] select {
-        background-position: right 1rem center;
-        padding-left: 1rem;
-        padding-right: 3rem;
-    }
-</style>
 @endsection

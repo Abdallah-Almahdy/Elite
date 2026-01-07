@@ -17,11 +17,13 @@ class Warehouse extends Model
         'address',
         'phone',
         'email',
-        'is_active'
+        'is_active',
+        'is_default'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'is_default' => 'boolean'
     ];
 
     // Relationship with addresses (polymorphic)
