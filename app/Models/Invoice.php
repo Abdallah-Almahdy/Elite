@@ -9,7 +9,9 @@ class Invoice extends Model
     protected $fillable = [
         'cashier_id',
         'total',
-        'safe_id'
+        'safe_id',
+        'payment_method',
+        'address'
     ];
 
     public function cashier()

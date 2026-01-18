@@ -26,6 +26,7 @@ use App\Http\Controllers\Back\PrintersController;
 use App\Http\Controllers\Back\ProductsController;
 use App\Http\Controllers\Back\SectionsController;
 use App\Http\Controllers\Back\AboutUsController;
+use App\Http\Controllers\Back\InvoiceController;
 // Other Controllers
 use App\Http\Controllers\Back\SupplierController;
 
@@ -91,7 +92,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('orders', OrdersIndex::class)->name('orders.index');
     Route::get('orderDetails/{id}', OrderDetails::class)->name('orders.details');
     Route::get('orderDetailsPrint/{id}', [OrdersController::class, 'print'])->name('orders.print');
-
+    // invoices
+    Route::get('invoices',[InvoiceController::class,'index'])->name('invoices.index');
     // warehouses
     Route::resource('warehouses', WarehouseController::class);
     Route::resource('warehouses_trasactions', WarehouseTransactionsController::class);

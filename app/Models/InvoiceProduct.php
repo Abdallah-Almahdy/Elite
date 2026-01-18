@@ -11,7 +11,9 @@ class InvoiceProduct extends Model
         'product_id',
         'quantity',
         'price',
-        'subtotal'
+        'subtotal',
+        'unit_conversion_factor',
+        
     ];
 
     public function invoice()

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductsController;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,7 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 Route::get('/get-product-by-barcode/{barcode}', [PosController::class, 'getProductByBarcode']);
 Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsByName']);
 
-Route::post('/invoices', [PosController::class, 'makeInvoice']);
+
 
 
 
@@ -27,3 +28,5 @@ Route::post('/invoices', [PosController::class, 'makeInvoice']);
 Route::get('/GetAllProducts',[ProductsController::class,'GetAllProducts']);
 Route::get('/users',[AuthController::class, 'getUsersInfo']);
 Route::post('/specialRegister',[AuthController::class, 'speacialRegister']);
+Route::post('/invoices', [InvoiceController::class, 'store']);
+Route::get('/invoices', [InvoiceController::class, 'index']);
