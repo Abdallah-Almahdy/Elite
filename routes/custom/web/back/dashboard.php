@@ -94,6 +94,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('orderDetailsPrint/{id}', [OrdersController::class, 'print'])->name('orders.print');
     // invoices
     Route::get('invoices',[InvoiceController::class,'index'])->name('invoices.index');
+    Route::delete('invoices/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
     // warehouses
     Route::resource('warehouses', WarehouseController::class);
     Route::resource('warehouses_trasactions', WarehouseTransactionsController::class);

@@ -23,6 +23,7 @@ class InvoiceResource extends JsonResource
             'products' => $this->products->map(function ($product) {
                 return [
                     'id' => $product->id,
+                    'name' => $product->product->name,
                     'quantity' => $product->quantity,
                     'price' => $product->price,
                     'subtotal' => $product->subtotal,
