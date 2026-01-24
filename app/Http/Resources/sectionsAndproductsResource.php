@@ -24,6 +24,7 @@ class sectionsAndproductsResource extends JsonResource
             'products' => productsResource::collection(
                $this->products()->where('active', 1)->with('defaultWarehouse')->get()
             ),
+            
 
         ];
     }

@@ -131,12 +131,12 @@ class Edit extends Component
         $this->section = $product->section_id;
         $this->hasRecipe = $product->uses_recipe;
         $this->isActive =  $product->active ? true : false;
-        $this->is_stock =  $product->is_stock  ? true : false ;
+        $this->is_stock =  $product->is_stock  ? true : false;
         $this->is_weight =  $product->is_weight ? true : false;
         $index = 0;
         $conversionFactor = 1;
-        $conversion_factor=[];
-        $this->units = $product->units->map(function ($unit) use (&$index, &$conversionFactor,&$conversion_factor) {
+        $conversion_factor = [];
+        $this->units = $product->units->map(function ($unit) use (&$index, &$conversionFactor, &$conversion_factor) {
             $index++;
             $pivot = $unit->pivot;
             $conversion_factor[$index] = $pivot->conversion_factor;
@@ -145,7 +145,6 @@ class Edit extends Component
             for ($i = $index; $i > 1; $i--) {
 
                 $conversionFactor =    $conversionFactor /  $conversion_factor[$i - 1];
-
             }
 
 
@@ -576,7 +575,7 @@ class Edit extends Component
 
     public function updateProduct()
     {
-       $this->validate();
+        $this->validate();
 
         $product = Product::findOrFail($this->productId);
 
@@ -655,12 +654,10 @@ class Edit extends Component
             $componentIds = [];
 
             if (!empty($unitData['components'])) {
-                foreach ($unitData['components'] as $compData)
-                {
+                foreach ($unitData['components'] as $compData) {
                     if (!empty($compData['id'])) {
                         $component = productUintComponent::find($compData['id']);
-                        if ($component)
-                        {
+                        if ($component) {
                             $component->update([
                                 'product_id' => $compData['product_id'],
                                 'component_unit_id' => $compData['component_unit_id'],
@@ -711,7 +708,6 @@ class Edit extends Component
                     'name' => $optData['name'],
                     'active' => $optData['active'] ?? true,
                 ]);
-
             }
             $optionIds[] = $option->id;
 

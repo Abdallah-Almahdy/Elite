@@ -116,4 +116,5 @@ class  Product extends Model
             ->withTimestamps();
     }
 
+
 }

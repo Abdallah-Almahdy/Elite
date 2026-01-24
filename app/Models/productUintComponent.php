@@ -17,7 +17,7 @@ class productUintComponent extends Model
 
     public function productUnit()
     {
-        return $this->belongsTo(ProductUnits::class, 'product_unit_id');
+        return $this->belongsTo(ProductUnits::class, 'product_unit_id',);
     }
 
     public function product()

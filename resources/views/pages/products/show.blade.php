@@ -247,7 +247,7 @@
                                                                 <tr>
                                                                     <td>{{ $component->product->name ?? 'غير محدد' }}</td>
                                                                     <td>{{ $component->quantity }}</td>
-                                                                    <td>{{ $component->componentUnit->name ?? 'غير محدد' }}
+                                                                    <td>{{ $component->componentUnit->unit->name ?? 'غير محدد' }}
                                                                     </td>
                                                                 </tr>
                                                             @endforeach
