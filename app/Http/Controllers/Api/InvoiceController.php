@@ -64,11 +64,12 @@ class InvoiceController extends Controller
                     ]);
                 }
 
+                
 
             if ($product->is_stock) {
                 if (!$product->uses_recipe) {
                     $this->decreamentwarehouse($product, $warehouse, $InvoiceProduct, false);
-                } else {    
+                } else {
 
                     $productUnit = $product->units->where('id', $InvoiceProduct['unit_id'])->first();
                     if(!$productUnit){
