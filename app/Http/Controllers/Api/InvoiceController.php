@@ -63,6 +63,7 @@ class InvoiceController extends Controller
                         'message' => "conversion factor not exists"
                     ]);
                 }
+
                 
             if ($product->is_stock) {
                 if (!$product->uses_recipe) {
