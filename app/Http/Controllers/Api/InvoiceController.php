@@ -63,9 +63,7 @@ class InvoiceController extends Controller
                         'message' => "conversion factor not exists"
                     ]);
                 }
-
                 
-
             if ($product->is_stock) {
                 if (!$product->uses_recipe) {
                     $this->decreamentwarehouse($product, $warehouse, $InvoiceProduct, false);
