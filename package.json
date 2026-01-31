@@ -19,6 +19,7 @@
         "vite": "^7.1.9"
     },
     "dependencies": {
+        "@inertiajs/react": "^2.3.13",
         "@popperjs/core": "^2.11.8",
         "@radix-ui/react-dialog": "^1.1.14",
         "@radix-ui/react-slot": "^1.2.3",
