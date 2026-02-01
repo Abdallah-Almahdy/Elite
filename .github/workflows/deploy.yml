@@ -22,9 +22,6 @@ jobs:
           script: |
             cd /home/elites/htdocs/sicilia-test.srv599157.hstgr.cloud
             git pull origin main
-            composer install --no-dev --optimize-autoloader
-            npm install
-            npm run build
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache

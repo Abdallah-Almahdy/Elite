@@ -24,27 +24,33 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'address' => 'required|string',
-            'payment_method' => 'required',
-
-
-            'products' => 'required|array',
-
-
+            'address' => 'string',
+            'payment_methods.*.key' => 'string|in:cash,credit_card,instapay,wallet,remaining',
+            'payment_methods.*.amount' => 'required_with:payment_methods|numeric|min:0',
+            'products' => 'required|array|min:1',
             'products.*.id' => 'required|integer|exists:products,id',
             'products.*.unit_conversion_factor' => 'required|numeric|min:0.0001',
             'products.*.quantity' => 'required|numeric|min:1',
+
         ]);
+
 
         $invoice = Invoice::create([
             'address' => $request->address,
-            'payment_method' => $request->payment_method,
             'cashier_id' => 1,
             'total' => 0,
             'safe_id' => null
-
-
         ]);
+
+        foreach ($request->payment_methods as $payment) {
+            $invoice->payments()->create([
+                'payment_method' => $payment['key'],
+                'amount' => $payment['amount'],
+
+            ]);
+        }
+
+
         $total = 0;
         $warehouse  = Warehouse::where('is_default', true)->first();
 
@@ -64,21 +70,25 @@ class InvoiceController extends Controller
                     ]);
                 }
 
-                
             if ($product->is_stock) {
                 if (!$product->uses_recipe) {
                     $this->decreamentwarehouse($product, $warehouse, $InvoiceProduct, false);
                 } else {
-
+                        // if the product uses recipe every product unit must have components and every product has components
+                        // every component has product
                     $productUnit = $product->units->where('id', $InvoiceProduct['unit_id'])->first();
+
                     if(!$productUnit){
                         return response()->json([
                             'message' => "unit_id  not exists"
                         ]);
                     }
+
+
                     $productUnit->pivot->refresh();
 
-                    foreach ($productUnit->pivot->components as $component) {
+                    foreach ($productUnit->pivot->components as $component)
+                    {
                         $comProduct = $component->product;
                         $this->decreamentwarehouse($comProduct, $warehouse, $InvoiceProduct, $component);
                     }
@@ -107,8 +117,6 @@ class InvoiceController extends Controller
 
     public function decreamentwarehouse($product, $warehouse, $InvoiceProduct, $component)
     {
-
-
 
 
         $WarehouseProduct = WarehouseProduct::where('warehouse_id', $warehouse->id)

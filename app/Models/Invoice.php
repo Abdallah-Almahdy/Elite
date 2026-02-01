@@ -10,9 +10,13 @@ class Invoice extends Model
         'cashier_id',
         'total',
         'safe_id',
-        'payment_method',
         'address'
     ];
+
+    public function payments()
+    {
+        return $this->hasMany(InvoicePayments::class, 'invoice_id');
+    }
 
     public function cashier()
     {
@@ -29,8 +33,4 @@ class Invoice extends Model
         return $this->hasMany(InvoiceProduct::class);
     }
 
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
 }
