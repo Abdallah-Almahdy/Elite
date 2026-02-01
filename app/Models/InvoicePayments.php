@@ -11,6 +11,7 @@ class InvoicePayments extends Model
         'payment_method',
         'amount'
     ];
+    protected $table = 'Invoice_payments';
 
     public function invoice()
     {
