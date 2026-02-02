@@ -97,8 +97,15 @@
                 @endcan
                 <li class="nav-item mb-1">
                     <a href="{{ route('invoices.index') }}" class="nav-link {{ Request::is('dashboard/invoices*') ? 'bg-success' : '' }}">
-                        <i class="nav-icon fas fa-shopping-cart ml-2"></i>
+                        <i class="nav-icon fas fa-file-invoice ml-2"></i>
                         <p class="ml-1">الفواتير</p>
+
+                    </a>
+                </li>
+                  <li class="nav-item mb-1">
+                    <a href="{{ route('pos.index') }}" class="nav-link {{ Request::is('dashboard/POS*') ? 'bg-success' : '' }}">
+                       <i class="nav-icon fas fa-file-invoice ml-2"></i>
+                        <p class="ml-1">شاشه البيع</p>
 
                     </a>
                 </li>
