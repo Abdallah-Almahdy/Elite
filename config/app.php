@@ -107,8 +107,8 @@ return [
             explode(',', env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
-  
-  	'img_base_link' => env('IMG_BASE_LINK', 'https://kolyoummarket.com/uploads/'),
+
+  	'img_base_link' => env('IMG_BASE_LINK', 'https://kolyoummarket.com/storage/'),
 
 
     /*
