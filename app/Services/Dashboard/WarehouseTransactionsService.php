@@ -10,7 +10,7 @@ use App\Models\WarehouseProductTransaction;
 use App\Models\WarehouseTransaction;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
-use App\Models\warehouseTransactionType;
+use App\Models\WarehouseTransactionType;
 use Illuminate\Support\Facades\Auth;
 
 class WarehouseTransactionsService
@@ -33,16 +33,16 @@ class WarehouseTransactionsService
         $this->checkTransactionType($transaction_type_id);
 
         switch ($transaction_type_id) {
-            case warehouseTransactionType::STOCK_RECEIPT:
+            case WarehouseTransactionType::STOCK_RECEIPT:
                 $this->stockReceiptTransaction($products, $warehouse_id);
                 break;
-            case warehouseTransactionType::STOCK_ISSUE:
+            case WarehouseTransactionType::STOCK_ISSUE:
                 $this->stockIssueTransaction($products, $warehouse_id);
                 break;
-            case warehouseTransactionType::STOCKTAKE:
+            case WarehouseTransactionType::STOCKTAKE:
                 $this->stocktakeTransaction($products, $warehouse_id);
                 break;
-            case warehouseTransactionType::STOCK_TRANSFER:
+            case WarehouseTransactionType::STOCK_TRANSFER:
                 $this->stockTransferTransaction($products, $warehouse_id, $new_warehouse_id);
                 break;
             default:
