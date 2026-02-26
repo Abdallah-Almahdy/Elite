@@ -64,6 +64,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         $data = SubSection::first();
         return view('/admin/dashboardHome', ['data' => $data]);
     })->name('dashboard');
+    
     Route::get('/POS', function () {
 
         return file_get_contents(public_path('POS/dist/index.html'));

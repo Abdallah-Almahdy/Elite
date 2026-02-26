@@ -26,7 +26,7 @@ class SectionsController extends Controller
      */
     public function create()
     {
-        Gate::authorize('create', Section::class);
+        
         return view('pages.sections.create');
     }
 

@@ -521,14 +521,12 @@ class Create extends Component
                 'description' => $this->description,
                 'photo' =>  $path ?: null,
                 'uses_recipe' => $this->hasRecipe,
-                'company_id' => null, // مؤقتاً
                 'active'   => $this->isActive,
                 'qtn' => $this->stockQnt,
                 'offer_rate'    => 0,
                 'company_id' => $this->company_id ?? null,
                 'is_stock' => $this->is_stock,
                 'is_weight' => $this->is_weight,
-                
             ]);
 
             foreach ($this->units as $index => $unitData) {
