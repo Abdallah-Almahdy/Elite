@@ -10,7 +10,7 @@ use App\Models\WarehouseProductTransaction;
 use App\Models\WarehouseTransaction;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
-use App\Models\warehouseTransactionType;
+use App\Models\WarehouseTransactionType;
 use Illuminate\Support\Facades\Auth;
 
 class WarehouseTransactionsService
