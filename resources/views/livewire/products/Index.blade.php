@@ -106,6 +106,22 @@
 
                                                 </a>
                                             @endcan
+                                            <!-- أيقونة Import -->
+                                            <label for="excelUpload" class="btn btn-outline-success p-1 m-0"
+                                                style="cursor:pointer">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M12 16V4m0 12 4-4m-4 4-4-4M4 20h16" />
+                                                </svg>
+
+                                            </label>
+
+                                            <!-- File Input مخفي -->
+                                            <input type="file" id="excelUpload" wire:model="file"
+                                                accept=".xlsx,.xls,.csv" class="d-none">
                                             <button type="button" wire:click="toggleBulkActions"
                                                 class="   btn btn-outline-primary right fas p-1 ">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -140,6 +156,7 @@
                                                     </svg>
                                                 @endif
                                             </button>
+
 
 
 
@@ -212,7 +229,7 @@
                                     <td class="px-3 py-2 border border-gray-200">
                                         <div class="relative w-12 h-12">
                                             <img class="w-12 h-12 rounded-full object-cover border border-gray-300"
-                                                src="{{  asset('storage/' . $product->photo)   ?? asset('products/img.png') }}"
+                                                src="{{ asset('storage/' . $product->photo) ?? asset('products/img.png') }}"
                                                 alt="img">
 
                                             @if (empty($product->photo))

@@ -25,6 +25,7 @@ class Index extends Component
     public $search = '';  //  a property for search
     public $showZeroStock = false; // Property to toggle between showing all products or only those with 0 stock
     public $showBulkActions = false;
+    public $file; // Store the uploaded Excel file
     // Delete selected products
     public function toggleBulkActions()
     {
@@ -147,6 +148,32 @@ class Index extends Component
             session()->flash('success', 'Product photo uploaded successfully!');
         } else {
             session()->flash('error', 'Product not found!');
+        }
+    }
+    public function updatedFile()
+    {
+        $this->uploadFromExcel();
+    }
+
+    public function uploadFromExcel()
+    {
+        $this->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240', // Validate Excel file
+        ]);
+
+        // Store the uploaded file temporarily
+        $filePath = $this->file->store('temp'); // Store in a temporary location
+
+        // Import products from the uploaded Excel file
+        try {
+            \Excel::import(new \App\Imports\SimpleProductsImport, $filePath);
+            session()->flash('success', 'تم استيراد المنتجات بنجاح!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error importing products: ' . $e->getMessage());
+        } finally {
+            // Delete the temporary file after import
+            \Storage::delete($filePath);
+            $this->file = null; // Reset the file input
         }
     }
 

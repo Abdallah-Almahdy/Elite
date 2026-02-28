@@ -25,6 +25,7 @@
 
     <div class="card-header bg-primary text-white py-3">
         <h5 class="text-center mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>إضافة صنف جديد</h5>
+
     </div>
 
     <form wire:submit="create" role="form" class="flex-grow-1 d-flex flex-column">
