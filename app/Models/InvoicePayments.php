@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class InvoicePayments extends Model
 {
+    protected $table = 'invoice_payments';
+
     protected $fillable = [
         'invoice_id',
         'payment_method',
@@ -13,7 +15,7 @@ class InvoicePayments extends Model
         'invoice_return_id',
         'type'
     ];
-    protected $table = 'Invoice_payments';
+   
 
     public function invoice()
     {
