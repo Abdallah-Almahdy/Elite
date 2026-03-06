@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
+        Schema::table('invoice_return_items', function (Blueprint $table) {
+            $table->decimal('unit_conversion_factor', 15, 6)->default(1)->after('quantity');
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('order', function (Blueprint $table) {
+        Schema::table('invoice_return_items', function (Blueprint $table) {
             //
         });
     }

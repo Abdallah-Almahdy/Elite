@@ -25,8 +25,11 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
 
 // شاشه الكاشير
-Route::get('/GetAllProducts',[ProductsController::class,'GetAllProducts']);
-Route::get('/users',[AuthController::class, 'getUsersInfo']);
-Route::post('/specialRegister',[AuthController::class, 'speacialRegister']);
-Route::post('/invoices', [InvoiceController::class, 'store']);
-Route::get('/invoices', [InvoiceController::class, 'index']);
+Route::middleware('auth:web', 'web')->group(function (){
+    Route::get('/GetAllProducts', [ProductsController::class, 'GetAllProducts']);
+    Route::get('/users', [AuthController::class, 'getUsersInfo']);
+    Route::post('/specialRegister', [AuthController::class, 'speacialRegister']);
+    Route::post('/invoices', [InvoiceController::class, 'store']);
+    Route::get('/invoices', [InvoiceController::class, 'index']);
+});
+

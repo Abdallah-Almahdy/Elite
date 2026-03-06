@@ -90,4 +90,9 @@ class User extends Authenticatable
     {
         return $this->HasMany(ContactUs::class);
     }
+
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(Shift::class, 'cashier_id');
+    }
 }

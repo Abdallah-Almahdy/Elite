@@ -35,6 +35,7 @@ use App\Livewire\Delivery\Index as DeliveryIndex;
 use App\Http\Controllers\Back\PromocodesController;
 use App\Http\Controllers\Back\PermissionsController;
 use App\Http\Controllers\Back\RepresentativeController;
+use App\Http\Controllers\Back\ShiftController;
 use App\Http\Controllers\Back\tools\NotificationsController;
 use App\Http\Controllers\Back\Statics\UsersStaticsController;
 use App\Http\Controllers\Back\Statics\StaticsOrdersController;
@@ -64,7 +65,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         $data = SubSection::first();
         return view('/admin/dashboardHome', ['data' => $data]);
     })->name('dashboard');
-    
+
     Route::get('/POS', function () {
 
         return file_get_contents(public_path('POS/dist/index.html'));
@@ -90,7 +91,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::resource('ingredients', IngredientController::class);
     Route::get('configs',[ConfigController::class,'update'])->name('config.update');
     Route::post('configs/edit',[ConfigController::class,'edit'])->name('admin.configs.edit');
-
+    Route::resource('shifts', ShiftController::class);
 
 
 

@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
+            $table->unsignedBigInteger('shift_id')->nullable()->after('safe_id');
+            $table->foreign('shift_id')->references('id')->on('shifts')->onDelete('set null');
         });
     }
 
@@ -21,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('order', function (Blueprint $table) {
+        Schema::table('invoices', function (Blueprint $table) {
             //
         });
     }

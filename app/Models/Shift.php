@@ -12,9 +12,13 @@ class Shift extends Model
         'end_cash',
         'start_time',
         'end_time',
-        'safe_id'
+        'safe_id',
+        'status'
     ];
-
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
     public function cashier()
     {
         return $this->belongsTo(User::class, 'cashier_id');
@@ -23,5 +27,10 @@ class Shift extends Model
     public function safe()
     {
         return $this->belongsTo(Safe::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'shift_id');
     }
 }

@@ -10,7 +10,9 @@ use App\Models\Product;
 use App\Models\ProductUnits;
 use App\Models\Warehouse;
 use App\Models\WarehouseProduct;
+use App\Services\API\ShiftService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
@@ -35,83 +37,99 @@ class InvoiceController extends Controller
         ]);
 
 
-        $invoice = Invoice::create([
-            'address' => $request->address,
-            'cashier_id' => 1,
-            'total' => 0,
-            'safe_id' => null
-        ]);
 
-        foreach ($request->payment_methods as $payment) {
-            $invoice->payments()->create([
-                'payment_method' => $payment['key'],
-                'amount' => $payment['amount'],
+        try {
+            DB::beginTransaction();
+            $ShiftService = new ShiftService();
+            $shift =  $ShiftService->openShift(auth()->user()->id);
 
+
+            $invoice = Invoice::create([
+                'address' => $request->address,
+                'cashier_id' => auth()->user()->id,
+                 'shift_id' => $shift->id,
+                'total' => 0,
+                'safe_id' => $shift->safe_id
             ]);
-        }
 
 
-        $total = 0;
-        $warehouse  = Warehouse::where('is_default', true)->first();
+            foreach ($request->payment_methods as $payment) {
+                $invoice->payments()->create([
+                    'payment_method' => $payment['key'],
+                    'amount' => $payment['amount'],
+
+                ]);
+            }
 
 
-        foreach ($request->products as $InvoiceProduct) {
+            $total = 0;
+            $warehouse  = Warehouse::where('is_default', true)->first();
 
-            $product = Product::with(['units', 'units.productUnits.components'])->find($InvoiceProduct['id']);
 
+            foreach ($request->products as $InvoiceProduct) {
 
-            $price = $product->units()
-                ->where('conversion_factor', $InvoiceProduct['unit_conversion_factor'])
-                ->value('sallPrice');
+                $product = Product::with(['units', 'units.productUnits.components'])->find($InvoiceProduct['id']);
 
-                if(!$price){
+                $price = $product->units()
+                    ->where('conversion_factor', $InvoiceProduct['unit_conversion_factor'])
+                    ->value('sallPrice');
+
+                if (!$price) {
                     return response()->json([
                         'message' => "conversion factor not exists"
                     ]);
                 }
 
-            if ($product->is_stock) {
-                if (!$product->uses_recipe) {
-                    $this->decreamentwarehouse($product, $warehouse, $InvoiceProduct, false);
-                } else {
+                if ($product->is_stock) {
+                    if (!$product->uses_recipe) {
+                        $this->decreamentwarehouse($product, $warehouse, $InvoiceProduct, false);
+                    } else {
                         // if the product uses recipe every product unit must have components and every product has components
                         // every component has product
-                    $productUnit = $product->units->where('id', $InvoiceProduct['unit_id'])->first();
+                        $productUnit = $product->units->where('id', $InvoiceProduct['unit_id'])->first();
 
-                    if(!$productUnit){
-                        return response()->json([
-                            'message' => "unit_id  not exists"
-                        ]);
-                    }
+                        if (!$productUnit) {
+                            return response()->json([
+                                'message' => "unit_id  not exists"
+                            ]);
+                        }
 
 
-                    $productUnit->pivot->refresh();
+                        $productUnit->pivot->refresh();
 
-                    foreach ($productUnit->pivot->components as $component)
-                    {
-                        $comProduct = $component->product;
-                        $this->decreamentwarehouse($comProduct, $warehouse, $InvoiceProduct, $component);
+                        foreach ($productUnit->pivot->components as $component) {
+                            $comProduct = $component->product;
+                            $this->decreamentwarehouse($comProduct, $warehouse, $InvoiceProduct, $component);
+                        }
                     }
                 }
+
+                $subtotal =  $price * $InvoiceProduct['unit_conversion_factor'] * $InvoiceProduct['quantity'];
+                $total = $total + $subtotal;
+
+                InvoiceProduct::create([
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $product->id,
+                    'quantity' => $InvoiceProduct['quantity'],
+                    'unit_conversion_factor' => $InvoiceProduct['unit_conversion_factor'],
+                    'price' => $price * $InvoiceProduct['unit_conversion_factor'],
+                    'subtotal' => $subtotal
+                ]);
             }
 
-            $subtotal =  $price * $InvoiceProduct['unit_conversion_factor'] * $InvoiceProduct['quantity'];
-            $total = $total + $subtotal;
 
-            InvoiceProduct::create([
-                'invoice_id' => $invoice->id,
-                'product_id' => $product->id,
-                'quantity' => $InvoiceProduct['quantity'],
-                'unit_conversion_factor' => $InvoiceProduct['unit_conversion_factor'],
-                'price' => $price * $InvoiceProduct['unit_conversion_factor'],
-                'subtotal' => $subtotal
-            ]);
+            $invoice->total = $total;
+            $invoice->save();
+            DB::commit();
+            return new InvoiceResource($invoice);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while creating the invoice.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-
-        $invoice->total = $total;
-        $invoice->save();
-        return new InvoiceResource($invoice);
     }
 
 

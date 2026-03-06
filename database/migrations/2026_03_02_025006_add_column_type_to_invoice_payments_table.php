@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
+        Schema::table('invoice_payments', function (Blueprint $table) {
+            $table->enum('type', ['payment', 'refund']);
+            
+            $table->foreignId('invoice_return_id')
+                ->nullable()
+                ->constrained('invoice_returns')
+                ->nullOnDelete();
+
         });
     }
 
@@ -21,7 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('order', function (Blueprint $table) {
+        Schema::table('invoice_payments', function (Blueprint $table) {
             //
         });
     }

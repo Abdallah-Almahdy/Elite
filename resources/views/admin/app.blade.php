@@ -73,6 +73,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         * {
             font-family: "Readex Pro", sans-serif;
         }
+        
     </style>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">

@@ -10,9 +10,18 @@ class Invoice extends Model
         'cashier_id',
         'total',
         'safe_id',
-        'address'
+        'address',
+        'shift_id'
     ];
-
+    public static function paymentMethods()
+    {
+        return [
+            'cash'         => 'نقدي',
+            'credit_card'  => 'بطاقة',
+            'instapay'     => 'إنستباي',
+            'wallet'       => 'محفظة',
+        ];
+    }
     public function payments()
     {
         return $this->hasMany(InvoicePayments::class, 'invoice_id');
@@ -32,5 +41,11 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceProduct::class);
     }
+
+    public function invoiceReturns()
+    {
+        return $this->hasMany(InvoiceReturn::class);
+    }
+
 
 }
