@@ -116,5 +116,11 @@ class  Product extends Model
             ->withTimestamps();
     }
 
+    public function productUnits()
+    {
+        return $this->hasMany(ProductUnits::class);
+    }
+
+
 
 }

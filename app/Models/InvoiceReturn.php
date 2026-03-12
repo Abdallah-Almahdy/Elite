@@ -12,7 +12,6 @@ class InvoiceReturn extends Model
         'type',
         'user_id',
         'total',
-
     ];
 
     public function invoice()

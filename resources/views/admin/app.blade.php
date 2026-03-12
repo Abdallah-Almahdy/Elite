@@ -73,7 +73,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         * {
             font-family: "Readex Pro", sans-serif;
         }
-        
+
     </style>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -146,7 +146,32 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
     </script>
+
     @stack('scripts')
+    <script>
+document.addEventListener('livewire:init', () => {
+    console.log("Livewire initialized, setting up event listeners...");
+    window.addEventListener('return-type-changed', (event) => {
+
+        let items = event.detail.returnItems;
+
+       
+        items.forEach((item, index) => {
+
+            let input = document.querySelector(
+                `input[wire\\:model\\.live="returnItems.${index}.quantity"]`
+            );
+
+            if (input) {
+                input.value = item.quantity ?? 0;
+            }
+
+        });
+
+    });
+
+});
+</script>
 </body>
 
 </html>

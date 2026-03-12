@@ -8,23 +8,28 @@
                         <div class="flex justify-between items-center gap-2">
                             <div class="flex items-center gap-2">
                                 <button wire:click="resetFilters" class="btn btn-outline-danger p-1" title="إعادة تعيين">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <input type="text" wire:model.live.debounce.300ms="searchCashier" placeholder="بحث باسم الكاشير"
-                                       class="w-48 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none">
-                                <select wire:model.live="status" class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
+                                <input type="text" wire:model.live.debounce.300ms="searchCashier"
+                                    placeholder="بحث باسم الكاشير"
+                                    class="w-48 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none">
+                                <select wire:model.live="status"
+                                    class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
                                     <option value="">كل الورديات</option>
                                     <option value="open">مفتوحة</option>
                                     <option value="close">مغلقة</option>
                                 </select>
                                 <label>من</label>
-                                <input type="date" wire:model.live="fromDate" class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
+                                <input type="date" wire:model.live="fromDate"
+                                    class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
                                 <label>إلى</label>
-                                <input type="date" wire:model.live="toDate" class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
+                                <input type="date" wire:model.live="toDate"
+                                    class="w-36 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm">
                             </div>
                         </div>
                     </th>
@@ -46,11 +51,13 @@
             </thead>
             <tbody>
                 @forelse($shifts as $index => $shift)
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 {{ $shift->status == 'open' ? 'bg-yellow-50' : '' }}">
+
                         <td class="px-3 py-2 border border-gray-200">{{ $shifts->firstItem() + $index }}</td>
                         <td class="px-3 py-2 border border-gray-200">
                             <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold ml-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold ml-2">
                                     {{ substr($shift->cashier->name ?? 'ك', 0, 1) }}
                                 </div>
                                 {{ $shift->cashier->name ?? '--' }}
@@ -74,32 +81,44 @@
                         <td class="px-3 py-2 border border-gray-200 font-bold text-purple-600">
                             {{ number_format($shift->cash_net ?? 0, 2) }} ج.م
                         </td>
-                        <td class="px-3 py-2 border border-gray-200 font-bold {{ $shift->end_cash ? 'text-blue-600' : 'text-gray-400' }}">
+                        <td
+                            class="px-3 py-2 border border-gray-200 font-bold {{ $shift->end_cash ? 'text-blue-600' : 'text-gray-400' }}">
                             {{ $shift->end_cash ? number_format($shift->end_cash, 2) . ' ج.م' : '--' }}
                         </td>
-                        <td class="px-3 py-2 border border-gray-200 font-bold {{ ($shift->difference ?? 0) > 0 ? 'text-green-600' : (($shift->difference ?? 0) < 0 ? 'text-red-600' : 'text-gray-600') }}">
+                        <td
+                            class="px-3 py-2 border border-gray-200 font-bold {{ ($shift->difference ?? 0) > 0 ? 'text-green-600' : (($shift->difference ?? 0) < 0 ? 'text-red-600' : 'text-gray-600') }}">
                             {{ $shift->end_cash ? number_format($shift->difference ?? 0, 2) . ' ج.م' : '--' }}
                         </td>
                         <td class="px-3 py-2 border border-gray-200">
                             <div class="inline-flex items-center justify-center gap-1">
                                 <!-- زر كشف الحساب -->
-                                <button type="button" wire:click="showStatement({{ $shift->id }})" class="btn btn-outline-info p-1" title="كشف حساب">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605" />
+                                <button type="button" wire:click="showStatement({{ $shift->id }})"
+                                    class="btn btn-outline-info p-1" title="كشف حساب">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605" />
                                     </svg>
                                 </button>
 
-                                @if($shift->status == 'open')
-                                    <button type="button" wire:click="confirmCloseShift({{ $shift->id }})" class="btn btn-outline-success p-1" title="إغلاق الوردية">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                @if ($shift->status == 'open')
+                                    <button type="button" wire:click="confirmCloseShift({{ $shift->id }})"
+                                        class="btn btn-outline-success p-1" title="إغلاق الوردية">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
                                     </button>
                                 @endif
 
-                                <button type="button" wire:click="deleteShift({{ $shift->id }})" wire:confirm="هل أنت متأكد من حذف الوردية؟" class="btn btn-outline-danger p-1" title="حذف">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                <button type="button" wire:click="deleteShift({{ $shift->id }})"
+                                    wire:confirm="هل أنت متأكد من حذف الوردية؟" class="btn btn-outline-danger p-1"
+                                    title="حذف">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                     </svg>
                                 </button>
                             </div>
@@ -108,8 +127,10 @@
                 @empty
                     <tr>
                         <td colspan="11" class="text-center py-8">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-gray-400 mx-auto mb-3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-12 text-gray-400 mx-auto mb-3">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                             </svg>
                             <h5 class="text-gray-500">لا توجد ورديات</h5>
                         </td>
@@ -119,7 +140,7 @@
         </table>
     </div>
 
-    @if($shifts->hasPages())
+    @if ($shifts->hasPages())
         <div class="mt-4">
             {{ $shifts->withQueryString()->links('pagination::bootstrap-4') }}
         </div>
@@ -166,24 +187,43 @@
                 </div>
 
                 <!-- معلومات الوردية -->
-                <div class="p-4 bg-gray-50 border-b">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                        <div><span class="font-semibold">الكاشير:</span> {{ $selectedShift->cashier->name ?? '--' }}
-                        </div>
-                        <div><span class="font-semibold">بداية:</span>
-                            {{ $selectedShift->start_time ? $selectedShift->start_time->format('Y-m-d h:i A') : '--' }}
-                        </div>
-                        <div><span class="font-semibold">نهاية:</span>
-                            {{ $selectedShift->end_time ? $selectedShift->end_time->format('Y-m-d h:i A') : '--' }}
-                        </div>
-                        <div><span class="font-semibold">الحالة:</span>
-                            <span
-                                class="px-2 py-1 rounded text-xs {{ $selectedShift->status == 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $selectedShift->status == 'open' ? 'مفتوحة' : 'مغلقة' }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+             <div class="p-4 bg-gray-50 border-b">
+    <!-- معلومات الوردية الأساسية -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+            <span class="font-semibold">الكاشير:</span>
+            <span class="block mt-1">{{ $selectedShift->cashier->name ?? '--' }}</span>
+        </div>
+        <div>
+            <span class="font-semibold">بداية:</span>
+            <span class="block mt-1">{{ $selectedShift->start_time ? $selectedShift->start_time->format('Y-m-d h:i A') : '--' }}</span>
+        </div>
+        <div>
+            <span class="font-semibold">نهاية:</span>
+            <span class="block mt-1">{{ $selectedShift->end_time ? $selectedShift->end_time->format('Y-m-d h:i A') : '--' }}</span>
+        </div>
+        <div>
+            <span class="font-semibold">الحالة:</span>
+            <span class="block mt-1">
+                <span class="px-2 py-1 rounded text-xs {{ $selectedShift->status == 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                    {{ $selectedShift->status == 'open' ? 'مفتوحة' : 'مغلقة' }}
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <!-- معلومات إضافية (عدد الفواتير والمرتجعات) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4 pt-3 border-t border-gray-200">
+        <div>
+            <span class="font-semibold">عدد الفواتير:</span>
+            <span class="block mt-1">{{ count($selectedShift->invoices) ?? 0 }} فاتورة</span>
+        </div>
+        <div>
+            <span class="font-semibold">المرتجعات:</span>
+            <span class="block mt-1">{{ $returns_count ?? 0 }} مرتجع</span>
+        </div>
+    </div>
+</div>
 
                 <!-- جدول تفاصيل طرق الدفع -->
                 <div class="p-4">

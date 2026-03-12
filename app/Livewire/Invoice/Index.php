@@ -18,26 +18,25 @@ class Index extends Component
     use WithPagination;
 
     public $searchId = '';
-    public $searchShiftId = ''; // إضافة حقل البحث بالوردية
+    public $searchShiftId = '';
     public $fromDate = '';
     public $toDate = '';
     public $returnStatus = '';
+
     public $selectedInvoice = null;
     public $showInvoiceModal = false;
     public $showReturnModal = false;
 
-    // بيانات نموذج الإرجاع
+    public $returnPayments = []; // مصفوفة طرق الدفع مع المبالغ المرتجعة
+
     public $returnReason = '';
     public $returnType = 'partial';
     public $returnItems = [];
     public $paymentMethods = [];
-    public $selectedPaymentMethod = '';
-    public $refundAmount = 0;
-    public $originalTotal = 0;
-    public $maxRefundAmount = 0;
     public $invoiceIdForReturn = null;
+    public $searchCashier = '';
 
-    protected $queryString = ['searchId', 'searchShiftId', 'fromDate', 'toDate', 'returnStatus'];
+    protected $queryString = ['searchId', 'searchCashier', 'fromDate', 'toDate', 'returnStatus'];
 
     public function mount()
     {
@@ -49,12 +48,24 @@ class Index extends Component
         ];
     }
 
+    // مجموع الأصناف المرتجعة
     public function getItemsTotalProperty()
     {
-        return collect($this->returnItems)->sum('total');
+        return collect($this->returnItems)->sum(fn($item) => (float) $item['total']);
+    }
+
+    // مجموع المبالغ المرتجعة من طرق الدفع
+    public function getTotalRefundProperty()
+    {
+        return collect($this->returnPayments)->sum('amount');
     }
 
     public function updatedSearchId()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchShiftId()
     {
         $this->resetPage();
     }
@@ -69,9 +80,6 @@ class Index extends Component
         $this->resetPage();
     }
 
-    /**
-     * عرض تفاصيل الفاتورة في مودال
-     */
     public function showInvoice($invoiceId)
     {
         $this->selectedInvoice = Invoice::with([
@@ -111,9 +119,6 @@ class Index extends Component
         $this->selectedInvoice = null;
     }
 
-    /**
-     * فتح مودال الإرجاع
-     */
     public function openReturnModal($invoiceId)
     {
         $this->invoiceIdForReturn = $invoiceId;
@@ -124,6 +129,7 @@ class Index extends Component
             'payments'
         ])->findOrFail($invoiceId);
 
+        // المنتجات
         $this->returnItems = $invoice->products->map(function ($product) use ($invoice) {
             $returnedQty = $invoice->invoiceReturns
                 ->flatMap(fn($return) => $return->returnItems)
@@ -143,105 +149,126 @@ class Index extends Component
             ];
         })->toArray();
 
-        $this->originalTotal = $invoice->total;
-        $totalPaid = $invoice->payments->where('type', 'payment')->sum('amount');
-        $totalRefunded = $invoice->payments->where('type', 'refund')->sum('amount');
-        $this->maxRefundAmount = $totalPaid - $totalRefunded;
-        $this->refundAmount = 0;
+        // تجميع المدفوعات حسب الطريقة
+        $paymentsGrouped = $invoice->payments
+            ->where('type', 'payment')
+            ->groupBy('payment_method')
+            ->map(fn($group) => $group->sum('amount'));
+
+        $refundsGrouped = $invoice->payments
+            ->where('type', 'refund')
+            ->groupBy('payment_method')
+            ->map(fn($group) => $group->sum('amount'));
+
+        $this->returnPayments = [];
+        foreach ($this->paymentMethods as $key => $label) {
+            $paid = $paymentsGrouped[$key] ?? 0;
+            $refunded = $refundsGrouped[$key] ?? 0;
+            $available = $paid - $refunded;
+            if ($available > 0) {
+                $this->returnPayments[$key] = [
+                    'label'     => $label,
+                    'paid'      => $paid,
+                    'refunded'  => $refunded,
+                    'available' => $available,
+                    'amount'    => 0,
+                ];
+            }
+        }
+
         $this->returnReason = '';
         $this->returnType = 'partial';
-        $this->selectedPaymentMethod = 'cash';
 
         $this->showReturnModal = true;
         $this->showInvoiceModal = false;
+
+        $this->dispatch('open-return-modal');
     }
 
     public function closeReturnModal()
     {
         $this->showReturnModal = false;
         $this->returnItems = [];
+        $this->returnPayments = [];
         $this->invoiceIdForReturn = null;
     }
 
-    /**
-     * تحديث إجمالي كل صنف عند تغيير الكمية
-     */
     public function updatedReturnItems()
     {
         foreach ($this->returnItems as $index => $item) {
-            $this->returnItems[$index]['total'] = $item['quantity'] * $item['price'];
+            $quantity = (float) $item['quantity'];
+            $price = (float) $item['price'];
+            $this->returnItems[$index]['total'] = $quantity * $price;
         }
     }
 
-    /**
-     * عند اختيار إرجاع كلي يتم تحديد كل الكميات تلقائياً
-     */
     public function updatedReturnType()
     {
         if ($this->returnType === 'full') {
             foreach ($this->returnItems as $index => $item) {
                 $this->returnItems[$index]['quantity'] = $item['max_quantity'];
             }
-            $this->updatedReturnItems(); // إعادة حساب totals
+            $this->updatedReturnItems();
+            $this->dispatch('return-type-changed', returnItems: $this->returnItems);
         }
     }
 
-    /**
-     * تنفيذ عملية الإرجاع
-     */
     public function submitReturn()
     {
-        $this->validate([
-            'invoiceIdForReturn'           => 'required|exists:invoices,id',
-            'returnReason'                  => 'nullable|string|max:255',
-            'returnType'                     => 'required|in:full,partial',
-            'returnItems'                     => 'required|array|min:1',
-            'returnItems.*.quantity'         => 'required|numeric|min:0',
-            'selectedPaymentMethod'           => 'required|string',
-            'refundAmount'                    => 'required|numeric|min:0|max:' . $this->maxRefundAmount,
-        ]);
-
+        // التحقق من وجود كمية مرتجعة
         $hasItems = collect($this->returnItems)->contains(fn($item) => $item['quantity'] > 0);
         if (!$hasItems) {
-            session()->flash('error', 'يجب تحديد كمية مرتجعة على الأقل.');
+            $this->addError('amountError', 'يجب تحديد كمية مرتجعة على الأقل.');
             return;
         }
 
-        DB::beginTransaction();
+        // التحقق من أن مجموع المبالغ المرتجعة يساوي إجمالي الأصناف
+        if (abs($this->totalRefund - $this->itemsTotal) > 0.01) {
+            $this->addError('returnPayments', 'مجموع المبالغ المرتجعة يجب أن يساوي إجمالي الأصناف (' . number_format($this->itemsTotal, 2) . ' ج.م)');
+            return;
+        }
 
+        // التحقق من كل طريقة ألا يتجاوز المبلغ المتاح
+        foreach ($this->returnPayments as $method => $data) {
+            if ($data['amount'] > $data['available'] + 0.01) { // تسامح بسيط
+                $this->addError("returnPayments.{$method}", "المبلغ يتجاوز المتاح لهذه الطريقة ({$data['available']} ج.م)");
+                return;
+            }
+        }
+
+        $this->validate([
+            'invoiceIdForReturn' => 'required|exists:invoices,id',
+            'returnReason'       => 'nullable|string|max:255',
+            'returnType'         => 'required|in:full,partial',
+            'returnItems'        => 'required|array|min:1',
+            'returnItems.*.quantity' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
         try {
             $invoice = Invoice::with([
                 'products',
                 'invoiceReturns.returnItems',
                 'payments'
-            ])
-                ->lockForUpdate()
-                ->findOrFail($this->invoiceIdForReturn);
+            ])->lockForUpdate()->findOrFail($this->invoiceIdForReturn);
 
-            // حساب مجموع الأصناف المرتجعة والتحقق من الكميات
-            $itemsTotal = 0;
+            // التحقق من الكميات المتاحة لكل منتج (نفس الكود السابق)
             $errors = [];
             foreach ($this->returnItems as $requestItem) {
                 if ($requestItem['quantity'] == 0) continue;
-
                 $invoiceProduct = $invoice->products->firstWhere('id', $requestItem['invoice_product_id']);
                 if (!$invoiceProduct) {
-                    $errors[] = "المنتج {$requestItem['name']} غير موجود في الفاتورة.";
+                    $errors[] = "المنتج {$requestItem['name']} غير موجود.";
                     continue;
                 }
-
                 $returnedQty = $invoice->invoiceReturns
                     ->flatMap(fn($return) => $return->returnItems)
                     ->where('invoice_products_id', $invoiceProduct->id)
                     ->sum('quantity');
-
                 $availableQty = $invoiceProduct->quantity - $returnedQty;
-
                 if ($requestItem['quantity'] > $availableQty) {
-                    $errors[] = "الكمية المطلوبة للمنتج {$requestItem['name']} ({$requestItem['quantity']}) تتجاوز المتاح للإرجاع ({$availableQty}).";
+                    $errors[] = "الكمية المطلوبة للمنتج {$requestItem['name']} ({$requestItem['quantity']}) تتجاوز المتاح ({$availableQty}).";
                 }
-
-                $itemsTotal += $requestItem['quantity'] * $requestItem['price'];
             }
 
             if (!empty($errors)) {
@@ -250,29 +277,11 @@ class Index extends Component
                 return;
             }
 
-            // التحقق من أن المبلغ المرتجع <= مجموع الأصناف المرتجعة
-            if ($this->refundAmount > $itemsTotal) {
-                DB::rollBack();
-                session()->flash('error', 'المبلغ المرتجع لا يمكن أن يتجاوز قيمة الأصناف المرتجعة (' . number_format($itemsTotal, 2) . ' ج.م).');
-                return;
-            }
-
-            // التحقق من أن المبلغ المرتجع لا يتجاوز المدفوع الفعلي (تم بواسطة قاعدة max)
-            $totalPaid = $invoice->payments->where('type', 'payment')->sum('amount');
-            $totalRefunded = $invoice->payments->where('type', 'refund')->sum('amount');
-            $availableRefund = $totalPaid - $totalRefunded;
-
-            if ($this->refundAmount > $availableRefund) {
-                DB::rollBack();
-                session()->flash('error', 'قيمة المرتجع تتجاوز المبلغ المتاح للرد (' . number_format($availableRefund, 2) . ' ج.م).');
-                return;
-            }
-
             // إنشاء سجل الإرجاع الرئيسي
             $invoiceReturn = InvoiceReturn::create([
                 'invoice_id' => $this->invoiceIdForReturn,
                 'user_id'    => auth()->id(),
-                'total'      => $this->refundAmount,
+                'total'      => $this->totalRefund, // استخدام المبلغ المحسوب
                 'type'       => $this->returnType,
                 'notes'      => $this->returnReason,
             ]);
@@ -286,25 +295,21 @@ class Index extends Component
             // إنشاء عناصر الإرجاع وإعادة المخزون
             foreach ($this->returnItems as $item) {
                 if ($item['quantity'] > 0) {
-                    // إنشاء عنصر الإرجاع
-                    $returnItem = InvoiceReturnItem::create([
+                    InvoiceReturnItem::create([
                         'invoice_return_id'   => $invoiceReturn->id,
                         'invoice_products_id' => $item['invoice_product_id'],
                         'quantity'            => $item['quantity'],
-                        'price'                => $item['price'],
-                        'total'                => $item['quantity'] * $item['price'],
+                        'price'               => $item['price'],
+                        'total'               => $item['quantity'] * $item['price'],
                     ]);
 
-                    // إعادة المخزون
                     $invoiceProduct = InvoiceProduct::with('product')->find($item['invoice_product_id']);
                     if ($invoiceProduct && $invoiceProduct->product->is_stock) {
                         $product = $invoiceProduct->product;
                         if (!$product->uses_recipe) {
-                            // منتج عادي
                             $quantityToAdd = $item['quantity'] * $invoiceProduct->unit_conversion_factor;
                             $this->incrementProductStock($product->id, $warehouse->id, $quantityToAdd);
                         } else {
-                            // منتج مركب
                             $productUnit = $product->units()
                                 ->wherePivot('conversion_factor', $invoiceProduct->unit_conversion_factor)
                                 ->first();
@@ -320,17 +325,20 @@ class Index extends Component
                 }
             }
 
-            // إنشاء حركة الدفع (refund)
-            InvoicePayments::create([
-                'invoice_id'       => $this->invoiceIdForReturn,
-                'payment_method'   => $this->selectedPaymentMethod,
-                'amount'           => $this->refundAmount,
-                'type'             => 'refund',
-                'invoice_return_id' => $invoiceReturn->id,
-            ]);
+            // إنشاء حركات الدفع (refund) لكل طريقة
+            foreach ($this->returnPayments as $method => $data) {
+                if ($data['amount'] > 0) {
+                    InvoicePayments::create([
+                        'invoice_id'       => $this->invoiceIdForReturn,
+                        'payment_method'   => $method,
+                        'amount'           => $data['amount'],
+                        'type'             => 'refund',
+                        'invoice_return_id' => $invoiceReturn->id,
+                    ]);
+                }
+            }
 
             DB::commit();
-
             session()->flash('success', 'تمت عملية الإرجاع بنجاح.');
             $this->closeReturnModal();
             $this->resetPage();
@@ -340,29 +348,22 @@ class Index extends Component
         }
     }
 
-    /**
-     * زيادة كمية منتج في المخزن
-     */
     private function incrementProductStock($productId, $warehouseId, $quantity)
     {
         $inventory = WarehouseProduct::where('warehouse_id', $warehouseId)
             ->where('product_id', $productId)
             ->first();
-
         if ($inventory) {
             $inventory->increment('quantity', $quantity);
         } else {
             WarehouseProduct::create([
                 'warehouse_id' => $warehouseId,
                 'product_id'   => $productId,
-                'quantity'        => $quantity,
+                'quantity'     => $quantity,
             ]);
         }
     }
 
-    /**
-     * حذف فاتورة (يمنع الحذف إذا كان هناك مدفوعات أو مرتجعات)
-     */
     public function deleteInvoice($id)
     {
         $invoice = Invoice::with('invoiceReturns', 'payments')->find($id);
@@ -392,9 +393,9 @@ class Index extends Component
             'cashier',
             'payments'
         ])
-            ->withCount('invoiceReturns') // إضافة عدد المرتجعات
+            ->withCount('invoiceReturns')
             ->when($this->searchId, fn($q) => $q->where('id', $this->searchId))
-            ->when($this->searchShiftId, fn($q) => $q->where('shift_id', $this->searchShiftId))
+            ->when($this->searchCashier, fn($q) => $q->whereHas('cashier', fn($q) => $q->where('name', 'like', '%' . $this->searchCashier . '%')))
             ->when($this->returnStatus === 'returned', fn($q) => $q->has('invoiceReturns'))
             ->when($this->returnStatus === 'not_returned', fn($q) => $q->doesntHave('invoiceReturns'))
             ->when($this->fromDate && $this->toDate, function ($q) {

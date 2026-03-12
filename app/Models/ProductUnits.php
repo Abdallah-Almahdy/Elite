@@ -17,6 +17,7 @@ class ProductUnits extends Pivot
         'price',
         'sallprice',
         'is_base',
+        'code'
 
     ];
 

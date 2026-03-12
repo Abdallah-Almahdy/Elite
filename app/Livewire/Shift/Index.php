@@ -22,6 +22,7 @@ class Index extends Component
     public $showCloseModal = false;
     public $closingShiftId = null;
     public $endCash = null;
+    public $returns_count = 0;
 
     // خصائص مودال كشف الحساب
     public $showStatementModal = false;
@@ -78,7 +79,7 @@ class Index extends Component
     {
         $this->validate();
         $shift = Shift::findOrFail($this->closingShiftId);
-        if ($shift->status === 'close') {
+        if ($shift->status === 'closed') {
             session()->flash('error', 'الوردية مغلقة بالفعل');
             $this->showCloseModal = false;
             return;
@@ -111,6 +112,11 @@ class Index extends Component
     {
         $this->selectedShift = Shift::with('cashier')->findOrFail($shiftId);
 
+        $this->returns_count = DB::table('invoice_returns')
+            ->join('invoices', 'invoices.id', '=', 'invoice_returns.invoice_id')
+            ->where('invoices.shift_id', $shiftId)
+            ->count();
+
         // طرق الدفع المتاحة
         $paymentMethods = ['cash', 'credit_card', 'instapay', 'wallet'];
 
@@ -141,6 +147,7 @@ class Index extends Component
                 'sales'   => $sales,
                 'returns' => $returns,
                 'net'     => $sales - $returns,
+
             ];
         }
 
@@ -160,6 +167,7 @@ class Index extends Component
         ];
         return $names[$method] ?? $method;
     }
+
     public function render()
     {
         $query = Shift::with('cashier', 'safe');
@@ -178,7 +186,8 @@ class Index extends Component
             $query->whereDate('start_time', '<=', $this->toDate);
         }
 
-        $shifts = $query->orderBy('start_time', 'desc')->paginate(10);
+        // ترتيب من الأقدم إلى الأحدث
+        $shifts = $query->orderBy('start_time', 'asc')->paginate(10);
 
         // حساب القيم لكل وردية
         foreach ($shifts as $shift) {
@@ -187,7 +196,7 @@ class Index extends Component
                 ->join('invoices', 'invoices.id', '=', 'invoice_payments.invoice_id')
                 ->where('invoices.shift_id', $shift->id)
                 ->where('invoice_payments.payment_method', 'cash')
-                ->whereNull('invoice_payments.invoice_return_id') // تجنب عد المرتجعات في الوارد (بعض التصميمات قد تخزن المرتجعات بنفس الجدول بعلامة سالبة أو بحقل return_id)
+                ->whereNull('invoice_payments.invoice_return_id')
                 ->sum('invoice_payments.amount');
 
             // صادر نقدي: مجموع المدفوعات النقدية للمرتجعات

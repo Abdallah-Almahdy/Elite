@@ -178,7 +178,8 @@
                             <ul class="nav nav-treeview">
 
                                 <li class="nav-item">
-                                    <a" class="nav-link">
+                                    <a  href="{{ route('products.balance') }}"
+                                        class="nav-link {{ Request::is('dashboard/products/balance*') ? 'bg-success' : '' }}"   >
                                         <i class="far fa-file-alt nav-icon"></i>
                                         <p>كشف المخازن</p>
                                     </a>

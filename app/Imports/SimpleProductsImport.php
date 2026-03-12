@@ -22,7 +22,7 @@ class SimpleProductsImport implements ToModel, WithHeadingRow, WithChunkReading
             $product = Product::create([
                 'name' => $row['name'],
                 'description' => 'منتج',
-                'section_id' => $row['section_id'],
+                'section_id' => 3,
                 'is_stock' => 1,
                 'is_weight' => 0,
                 'active' => 1,
@@ -33,31 +33,14 @@ class SimpleProductsImport implements ToModel, WithHeadingRow, WithChunkReading
             // 2️⃣ Create Unit
             $unit = ProductUnits::create([
                 'product_id' => $product->id,
-                'unit_id' => $row['unit_id'],
+                'unit_id' => 22,
                 'conversion_factor' => 1,
                 'price' => $row['price'],
                 'sallprice' => $row['sall_price'],
                 'is_base' => true,
+                'code' => $row['barcode'] ?? null
             ]);
 
-            // 3️⃣ Multiple Barcodes
-            if (!empty($row['barcodes'])) {
-
-                $barcodes = array_unique(
-                    array_map('trim', explode(',', $row['barcodes']))
-                );
-
-                foreach ($barcodes as $index => $code) {
-
-                    if (!empty($code) && !Barcode::where('code', $code)->exists()) {
-
-                        $unit->barcodes()->create([
-                            'code' => $code,
-                            'is_default' => $index === 0,
-                        ]);
-                    }
-                }
-            }
 
             DB::commit();
             return $product;

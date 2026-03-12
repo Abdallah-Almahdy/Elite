@@ -74,6 +74,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     // CRUD
     Route::get('delivery', DeliveryIndex::class)->name('delivery.index');
+    Route::get('products/balance', [ProductsController::class, 'balance'])->name('products.balance');
+
     Route::resource('sections', SectionsController::class);
     Route::resource('companies', CompanisController::class);
     Route::resource('products', ProductsController::class);

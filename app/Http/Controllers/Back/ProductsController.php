@@ -56,7 +56,7 @@ class ProductsController extends Controller
     {
         $product = Product::with('units')->find($id);
 
-        $options = $product->options;
+        $options = $product->options ?? [];
 
         return view('pages.products.show', ['product' => $product, 'options' => $options]);
     }
@@ -86,5 +86,11 @@ class ProductsController extends Controller
     public function destroy(product $product)
     {
         //
+    }
+
+    public function balance()
+    {
+        $products = Product::with('units')->get();
+        return view('pages.products.balance', ['products' => $products]);
     }
 }

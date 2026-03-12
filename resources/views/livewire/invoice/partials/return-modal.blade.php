@@ -1,6 +1,6 @@
 <div class="modal fade show" id="returnModal" tabindex="-1" aria-hidden="true"
-    style="display: block; background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-lg">
+    style="display: block; background: rgba(0,0,0,0.5);" wire:init="$dispatch('open-return-modal')">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-warning text-white">
                 <h5 class="modal-title">
@@ -16,76 +16,107 @@
             </div>
             <div class="modal-body">
                 <form wire:submit.prevent="submitReturn">
-                    <div class="mb-3">
-                        <label for="returnType" class="form-label">نوع الإرجاع</label>
-                        <select wire:model.live="returnType" id="returnType" class="form-control">
-                            <option value="partial">جزئي</option>
-                            <option value="full">كلي</option>
-                        </select>
-                    </div>
+                    <div class="row">
+                        <!-- العمود الأيمن: المنتجات -->
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label for="returnType" class="form-label">نوع الإرجاع</label>
+                                <select wire:model.live="returnType" id="returnType" class="form-control">
+                                    <option value="partial">جزئي</option>
+                                    <option value="full">كلي</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">المنتجات</label>
+                                <div class="table-responsive"
+                                    style="max-height: 400px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                                    <table class="table table-bordered table-sm mb-0" style="min-width: 600px;">
+                                        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                                            <tr>
+                                                <th style="min-width: 150px;">المنتج</th>
+                                                <th style="min-width: 70px;">المتاح</th>
+                                                <th style="min-width: 80px;">الكمية</th>
+                                                <th style="min-width: 80px;">السعر</th>
+                                                <th style="min-width: 100px;">الإجمالي</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($returnItems as $index => $item)
+                                                <tr>
+                                                    <td>{{ $item['name'] }}</td>
+                                                    <td>{{ $item['max_quantity'] }}</td>
+                                                    <td>
+                                                        <input type="number"
+                                                            wire:model.live="returnItems.{{ $index }}.quantity"
+                                                            min="0" max="{{ $item['max_quantity'] }}"
+                                                            class="form-control form-control-sm quantity-input"
+                                                            style="width: 70px;">
+                                                    </td>
+                                                    <td>{{ number_format($item['price'], 2) }}</td>
+                                                    <td>{{ number_format($item['total'], 2) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    @error('amountError')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
 
-                    <div class="mb-3">
-                        <label class="form-label">المنتجات</label>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>المنتج</th>
-                                    <th>الكمية المتاحة</th>
-                                    <th>الكمية المرتجعة</th>
-                                    <th>السعر</th>
-                                    <th>الإجمالي</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($returnItems as $index => $item)
-                                    <tr>
-                                        <td>{{ $item['name'] }}</td>
-                                        <td>{{ $item['max_quantity'] }}</td>
-                                        <td>
-                                            <input type="number"
-                                                wire:model.live="returnItems.{{ $index }}.quantity"
-                                                min="0" max="{{ $item['max_quantity'] }}"
-                                                class="form-control form-control-sm" style="width: 80px;">
-                                        </td>
-                                        <td>{{ number_format($item['price'], 2) }}</td>
-                                        <td>{{ number_format($item['total'], 2) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="4" class="text-left">الإجمالي</th>
-                                    <th>{{ number_format($refundAmount, 2) }} ج.م</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="selectedPaymentMethod" class="form-label">طريقة الرد</label>
-                        <select wire:model="selectedPaymentMethod" id="selectedPaymentMethod" class="form-control">
-                            @foreach ($paymentMethods as $key => $value)
-                                <option value="{{ $key }}">{{ $value }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="refundAmount" class="form-label">المبلغ المرتجع</label>
-                        <div class="input-group">
-                            <input type="number" step="0.01" wire:model="refundAmount" id="refundAmount"
-                                class="form-control" min="0" max="{{ $maxRefundAmount }}">
-                            <span class="input-group-text">ج.م</span>
+                                </div>
+                            </div>
                         </div>
-                        <small class="text-muted">المبلغ المتاح للرد: {{ number_format($maxRefundAmount, 2) }}
-                            ج.م</small>
-                        @error('refundAmount')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="returnReason" class="form-label">سبب الإرجاع (اختياري)</label>
-                        <textarea wire:model="returnReason" id="returnReason" class="form-control" rows="2"></textarea>
+                        <!-- العمود الأيسر: طرق الدفع -->
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label class="form-label">طرق الدفع</label>
+                                <div class="table-responsive"
+                                    style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                                            <tr>
+                                                <th>طريقة الدفع</th>
+                                                <th>المدفوع</th>
+                                                <th>المسترد</th>
+                                                <th>المتبقي</th>
+                                                <th>المبلغ المرتجع</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($returnPayments as $method => $data)
+                                                <tr>
+                                                    <td>{{ $data['label'] }}</td>
+                                                    <td>{{ number_format($data['paid'], 2) }}</td>
+                                                    <td>{{ number_format($data['refunded'], 2) }}</td>
+                                                    <td>{{ number_format($data['available'], 2) }}</td>
+                                                    <td>
+                                                        <input type="number" step="0.01"
+                                                            wire:model.live="returnPayments.{{ $method }}.amount"
+                                                            min="0" max="{{ $data['available'] }}"
+                                                            class="form-control form-control-sm" style="width: 100px;">
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" class="text-left">الإجمالي</th>
+                                                <th>{{ number_format(collect($this->returnPayments)->sum('amount'), 2) }}
+                                                    ج.م</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                @error('returnPayments')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="returnReason" class="form-label">سبب الإرجاع (اختياري)</label>
+                                <textarea wire:model="returnReason" id="returnReason" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer">

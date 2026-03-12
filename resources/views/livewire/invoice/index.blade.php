@@ -24,9 +24,9 @@
                                                 placeholder="رقم الفاتورة">
 
                                             <!-- حقل جديد للبحث بالوردية -->
-                                            <input type="text" wire:model.live.debounce.300ms="searchShiftId"
+                                            <input type="text" wire:model.live.debounce.300ms="searchCashier"
                                                 class="w-40 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm"
-                                                placeholder="رقم الوردية">
+                                                placeholder="الكاشير">
 
                                             <label>من</label>
                                             <input type="date" wire:model.live="fromDate"
