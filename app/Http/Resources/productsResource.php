@@ -16,6 +16,7 @@ class productsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+       
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -24,7 +25,6 @@ class productsResource extends JsonResource
             'quantity' =>  $this->defaultWarehouse->first()->pivot->quantity ?? 0,
             'nutritionWeight' => 0,
             'unit_name' => 'ج.م',
-            'purchase_count' => $this->purchase_count,
             'offer_rate' => $this->offer_rate,
             'uses_recipe' => $this->uses_recipe,
             'active' => $this->active,
@@ -34,8 +34,8 @@ class productsResource extends JsonResource
             'section' => $this->section->name ?? null,
             'number'=>1,
             'Units' => ProductUnitResource::collection($this->units),
-            'options' => OptionsResource::collection($this->options),
-            'addsOn' =>  AddsOnsResource::collection($this->addsOn),
+            //'options' => OptionsResource::collection($this->options),
+            //'addsOn' =>  AddsOnsResource::collection($this->addsOn),
 
         ];
     }

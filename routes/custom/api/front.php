@@ -26,7 +26,9 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
 // شاشه الكاشير
 //Route::middleware('auth:web', 'web')->group(function (){
-    Route::get('/GetAllProducts', [ProductsController::class, 'GetAllProducts']);
+
+    Route::get('/sections', [ProductsController::class, 'GetAllSections']);
+    Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
     Route::get('/users', [AuthController::class, 'getUsersInfo']);
     Route::post('/specialRegister', [AuthController::class, 'speacialRegister']);
     Route::post('/invoices', [InvoiceController::class, 'store']);

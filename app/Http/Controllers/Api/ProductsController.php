@@ -11,17 +11,46 @@ use App\Models\Product;
 use App\Models\SubSection;
 use Illuminate\Http\Request;
 use App\Traits\ApiTrait;
+use Illuminate\Support\Facades\Cache;
 
 class ProductsController extends Controller
 {
     use ApiTrait;
 
-
-    public function GetAllProducts()
+    public function GetAllSections()
     {
 
+    $subsections = SubSection::all();
 
-        return  sectionsAndproductsResource::collection(SubSection::with('products')->get());
+        return sectionsAndproductsResource::collection($subsections);
+    }
+
+    public function get_products($id)
+    {
+
+        // أولاً جيب الـ SubSection
+        $subsection = SubSection::find($id);
+
+        if (!$subsection) {
+            return response()->json([
+                'message' => 'SubSection not found'
+            ], 404);
+        }
+
+        // احصل على المنتجات المفعلة فقط مع pagination
+        $products = $subsection->products()
+            ->where('active', 1)
+            ->with([
+                'defaultWarehouse',
+                'units',
+                'company',
+                'section',
+
+            ])
+            ->paginate(50); // كل صفحة 50 منتج
+
+        // رجع Resource مع pagination
+        return productsResource::collection($products);
     }
 
     public function get_product($id)
