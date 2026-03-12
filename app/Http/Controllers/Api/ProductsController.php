@@ -21,7 +21,7 @@ class ProductsController extends Controller
     {
 
 
-        return  sectionsAndproductsResource::collection(SubSection::get());
+        return  sectionsAndproductsResource::collection(SubSection::with('products')->get());
     }
 
     public function get_product($id)
