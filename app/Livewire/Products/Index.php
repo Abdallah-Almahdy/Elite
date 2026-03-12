@@ -6,9 +6,11 @@ use App\Models\Product;
 use App\Models\Favorit;
 use App\Models\SubSection;
 use App\Models\OrderProduct;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads; // Import WithFileUploads for file handling
+use Maatwebsite\Excel\Facades\Excel;
 
 class Index extends Component
 {
@@ -166,13 +168,13 @@ class Index extends Component
 
         // Import products from the uploaded Excel file
         try {
-            \Excel::import(new \App\Imports\SimpleProductsImport, $filePath);
+        Excel::import(new \App\Imports\SimpleProductsImport, $filePath);
             session()->flash('success', 'تم استيراد المنتجات بنجاح!');
         } catch (\Exception $e) {
             session()->flash('error', 'Error importing products: ' . $e->getMessage());
         } finally {
             // Delete the temporary file after import
-            \Storage::delete($filePath);
+            Storage::delete($filePath);
             $this->file = null; // Reset the file input
         }
     }
