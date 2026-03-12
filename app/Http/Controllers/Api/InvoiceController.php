@@ -41,12 +41,12 @@ class InvoiceController extends Controller
         try {
             DB::beginTransaction();
             $ShiftService = new ShiftService();
-            $shift =  $ShiftService->openShift(auth()->user()->id);
+            $shift =  $ShiftService->openShift(1);
 
 
             $invoice = Invoice::create([
                 'address' => $request->address,
-                'cashier_id' => auth()->user()->id,
+                'cashier_id' => 1,
                  'shift_id' => $shift->id,
                 'total' => 0,
                 'safe_id' => $shift->safe_id

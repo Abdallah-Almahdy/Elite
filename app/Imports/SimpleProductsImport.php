@@ -38,7 +38,7 @@ class SimpleProductsImport implements ToModel, WithHeadingRow, WithChunkReading
                 'price' => $row['price'],
                 'sallprice' => $row['sall_price'],
                 'is_base' => true,
-                'code' => $row['barcode'] ?? null
+                'code' => ltrim($row['barcode'], "'") ?? null
             ]);
 
 
