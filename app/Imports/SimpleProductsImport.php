@@ -14,33 +14,49 @@ class SimpleProductsImport implements ToModel, WithHeadingRow, WithChunkReading
 {
     public function model(array $row)
     {
+        ini_set('max_execution_time', 300);
         DB::beginTransaction();
 
         try {
 
-            // 1️⃣ Create Product
-            $product = Product::create([
-                'name' => $row['name'],
-                'description' => 'منتج',
-                'section_id' => 3,
-                'is_stock' => 1,
-                'is_weight' => 0,
-                'active' => 1,
-                'offer_rate' => 0,
-                'qtn' => 0,
-            ]);
+            // 1️⃣ تحقق لو المنتج موجود بالاسم
+            $product = Product::firstOrCreate(
+                ['name' => $row['name']], // شرط البحث
+                [
+                    'description' => 'منتج',
+                    'section_id' => 3,
+                    'is_stock' => 1,
+                    'is_weight' => 0,
+                    'active' => 1,
+                    'offer_rate' => 0,
+                    'qtn' => 0,
+                ]
+            );
 
-            // 2️⃣ Create Unit
-            $unit = ProductUnits::create([
-                'product_id' => $product->id,
-                'unit_id' => 22,
-                'conversion_factor' => 1,
-                'price' => $row['price'],
-                'sallprice' => $row['sall_price'],
-                'is_base' => true,
-                'code' => ltrim($row['barcode'], "'") ?? null
-            ]);
+            // 2️⃣ تحقق لو Unit موجود للمنتج
+            $unit = ProductUnits::firstOrNew(
+                ['product_id' => $product->id, 'unit_id' => 22]
+            );
 
+            // حدث البيانات أو عينها لأول مرة
+            $unit->conversion_factor = 1;
+            $unit->price = $row['price'];
+            $unit->sallprice = $row['sall_price'];
+            $unit->is_base = true;
+            $unit->code = ltrim($row['barcode'], "'") ?? null;
+            $unit->save();
+
+            // 3️⃣ تحقق لو Barcode موجود
+            if (!empty($row['barcode'])) {
+                $barcode = Barcode::firstOrNew([
+                    'product_unit_id' => $unit->id,
+                    'code' => ltrim($row['barcode'], "'")
+                ]);
+
+                // لو موجود حدث الكود (عادة الكود نفسه هو المفتاح، لكن لو حابب تحدث خصائص اخرى)
+                $barcode->code = ltrim($row['barcode'], "'");
+                $barcode->save();
+            }
 
             DB::commit();
             return $product;
@@ -49,7 +65,6 @@ class SimpleProductsImport implements ToModel, WithHeadingRow, WithChunkReading
             return null;
         }
     }
-
     public function chunkSize(): int
     {
         return 200;

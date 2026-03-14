@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductsController;
+use App\Http\Controllers\Api\ShiftController ;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front\react\pos\IndexPosController;
 
@@ -33,5 +34,6 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
     Route::post('/specialRegister', [AuthController::class, 'speacialRegister']);
     Route::post('/invoices', [InvoiceController::class, 'store']);
     Route::get('/invoices', [InvoiceController::class, 'index']);
+    Route::post('/shifts/close', [ShiftController::class, 'close']);
 // });
 

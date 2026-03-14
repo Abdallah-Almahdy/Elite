@@ -25,7 +25,7 @@ class ProductsController extends Controller
         return sectionsAndproductsResource::collection($subsections);
     }
 
-    public function get_products($id)
+    public function get_products($id, Request $request)
     {
 
         // أولاً جيب الـ SubSection
@@ -47,7 +47,7 @@ class ProductsController extends Controller
                 'section',
 
             ])
-            ->paginate(50); // كل صفحة 50 منتج
+            ->paginate($request->get('num')); // كل صفحة 50 منتج
 
         // رجع Resource مع pagination
         return productsResource::collection($products);
