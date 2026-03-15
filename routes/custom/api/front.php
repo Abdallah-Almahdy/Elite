@@ -30,6 +30,8 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
     Route::get('/sections', [ProductsController::class, 'GetAllSections']);
     Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
+    Route::get('/product/searchByname',[ProductsController::class, 'searchByname']);
+    Route::get('/product/searchByBarcode',[ProductsController::class, 'searchByBarcode']);
     Route::get('/users', [AuthController::class, 'getUsersInfo']);
     Route::post('/specialRegister', [AuthController::class, 'speacialRegister']);
     Route::post('/invoices', [InvoiceController::class, 'store']);

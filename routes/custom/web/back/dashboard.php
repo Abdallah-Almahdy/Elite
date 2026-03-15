@@ -41,6 +41,7 @@ use App\Http\Controllers\Back\Statics\UsersStaticsController;
 use App\Http\Controllers\Back\Statics\StaticsOrdersController;
 use App\Livewire\Statices\StaticesController as StaticesIndex;
 use App\Http\Controllers\Back\Statics\RatingsStaticsController;
+use App\Http\Controllers\Back\Statics\SalesDuringPeriodController;
 use App\Http\Controllers\Back\Statics\SectionsStaticsController;
 use App\Http\Controllers\Back\WarehouseTransactionsController;
 use App\Http\Controllers\UnitController;
@@ -94,6 +95,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('configs',[ConfigController::class,'update'])->name('config.update');
     Route::post('configs/edit',[ConfigController::class,'edit'])->name('admin.configs.edit');
     Route::resource('shifts', ShiftController::class);
+    Route::get('reports/sales-period', [SalesDuringPeriodController::class,'index'])->name('reports.sales-period');
 
 
 

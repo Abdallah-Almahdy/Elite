@@ -155,7 +155,7 @@ document.addEventListener('livewire:init', () => {
 
         let items = event.detail.returnItems;
 
-       
+
         items.forEach((item, index) => {
 
             let input = document.querySelector(

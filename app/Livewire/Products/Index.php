@@ -16,7 +16,7 @@ class Index extends Component
 {
     use WithPagination, WithFileUploads; // Add WithFileUploads to handle file uploads
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'bootstrap-4';
     public $selectedProducts = []; // Store selected product IDs
     public $newSectionId; // New section ID for bulk update
     public $perPage = 20;
@@ -204,6 +204,7 @@ class Index extends Component
                 $this->viewLinks = false;
             }
         }
+
 
         return view('livewire.products.Index', [
             'products' => $products,

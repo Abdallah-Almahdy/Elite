@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\productsResource;
 use App\Http\Resources\sectionsAndproductsResource;
+use App\Models\Barcode;
 //use App\Http\Resources\ProductPaginationResource;
 // use App\Http\Resources\productCollection;
 use App\Models\Product;
@@ -61,40 +62,52 @@ class ProductsController extends Controller
         return $this->success($data);
     }
 
+  public function searchByname(Request $request)
+{
+    $name = $request->query('name');
 
+    $data = Product::with([
+            'defaultWarehouse',
+            'units',
+            'company',
+            'section',
+        ])
+        ->where('name', 'LIKE', "%{$name}%")
+        ->get();
 
-    public function product_info(Request $request)
-    {
-
-        // $prod_id = product::find();
-
-
-        $data = Product::find($request->query('prod_id'));
-        if (!$data) {
-            return [];
-        }
-        return new productsResource($data);
-    }
-
-
-    public function get_all_products(Request $request)
-    {
-        // $data = Product::where('active', 1)->get();
-
-        // return  productsResource::collection($data);
-
-        $perPage = $request->input('per_page', 10);
-
-        $data = Product::where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
-
+    if ($data->isEmpty()) {
         return response()->json([
-            'total_products' => $data->total(),
-            'total_pages'    => $data->lastPage(),
-            'current_page'   => $data->currentPage(),
-            'per_page'       => $data->perPage(),
-            'data'           => productsResource::collection($data->items()),
-        ]);
+            'message' => 'بحث عن المنتج بالاسم لم يُعثر على نتائج.'
+        ], 404);
     }
+
+    return ProductsResource::collection($data);
+}
+
+    public function searchByBarcode(Request $request)
+    {
+        $searchbarcode = $request->query('barcode');
+
+         $barcode = Barcode::where('code', 'LIKE', "%{$searchbarcode}%")->first();
+        if (!$barcode) {
+            return response()->json([
+                'message' => 'بحث عن المنتج بالباركود لم يُعثر على نتائج.'
+            ], 404);
+        }
+
+        $product = $barcode->productUnit->product;
+        if (!$product) {
+            return response()->json([
+                'message' => 'لم يتم العثور على منتج مرتبط بهذا الباركود.'
+            ], 404);
+        }
+
+        return  new productsResource($product);
+    }
+
+
+
+
 
 
 
@@ -143,43 +156,6 @@ class ProductsController extends Controller
 
 
 
-    //     public function products_search(Request $request)
-    // {
-    //     $useFilter   = filter_var($request->input('useFilter', false), FILTER_VALIDATE_BOOLEAN);
-    //     $minPrice    = $request->input('minPrice');
-    //     $maxPrice    = $request->input('maxPrice');
-    //     $searchType  = $request->query('type');
-    //     $searchValue = $request->query('search_value');
-
-    //     $query = Product::query();
-
-
-    //     if ($searchValue) {
-    //         if ($searchType == '1') {
-    //             $query->where('bar_code', 'LIKE', "%{$searchValue}%");
-    //         } elseif ($searchType == '2') {
-    //             $query->where('name', 'LIKE', "%{$searchValue}%");
-    //         }
-    //     }
-
-
-    //     if ($useFilter) {
-    //         if (!is_null($minPrice)) {
-    //             $query->where('price', '>=', $minPrice);
-    //         }
-    //         if (!is_null($maxPrice)) {
-    //             $query->where('price', '<=', $maxPrice);
-    //         }
-    //     }
-
-    //     $products = $query->orderBy('created_at', 'desc')->paginate(10);
-
-    //     if ($products->count() === 0) {
-    //         return [];
-    //     }
-
-    //     return productsResource::collection($products);
-    // }
 
     public function products_search(Request $request)
     {

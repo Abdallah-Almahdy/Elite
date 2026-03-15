@@ -325,7 +325,7 @@
             </div>
             @if ($viewLinks)
                 <div class="mt-4">
-                    {{ $products->links('pagination::bootstrap-4') }}
+                    {{ $products->links() }}
                 </div>
             @endif
         </div>
