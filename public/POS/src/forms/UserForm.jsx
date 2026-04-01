@@ -62,7 +62,18 @@ const UserForm = forwardRef((props, ref) => {
   const streetInputRef = useRef(null);
   const clientResultRef = useRef(null);
   const selectedUser = JSON.stringify(sessionStorage.getItem("selectedUser"));
-  const invSerial = JSON.parse(localStorage.getItem("Invoice Serial"));
+    function safeJSONParse(value, fallback = null) {
+  try {
+    if (!value) return fallback;
+    return JSON.parse(value);
+  } catch (error) {
+    console.warn("Invalid JSON detected:", value);
+    return fallback;
+  }
+}
+  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  const userSettings = JSON.parse(localStorage.getItem("User Settings"))
   const formik = useFormik({
     initialValues: {
       serialInput:
@@ -77,13 +88,13 @@ const UserForm = forwardRef((props, ref) => {
       address1: draftFormData?.address1 || formData.address1 || "",
       notes: draftFormData?.notes || formData.notes || "",
       invoiceType:
-        draftFormData?.invoiceType || formData.invoiceType || "تيك أواى",
+        draftFormData?.invoiceType || formData.invoiceType || invoiceSettings?.defaultInvoiceType,
       paymentMethod:
         draftFormData?.paymentMethod ||
         formData?.paymentMethod ||
         (formData?.paymentMethods &&
           Object.keys(formData?.paymentMethods)[0]) ||
-        "كاش", // new field
+        invoiceSettings?.defaultPaymentMethod, // new field
     },
 
     enableReinitialize: true,
@@ -154,8 +165,12 @@ const UserForm = forwardRef((props, ref) => {
     }));
   }, [formik.values, setFormData]);
 
-  const invoiceTypes = ["تيك أواى", "دليفرى", "صالة"]; 
+
+
+  const invoiceTypes = invoiceSettings?.allowedInvoiceType; 
   const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"]; 
+  // const invoiceTypes = ["تيك أواى", "دليفرى", "صالة"]; 
+  // const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"]; 
   useEffect(() => {
     sessionStorage.setItem("FormData", JSON.stringify(formik.values));
   }, [formik.values]);
@@ -250,7 +265,7 @@ const UserForm = forwardRef((props, ref) => {
               <td className="pr-2 bg-blue-100 bg-opacity-50">نوع الفاتورة</td>
               <td className="relative bg-blue-100 bg-opacity-50" colSpan={2}>
                 <div className="flex justify-evenly items-center gap-2 ">
-                  {invoiceTypes.map((type) => (
+                  {invoiceTypes?.map((type) => (
                     <button
                       key={type}
                       type="button"
@@ -272,6 +287,7 @@ const UserForm = forwardRef((props, ref) => {
                 <select
                   className="w-full text-gray-900 px-2.5 py-1.5 text-sm border rounded focus:outline-blue-500 bg-blue-100 bg-opacity-50 appearance-none"
                   value={formik.values.paymentMethod}
+                  disabled={!userSettings?.methodChangeAuth}
                   // onChange={(e) =>
                   //   formik.setFieldValue("paymentMethod", e.target.value)
                   // }
@@ -503,9 +519,9 @@ const UserForm = forwardRef((props, ref) => {
                 <textarea
                   id="notes"
                   name="notes"
-                  rows={2}
-                  className="resize-none text-gray-900 placeholder-gray-600 text-xs block w-full px-2.5 py-1.5 focus:outline-blue-500"
-                  placeholder="هذا النص هو مثال لنص  يمكن أن يستبدل فى نفس المساحة, لقد تم توليد هذا النص من مولد النص العربية حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى اضافة الى زيادة عدد الحروف التى يولدها التطبيق."
+                  rows={1}
+                  className="resize-none text-gray-900 placeholder-gray-600 text-xs block w-full px-2.5 py-1.5 focus:outline-blue-500 border"
+                  // placeholder="هذا النص هو مثال لنص  يمكن أن يستبدل فى نفس المساحة, لقد تم توليد هذا النص من مولد النص العربية حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى اضافة الى زيادة عدد الحروف التى يولدها التطبيق."
                   value={formik.values.notes}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}

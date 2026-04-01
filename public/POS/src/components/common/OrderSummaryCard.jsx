@@ -4,6 +4,7 @@ import { useSelectedProducts } from "../../contexts/SelectedProductsContext";
 export default function OrderSummaryCard() {
   const { selectedProducts } = useSelectedProducts();
   const { subtotal, tax, total } = calculateTotals(selectedProducts);
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"));
   return (
     <div className="w-[95%] mx-auto bg-white flex flex-col px-5 py-2 rounded-lg">
       <div className="flex justify-between items-center mb-2">
@@ -27,7 +28,7 @@ export default function OrderSummaryCard() {
             </tr>
 
             <tr>
-              <td className="font-medium text-gray-400">الضريبة14%</td>
+              <td className="font-medium text-gray-400">الضريبة {invoiceSettings?.taxType}{invoiceSettings?.taxValue}</td>
               <td className="text-end font-medium text-blue-700">
                 {tax.toFixed(2)}
               </td>

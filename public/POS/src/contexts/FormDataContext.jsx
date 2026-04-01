@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedUser } from "../store/reducers/userSlice";
+import notify from "../hooks/Notification";
 export const FormDataContext = createContext();
 
 export const FormDataProvider = ({ children }) => {
@@ -9,10 +10,20 @@ export const FormDataProvider = ({ children }) => {
   const [draftFormData, setDraftFormData] = useState(
     JSON.parse(sessionStorage.getItem("draftFormData")),
   );
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const user = useSelector((state) => state?.user?.user);
   const dispatch = useDispatch();
   const date = new Date();
-  const invSerial = JSON.parse(localStorage.getItem("Invoice Serial"));
+  function safeJSONParse(value, fallback = null) {
+  try {
+    if (!value) return fallback;
+    return JSON.parse(value);
+  } catch (error) {
+    console.warn("Invalid JSON detected:", value);
+    return fallback;
+  }
+}
+  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
   useEffect(() => {
     const storedUser = sessionStorage.getItem("selectedUser");
     if (storedUser) {
@@ -31,8 +42,8 @@ export const FormDataProvider = ({ children }) => {
       "",
     clientName: savedData?.clientName || user?.name || "",
     notes: savedData?.notes || "",
-    invoiceType: savedData?.invoiceType || "تيك أواى",
-    paymentMethod: savedData?.paymentMethod || "كاش",
+    invoiceType: savedData?.invoiceType || invoiceSettings?.defaultInvoiceType,
+    paymentMethod: savedData?.paymentMethod || invoiceSettings?.defaultPaymentMethod,
     paymentMethods: savedData?.paymentMethods || {},
     address1: savedData?.address1 || "",
     newAddress: savedData?.newAddress || "",

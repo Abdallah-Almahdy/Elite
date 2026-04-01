@@ -27,6 +27,18 @@ export const fetchClientsNames = createAsyncThunk(
   },
 );
 
+export const closeShift = createAsyncThunk(
+  "users/closeShift",
+  async ({amount}, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/shifts/close", {end_cash:Number(amount)});
+      return response?.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -51,7 +63,18 @@ const userSlice = createSlice({
       .addCase(fetchClientsNames.rejected, (state, action) => {
         state.loading = false;
         state.error = action?.payload;
-      });
+      })
+      .addCase(closeShift.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(closeShift.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(closeShift.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action?.payload;
+      })
   },
 });
 

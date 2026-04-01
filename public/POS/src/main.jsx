@@ -9,17 +9,16 @@ import { ProductsProvider } from './contexts/ProductsContext.jsx'
 import { FormDataProvider } from './contexts/FormDataContext.jsx'
 
 createRoot(document.getElementById("root")).render(
-  <Provider store={store}>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <FormDataProvider>
-        <SelectedProductsProvider>
-          <ProductsProvider>
-            <App />
-          </ProductsProvider>
-        </SelectedProductsProvider>
-      </FormDataProvider>
-    </BrowserRouter>
-  </Provider>,
+    <Provider store={store}>
+        <BrowserRouter basename="/dashboard/POS" >
+            <FormDataProvider>
+                <SelectedProductsProvider>
+                    <ProductsProvider>
+                        <App />
+                    </ProductsProvider>
+                </SelectedProductsProvider>
+            </FormDataProvider>
+        </BrowserRouter>
+    </Provider>,
 );
-
 

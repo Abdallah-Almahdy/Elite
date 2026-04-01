@@ -21,10 +21,11 @@ import { useProducts } from "../contexts/ProductsContext";
 import notify from "../hooks/Notification";
 
 export default function OrderDetailsPage() {
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPayment, setSelectedPayment] = useState("كاش");
-  const [selectedOrder, setSelectedOrder] = useState("تيك أواى");
+  const [selectedPayment, setSelectedPayment] = useState(invoiceSettings?.defaultPaymentMethod);
+  const [selectedOrder, setSelectedOrder] = useState(invoiceSettings?.defaultInvoiceType);
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const formRef = useRef();
@@ -62,9 +63,9 @@ export default function OrderDetailsPage() {
     }
   };
 
-  // const printReceipt = (data) => {
-  //   receiptRef?.current?.printReceipt(data || invoice);
-  // };
+  const printReceipt = (data) => {
+    receiptRef?.current?.printReceipt(data || invoice);
+  };
 
   const paymentMethodMap = {
     كاش: "cash",
@@ -81,7 +82,116 @@ export default function OrderDetailsPage() {
       amount: Number(value),
     }));
 
-  const handleSubmit = async () => {
+  const handleSubmitWithPrinting = async () => {
+   try{
+ 
+    // formRef.current?.submitForm();
+    const paymentMethods = formData.paymentMethods || {};
+    const hasPrice = Object.values(paymentMethods).some(
+      (val) => val !== "" && Number(val) > 0,
+    );
+    if (!hasPrice) {
+      setError("يجب إدخال قيمة لطريقة دفع واحدة على الأقل قبل إتمام الطلب");
+      return;
+    }
+    if (remainingValue < 0) {
+      setError("يجب دفع القيمة المطلوبة");
+      return;
+    }
+    setError("");
+    const isValid = await formRef?.current?.validateForm();
+    if (isValid) {
+      formRef?.current?.submitForm();
+      const payload = {
+        payment_methods:  convertedPaymentMethods,
+        // payment_method: "cash",
+        cashier_id: Number(formData.cashier_id) || 1,
+
+        products: selectedProducts.map((product) => ({
+          id: product.id,
+          unit_conversion_factor: product.unit_conversion_factor ?? 1,
+          quantity: product.number,
+        })),
+      };
+      if (formData.address1?.trim()) {
+  payload.address = formData.address1.trim();
+}
+      const returnedInvoice = await dispatch(saveOrder(payload));
+      await receiptRef.current?.printReceipt();
+
+      const invoiceData = {
+        id: returnedInvoice?.id,
+        type: "invoice",
+        invoice: {
+          userInfo: formData,
+          items: selectedProducts,
+          subTotal: subtotal,
+          timestamp: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`,
+        },
+      };
+
+      setInvoice(invoiceData);
+      setPayload(returnedInvoice);
+      let backendSerial = returnedInvoice?.id ? returnedInvoice?.id : 1;
+      setInvSerial(backendSerial);
+      localStorage.setItem("Invoice Serial", JSON.stringify(backendSerial || 1));
+      // console.log(returnedInvoice.id)
+      await dispatch(deleteDraft(invoiceData?.invoice?.userInfo?.serialInput));
+      handleNew();
+      sessionStorage.removeItem("selectedUser");
+      sessionStorage.removeItem("draftFormData");
+      sessionStorage.removeItem("Selected Products");
+      setSelectedProducts([]);
+
+      let date = new Date();
+      date = `${date.getFullYear()}-${date.toLocaleDateString("en-US", {
+        month: "2-digit",
+      })}-${date.toLocaleDateString("en-US", {
+        day: "2-digit",
+      })}`;
+      sessionStorage.removeItem("FormData");
+
+      setDraftFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: invoiceSettings?.defaultPaymentMethod,
+        paymentMethods: {},
+        invoiceType: invoiceSettings?.defaultInvoiceType,
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+      setFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: "كاش",
+        paymentMethods: {},
+        invoiceType: "تيك أواى",
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+
+      
+      // navigate("/", { replace: true });
+    }
+   }
+   catch(error){
+    notify("حدث مشكلة يرجى المحاولة مرة أخرى", "error" || error.message)
+   }
+  };
+
+  const handleSubmitWithoutPrinting = async () => {
    try{
  
     // formRef.current?.submitForm();
@@ -116,7 +226,6 @@ export default function OrderDetailsPage() {
   payload.address = formData.address1.trim();
 }
       const returnedInvoice = await dispatch(saveOrder(payload));
-      // await receiptRef.current?.printReceipt();
 
       const invoiceData = {
         id: returnedInvoice?.id,
@@ -133,7 +242,7 @@ export default function OrderDetailsPage() {
       setPayload(returnedInvoice);
       let backendSerial = returnedInvoice?.id;
       setInvSerial(backendSerial);
-      localStorage.setItem("Invoice Serial", JSON.stringify(backendSerial));
+      localStorage.setItem("Invoice Serial", JSON.stringify(backendSerial || 1));
       // console.log(returnedInvoice.id)
       await dispatch(deleteDraft(invoiceData?.invoice?.userInfo?.serialInput));
       handleNew();
@@ -155,9 +264,9 @@ export default function OrderDetailsPage() {
         dateInput: date || "",
         clientName: "",
         notes: "",
-        paymentMethod: "كاش",
+        paymentMethod: invoiceSettings?.defaultPaymentMethod,
         paymentMethods: {},
-        invoiceType: "تيك أواى",
+        invoiceType: invoiceSettings?.defaultInvoiceType,
         phone1: "",
         newPhone: "",
         optionalPhone: "",
@@ -193,14 +302,26 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     const handleKeyEnter = (e) => {
       if (e.key === "Enter") {
-        handleSubmit();
+        handleSubmitWithPrinting();
       }
     };
     window.addEventListener("keydown", handleKeyEnter);
     return () => {
       window.removeEventListener("keydown", handleKeyEnter);
     };
-  }, [handleSubmit]);
+  }, [handleSubmitWithPrinting]);
+
+  useEffect(() => {
+    const handleKeyEnter = (e) => {
+      if (e.key === "F2") {
+        handleSubmitWithoutPrinting();
+      }
+    };
+    window.addEventListener("keydown", handleKeyEnter);
+    return () => {
+      window.removeEventListener("keydown", handleKeyEnter);
+    };
+  }, [handleSubmitWithoutPrinting]);
 
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -238,9 +359,8 @@ export default function OrderDetailsPage() {
             />
           </div>
           <Actions
-            currentPage={currentPage}
-            goToPrevPage={goToPrevPage}
-            handleSubmit={handleSubmit}
+            handleSubmitWithPrinting={handleSubmitWithPrinting}
+            handleSubmitWithoutPrinting={handleSubmitWithoutPrinting}
           />
         </div>
       </div>

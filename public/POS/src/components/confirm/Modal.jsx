@@ -179,7 +179,9 @@ export default function Modal({ isOpen, onConfirm }) {
         </div>
         <div className="w-full flex justify-center items-center mt-5 lg:mt-0">
           <button
-            onClick={() => onConfirm(selectedPreference)}
+            onClick={() => {onConfirm(selectedPreference)
+              window.location.reload()
+            }}
             className="w-1/2 bg-blue-600 hover:bg-blue-500 p-2 rounded text-white text-md font-medium"
           >
             Confirm

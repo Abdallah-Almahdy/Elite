@@ -16,10 +16,16 @@ import { useNavigate } from "react-router-dom";
 import { FormDataContext } from "../contexts/FormDataContext";
 import { useNetworkStatus } from "../hooks/offlineFirst/useNetworkStatus";
 // import { syncOfflineDrafts } from "../store/reducers/draftSlice"
-import { syncOfflineUsers } from "../store/reducers/userSlice";
+import { closeShift, syncOfflineUsers } from "../store/reducers/userSlice";
 import PrintBarcodePage from "./PrintBarcodePage";
 import { getOfflineDrafts } from "../services/indexedDB";
 import { useProducts } from "../contexts/ProductsContext";
+import SettingsPage from "./SettingsPage";
+import { useInvoiceSettings } from "../contexts/InvoiceSettingsContext";
+import UserSettingsPage from "./UserSettingsPage";
+import { useUserSettingsPreference } from "../contexts/UserSettingsPreferenceContext";
+import notify from "../hooks/Notification";
+import ShiftModal from "../components/confirm/ShiftModal";
 export default function Home() {
   const {
     selectedProducts,
@@ -33,7 +39,12 @@ export default function Home() {
     setDraftFormData,
   } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+
+  
   const { preference, updatePreference } = useUIPreferences();
+  const { invoiceSetting, updateUserSettings } = useInvoiceSettings();
+  const {passwordReq, errors, password, confirmPassword, printerName} =  useUserSettingsPreference();
   const loading = useSelector((state) => state.product.loading);
   const isFirstRun = useRef(true);
   const dispatch = useDispatch();
@@ -129,6 +140,21 @@ export default function Home() {
     setIsModalOpen(false);
     updatePreference(value);
   };
+  const handleShiftModalClose = () => {
+    setIsShiftModalOpen(false);
+  };
+
+  const handleConfirmCloseShift = (amount) =>{
+    try{
+      dispatch(closeShift({amount}));
+    handleShiftModalClose()
+    notify("تم إغلاق الوردية بنجاح", "success")
+    }
+    catch(err){
+      notify("حدثت مشكلة فى اغلاق الورديه!", "warn")
+    }
+  }
+
 
   if (loading) {
     return (
@@ -147,6 +173,7 @@ export default function Home() {
   return (
     <>
       <Modal isOpen={isModalOpen} onConfirm={handleModalConfirm} />
+      <ShiftModal isOpen={isShiftModalOpen} onClose={handleShiftModalClose} onConfirm={handleConfirmCloseShift}/>
       <div
         className={`w-full p-1 lg:pb-0 flex flex-col-reverse md:flex-row ${!isModalOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}  ${!isPopupOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}`}
       >
@@ -176,7 +203,7 @@ export default function Home() {
             className={`w-full flex flex-col lg:flex-row justify-between items-center md:justify-center pl-2 ${preference === "textWrap" ? `mt-0` : preference === "largeWrap" ? `mt-1` : `mt-0`}`}
           >
             <div className="w-full flex items-center">
-              <Actions />
+              <Actions setIsShiftModalOpen={setIsShiftModalOpen} />
             </div>
             <div>
               <NumericKeypad userPreference={preference} />

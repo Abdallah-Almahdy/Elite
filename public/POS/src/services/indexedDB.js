@@ -8,7 +8,7 @@ export const initDB = async () => {
         db.createObjectStore("invoice", { keyPath: "id", autoIncrement: true });
       }
 
-      // ⭐ NEW — DRAFTS STORE
+      // NEW — DRAFTS STORE
       if (!db.objectStoreNames.contains("drafts")) {
         db.createObjectStore("drafts", { keyPath: "id" });
       }

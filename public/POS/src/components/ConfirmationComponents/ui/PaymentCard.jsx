@@ -23,13 +23,24 @@ export default function PaymentCard({
     { id: 4, name: "انستا باى", icon: <MdFlashOn />, desc: "انستا باى" },
     { id: 5, name: "اجل", icon: <FaRegMoneyBillAlt />, desc: "الدفع لاحقاً" },
   ];
+  const {selectedProducts} = useSelectedProducts()
   
   const { formData, setFormData } = useContext(FormDataContext);
   const [selectedMethods, setSelectedMethods] = useState(
     formData.paymentMethods,
   );
   const inputRefs = useRef({});
-
+    const userSettings = JSON.parse(localStorage.getItem("User Settings"))
+useEffect(()=>{
+if(selectedProducts.length === 0) {
+  setSelectedMethods({});
+  setFormData((prev) => ({
+    ...prev,
+    paymentMethods: {}
+  }))
+}
+}, [selectedProducts, setFormData])
+  
   useEffect(() => {
     if (!formData?.paymentMethod) return;
 
@@ -43,15 +54,18 @@ export default function PaymentCard({
         .reduce((sum, [, val]) => sum + Number(val || 0), 0);
       const remainingAmount = total - otherMethodsTotal.toFixed(2);
       if (updated[method] !== undefined) {
-        if (Number(updated[method]) < remainingAmount) {
+        // if (Number(updated[method]) < remainingAmount) {
           updated[method] = remainingAmount.toFixed(2);
-        }
+        // }
       } else {
         updated[method] = remainingAmount.toFixed(2);
       }
       return updated;
     });
-  }, [formData?.paymentMethod, total]);
+  }, [formData?.paymentMethod, total, remainingValue]);
+
+
+
 
   useEffect(() => {
     if (Object.keys(selectedMethods).length === 1) {
@@ -63,7 +77,6 @@ export default function PaymentCard({
   }, [selectedMethods]);
 
   useEffect(() => {
-    // only update if selectedMethods is not empty
     if (Object.keys(selectedMethods).length > 0) {
       setFormData((prev) => ({
         ...prev,
@@ -95,11 +108,12 @@ export default function PaymentCard({
     0,
   );
 
+
   const remainingTotal = (paidAmount - total).toFixed(2);
   const isFullyPaid = Number(remainingTotal) < 0;
   useEffect(() => {
     setRemainingValue(remainingTotal);
-  }, [remainingTotal]);
+  }, [remainingTotal ]);
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -124,9 +138,10 @@ export default function PaymentCard({
               checked={!!selectedMethods[m.name]}
               onChange={() => handleToggle(m.name)}
               className="w-4 h-4 accent-blue-600"
+              disabled={!userSettings?.methodChangeAuth}
             />
-            <span className="text-blue-600 opacity-80">{m.icon}</span>
-            <span className="text-sm font-semibold">{m.name}</span>
+            <span className="text-blue-600 opacity-80 cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.icon}</span>
+            <span className="text-sm font-semibold cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.name}</span>
           </div>
 
           {selectedMethods[m.name] !== undefined && (

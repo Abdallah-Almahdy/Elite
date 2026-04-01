@@ -10,6 +10,8 @@ export default function OrderSummary() {
   const discountValue = 0;
   const deliveryService = 0;
   const dineInService = 0;
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"));
+
 
   return (
     <div className="w-full border-t border-gray-300 py-2 lg:pt-0  lg:pb-1">
@@ -50,14 +52,14 @@ export default function OrderSummary() {
 
             {/* القيمة المضافة */}
             <tr className="font-normal">
-              <td colSpan={2}>القيمة المضافة (14%)</td>
+              <td colSpan={2}>القيمة المضافة ({invoiceSettings?.taxType}{invoiceSettings?.taxValue})</td>
               <td className="text-end pl-5" colSpan={2}>
                 {tax.toFixed(2)}
               </td>
             </tr>
 
             {/* المبلغ المستحق */}
-            <tr className="font-bold">
+            <tr className="font-bold text-[18px]">
               <td colSpan={2}>المبلغ المستحق</td>
               <td className="text-end pl-5" colSpan={2}>
                 {total.toFixed(2)}

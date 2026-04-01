@@ -10,6 +10,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useSelectedProducts } from "../../../contexts/SelectedProductsContext";
 import Select from "react-select";
+import notify from "../../../hooks/Notification";
 
 const UserForm = forwardRef((props, ref) => {
   const { formData, setFormData } = useContext(FormDataContext);
@@ -20,7 +21,17 @@ const UserForm = forwardRef((props, ref) => {
   const [showOptionalAddress, setShowOptionalAddress] = useState(false);
   const [showNewAddress, setShowNewAddress] = useState(false);
   const date = new Date();
-  const invSerial = JSON.parse(localStorage.getItem("Invoice Serial"));
+  function safeJSONParse(value, fallback = null) {
+  try {
+    if (!value) return fallback;
+    return JSON.parse(value);
+  } catch (error) {
+    console.warn("Invalid JSON detected:", value);
+    return fallback;
+  }
+}
+  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const formik = useFormik({
     initialValues: {
       serialInput: draftFormData?.id || formData.serialInput || invSerial || "",
@@ -40,9 +51,9 @@ const UserForm = forwardRef((props, ref) => {
         draftFormData?.optionalAddress || formData?.optionalAddress || "",
       newAddress: draftFormData?.newAddress || formData?.newAddress || "",
       invoiceType:
-        draftFormData?.invoiceType || formData?.invoiceType || "تيك أواى",
+        draftFormData?.invoiceType || formData?.invoiceType || invoiceSettings?.defaultInvoiceType,
       paymentMethod:
-        draftFormData?.paymentMethod || formData?.paymentMethod || "كاش",
+        draftFormData?.paymentMethod || formData?.paymentMethod || invoiceSettings?.defaultPaymentMethod,
       paymentMethods:
         draftFormData?.paymentMethods || formData?.paymentMethods || {},
     },
@@ -159,7 +170,6 @@ const UserForm = forwardRef((props, ref) => {
                     id="phone1"
                     name="phone1"
                     value={formik.values.phone1}
-                    // onChange={(e) => setPhone1(e.target.value)}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="block w-full pr-8 ps-10 py-1.5 bg-neutral-secondary-medium border text-heading text-sm rounded-md focus:ring-brand focus:border-brand outline-none shadow-xs placeholder:text-body  focus:outline-blue-600"

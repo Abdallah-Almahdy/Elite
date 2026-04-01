@@ -31,7 +31,7 @@ export default function NumericKeypad({ userPreference }) {
 
   return (
     <div
-      className={`border border-gray-300 rounded-2xl shadow-lg w-64 ${userPreference === "smallWrap" ? `lg:p-1` : `p-2`}`}
+      className={`border border-gray-300 rounded-2xl shadow-lg w-[18rem] ${userPreference === "smallWrap" ? `lg:p-1` : `p-2`}`}
     >
       <div className="grid grid-cols-3 gap-1 mb-1 text-center">
         {buttons.map((btn) => (

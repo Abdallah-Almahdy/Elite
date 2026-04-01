@@ -1,8 +1,10 @@
 // Receipt80mm.jsx
 import React, { forwardRef, useRef, useImperativeHandle } from "react";
 import { printHTML, connectQZ, getPrinters } from "../../services/qzService";
+import { useUserSettingsPreference } from "../../contexts/UserSettingsPreferenceContext";
 
 const Receipt80mm = forwardRef(({ invoice, payload }, ref) => {
+  const {printerName} = useUserSettingsPreference();
   const domRef = useRef();
 
   // Expose the print function to parent
@@ -41,7 +43,9 @@ const imgBase64 = await fetch(cloudinaryUrl)
       // const printers = await getPrinters();
 
       //PASS PRINTER NAME HERE
-      //await printHTML("THERMAL_TEXT_TEST", htmlContent);
+     if(printerName){
+       await printHTML(printerName, htmlContent);
+     }
       //    await printHTML("Microsoft Print to PDF", `
       //   <html>
       //     <body>

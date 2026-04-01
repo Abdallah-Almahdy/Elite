@@ -15,6 +15,8 @@ export default function OrderRow({ quantityRefs }) {
     handleChangeUnit,
   } = useProducts();
 
+   
+
   // Function To Go to Increment Quantity
   const incQuantity = (objID) => {
     incrementQuantity(objID);
@@ -39,6 +41,16 @@ export default function OrderRow({ quantityRefs }) {
     <>
       {selectedProducts?.length > 0 ? (
         selectedProducts?.map((product, index) => {
+          const usedByOtherUnits = selectedProducts
+        .filter(p => p.id === product.id)
+        .reduce((sum, p) => 
+          product?.is_weight
+            ? sum + (p.weight || 0)
+            : sum + (p.number || 0)
+        , 0);
+
+  
+        const availableStock = product.stock - usedByOtherUnits;
           const unitOptions = product?.Units?.map((u) => ({
             value: u?.id,
             label: `${u?.name} - ${u?.sallprice}${product?.unit_name}`,
@@ -54,7 +66,7 @@ export default function OrderRow({ quantityRefs }) {
               <td className="px-1  border border-gray-300">
                 {product?.code || ""}
               </td>
-              <td className="px-1 border border-gray-300">{product?.name}</td>
+              <td className="px-1 border border-gray-300 font-semibold">{product?.name}</td>
               <td className=" border border-gray-300 w-44">
                 <div className="flex gap-x-2 justify-center items-center">
                   <button
@@ -67,14 +79,17 @@ export default function OrderRow({ quantityRefs }) {
 
                   <input
                     type="number"
-                    disabled={product?.is_weight}
+                    // disabled={product?.is_weight}
+                    // value={
+                    //    product?.number
+                    // }
                     value={
                       product?.is_weight ? product?.weight : product?.number
                     }
                     onChange={(e) => {
                       chngQuantity(
                         product?.rowKey,
-                        parseFloat(e?.target?.value),
+                        e?.target?.value,
                       );
                     }}
                     className={`w-[70px] px-1 border border-gray-300 rounded text-center text-sm appearance-none`}
@@ -82,8 +97,9 @@ export default function OrderRow({ quantityRefs }) {
 
                   <button
                     onClick={() => incQuantity(product?.rowKey)}
-                    disabled={product?.is_weight}
-                    className={`bg-green-500  px-2 py-1 rounded ${product?.quantity == 0 ? `bg-opacity-40 cursor-not-allowed` : ` hover:bg-green-400`} ${product?.is_weight ? `bg-opacity-40 cursor-not-allowed` : ` hover:bg-green-400`}`}
+                    // disabled={product?.is_weight}
+                    // className={`bg-green-500  px-2 py-1 rounded ${product?.quantity == 0 ? `bg-opacity-40 cursor-not-allowed` : ` hover:bg-green-400`} ${product?.is_weight ? `bg-opacity-40 cursor-not-allowed` : ` hover:bg-green-400`}`}
+                    className={`bg-green-500  px-2 py-1 rounded ${availableStock == 0 ? `bg-opacity-40 cursor-not-allowed` : ` hover:bg-green-400`}`}
                   >
                     <FaPlus className="text-sm" />
                   </button>
@@ -104,7 +120,7 @@ export default function OrderRow({ quantityRefs }) {
                         : null
                     }
                     onChange={(option) => {
-                      handleChangeUnit(product?.id, option);
+                      handleChangeUnit(product?.id, option, product?.rowKey);
                     }}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
@@ -122,10 +138,10 @@ export default function OrderRow({ quantityRefs }) {
                 </div>
               </td>
               <td className="px-1 border border-gray-300">
-                {product?.price.toFixed(2)}
+                {product?.price?.toFixed(2)}
               </td>
               <td className="px-1 border border-gray-300">
-                {product?.total.toFixed(2)}
+                {product?.total?.toFixed(2)}
               </td>
               <td className=" border border-gray-300">
                 <button

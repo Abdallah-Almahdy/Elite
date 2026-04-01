@@ -16,7 +16,7 @@ class Index extends Component
 {
     use WithPagination, WithFileUploads; // Add WithFileUploads to handle file uploads
 
-    protected $paginationTheme = 'bootstrap-4';
+    protected $paginationTheme = 'bootstrap';
     public $selectedProducts = []; // Store selected product IDs
     public $newSectionId; // New section ID for bulk update
     public $perPage = 20;

@@ -1,14 +1,18 @@
 import React from "react";
 
-export default function Pagination({ currentPage, totalPages, onPageChange }) {
+export default function Pagination({ currentPage, totalPages, onPageChange, setCurrentPage }) {
   // Function To Go to Next Page
   const goToNextPage = () => {
-    if (currentPage < totalPages) onPageChange(currentPage + 1);
+    if (currentPage < totalPages) {setCurrentPage(currentPage + 1)
+      onPageChange(currentPage + 1)
+    };
   };
 
   // Function To Go to Previous Page
   const goToPrevPage = () => {
-    if (currentPage > 1) onPageChange(currentPage - 1);
+    if (currentPage > 1) {setCurrentPage(currentPage - 1)
+      onPageChange(currentPage - 1)
+    };
   };
 
   // Function To Go to a Specific Page
@@ -34,7 +38,12 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         <button
           key={index}
           disabled={page === "..."}
-          onClick={() => page !== "..." && onPageChange(page)}
+          onClick={() => {
+  if (page !== "...") {
+    setCurrentPage(page);
+    onPageChange(page);
+  }
+}}
           className={`
         px-3 py-0.5 border rounded-md text-base
         ${page === "..." ? "cursor-default border-none text-gray-500" : "border-gray-400 hover:bg-gray-200"} 

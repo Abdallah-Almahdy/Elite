@@ -10,8 +10,7 @@ export const connectQZ = async () => {
       resolve("");
     };
   });
-  // qz.security.setCertificatePromise(() => Promise.resolve(""));
-  // qz.security.setSignaturePromise(() => Promise.resolve(""));
+ 
 
   await qz.websocket.connect({
     host: "192.168.72.1",

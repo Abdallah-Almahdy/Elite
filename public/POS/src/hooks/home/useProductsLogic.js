@@ -3,14 +3,21 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FormDataContext } from "../../contexts/FormDataContext";
 import { useSelectedProducts } from "../../contexts/SelectedProductsContext";
-import { saveProductsOfflineThunk } from "../../store/reducers/productSlice";
+import { fetchCategoryProducts, saveProductsOfflineThunk, searchProductsByBarcode, searchProductsByName, searchProductsByNameInGrid } from "../../store/reducers/productSlice";
 import { saveDraft } from "../../store/reducers/draftSlice";
 import { setSelectedUser } from "../../store/reducers/userSlice";
 import notify from "../Notification";
 import { number } from "yup";
+import { useUIPreferences } from "../../contexts/UIPreferencesContext";
 export default function useProductsLogic() {
-  const data = useSelector((state) => state?.product?.products); // All Products Fetched From the Backend
+
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+
+  const data = useSelector((state) => state?.product?.categories); // All Products Fetched From the Backend
+  const products = useSelector((state) => state?.product?.products); // All Products Fetched From the Backend
   const users = useSelector((state) => state?.user?.users); // Users Fetched From the Backend
+  const barcodeProduct = useSelector((state) => state?.product?.barcodeProduct); // Users Fetched From the Backend
+  let filteredProductsByName = [];
 
   const dispatch = useDispatch();
   
@@ -25,12 +32,19 @@ export default function useProductsLogic() {
   const [searchClientPhoneResult, setSearchClientPhoneResult] = useState([]); // State Which Holds The Returned Data Of Searched By Phone Input
   const [draftFormData, setDraftFormData] = useState(null); // State Which Holds The Values Of The Form Stored in Drafts
   const [weight, setWeight] = useState(0); // State Which Holds The Values Of The Form Stored in Drafts
-  const [selectedCategory, setSelectedCategory] = useState(1); // State Which Hold The Value Of The Selcted Category
+  const [selectedCategory, setSelectedCategory] = useState(1); // State Which Hold The Value Of The Selected Category
   const [currentPage, setCurrentPage] = useState(1); // State Which Holds The Value Of The Current Page
   const [isPopupOpen, setIsPopupOpen] = useState(false);  //State Which Holds The Value of The Pop-up
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);  //State Which Holds The value of The Search in The Pop-up
   const [invSerial, setInvSerial] = useState(1);  //State Which Holds The value of The Invoice Serial
-
+  // const preference = useUIPreferences()
+  const [productsPerPage, setProductsPerPage] = useState(() => {
+  const uiPreference = localStorage.getItem("uiPreference");
+  if (uiPreference === "textWrap") return 16;
+  if (uiPreference === "smallWrap") return 12;
+  return 8;
+  
+});
   const inputNameRef = useRef(null); // Input Ref To The Search By Name Input
   const formRef = useRef(); // Input Ref To The Form
   const inputRef = useRef(null); // Input Ref To The BarCode Input
@@ -42,27 +56,20 @@ export default function useProductsLogic() {
   const { selectedProducts, setSelectedProducts, total } =
     useSelectedProducts(); // Selected Products Context
 
-  {
-    /* Array Of The Selected Category */
+  useEffect(() => {
+  if (selectedCategory) {
+    dispatch(fetchCategoryProducts({id:selectedCategory, pageNum:currentPage, itemNum:productsPerPage}));
   }
-  const selectedCategoryObj = data.find((item) => {
-    return item.id === selectedCategory;
-  });
-
-  {
-    /* Array Of The Products Of The Selected Category */
-  }
-  const filteredProducts = selectedCategoryObj
-    ? selectedCategoryObj.products
-    : [];
+}, [selectedCategory, dispatch]);
 
   {
     /* Array Of Products Filtered By Name */
   }
-  const filteredProductsByName = filteredProducts.filter((p) =>
-    p.name.toLowerCase().includes(searchNameValueInGrid.toLowerCase()),
-  );
+  if(products.length>0){
+ filteredProductsByName = products
+  }
 
+ 
   {
     /* Fetching The Products From The BackEnd */
   }
@@ -78,6 +85,7 @@ export default function useProductsLogic() {
   const handleAddObj = (newObj) => {
     if (formData.serialInput.length !== 0) {
       setSelectedProducts((prevProducts) => {
+        
         const existsIndex = prevProducts.findIndex(
           (p) =>
             p.id === newObj.id && p.baseUnit.value === newObj.baseUnit.value,
@@ -91,16 +99,27 @@ export default function useProductsLogic() {
         if (newObj.is_weight) {
           if (existsIndex !== -1) {
             return prevProducts.map((product, idx) => {
+          const usedByOtherUnits = selectedProducts
+        .filter(p => p.id === product.id)
+        .reduce((sum, p) => 
+          product?.is_weight 
+            ? sum + (p.weight || 0)
+            : sum + (p.number || 0)
+        , 0);
+
+  
+        const availableStock = product.stock - usedByOtherUnits;
               if (idx !== existsIndex) return product;
 
-              if (newObj.weight <= product.quantity) {
-                // normal update
+              if (newObj.weight <= availableStock) {
+                            console.log(product)
                 return {
                   ...product,
                   number: product.number + 1,
                   weight: product.weight + newObj.weight,
-                  quantity: product.quantity - newObj.weight,
+                  quantity: availableStock - newObj.weight,
                   total: (product.weight + newObj.weight) * product.price,
+                  canDecrement: product.number >1,
                 };
               } else {
                 notify("الكمية لا تسمح", "warn");
@@ -119,16 +138,21 @@ export default function useProductsLogic() {
                 quantity: newObj.quantity - newObj.weight,
                 total: newObj.quantity * newObj.price,
                 stock: newObj.stock,
+                canDecrement: newObj.quantity >1,
               },
             ];
           } else {
+            console.log(newObj)
             return [
               ...prevProducts,
               {
                 ...newObj,
-                weight: newObj.weight,
-                quantity: newObj.quantity - newObj.weight,
-                total: newObj.weight * newObj.price,
+                // weight: newObj.weight,
+                weight: 1,
+                // quantity: newObj.quantity - newObj.weight,
+                quantity: newObj.quantity - 1,
+                // total: newObj.weight * newObj.price,
+                total: newObj.price,
               },
             ];
           }
@@ -161,7 +185,7 @@ export default function useProductsLogic() {
           {
             ...newObj,
             number: 1,
-            total: newObj.price,
+            total: newObj.total,
             canDecrement: false,
             quantity: newObj.quantity - 1,
           },
@@ -193,112 +217,112 @@ export default function useProductsLogic() {
   {
     /* Function To Change The Quantity Of A Product */
   }
+
   const ChangeQuantity = (rowKey, newVal) => {
-    setSelectedProducts((prevProducts) =>
-      prevProducts.map((product) => {
-        if (product.rowKey !== rowKey) return product;
+  setSelectedProducts((prevProducts) =>
+    prevProducts.map((product) => {
+      if (product.rowKey !== rowKey) return product;
 
-        // If input is empty or invalid, default to 1
-        let value = parseFloat(newVal);
-        if (isNaN(value) || value < 0) {
-          value = 1;
-        }
+      let value = newVal;
+      if (isNaN(value) || value < 0) {
+        value = 1;
+      }
 
-        const finalQuantity =
-          !product?.is_weight && !product?.is_stock
-            ? value
-            : Math.min(value, product.stock);
-        if(product.is_weight || product.is_stock){
-          if (value > product.stock) {
+      const usedByOtherUnits = prevProducts
+        .filter(p => p.id === product.id && p.rowKey !== rowKey)
+        .reduce((sum, p) => sum + (p.number || 0), 0);
+
+      const availableStock = product.stock - usedByOtherUnits;
+
+      const finalQuantity =
+        !product?.is_weight && !product?.is_stock
+          ? value
+          : Math.min(value, availableStock);
+
+      if (product.is_weight || product.is_stock) {
+        if (value > availableStock) {
           notify("الكمية لا تسمح", "warn");
         }
-        }
-        return {
-          ...product,
-          quantity: product.quantity - finalQuantity,
-          number: finalQuantity,
-          weight: finalQuantity,
-          canDecrement: finalQuantity > 1,
+      }
 
-          total: product.price * finalQuantity,
-        };
-      }),
-    );
-  };
+      return {
+        ...product,
+        quantity: availableStock - finalQuantity,
+        number: finalQuantity,
+        weight: finalQuantity,
+        canDecrement: finalQuantity > 1,
+        total: product.price * finalQuantity,
+      };
+    })
+  );
+};
 
   {
     /* Function To Change The Unit Of A Product */
   }
-  const handleChangeUnit = (productId, option) => {
-    setSelectedProducts((prevProducts) => {
-      const unitId = option.unitData.id;
-      const newPrice = Number(option.unitData.sallprice);
-      const newCode = option?.unitData?.barcodes[0]?.code || "";
-      const existingIndex = prevProducts.findIndex(
-        (p) => p.id === productId && p.baseUnit?.value === unitId,
-      );
+ 
+const handleChangeUnit = (productId, option, rowKey) => {
+  setSelectedProducts(prevProducts => {
+    const unitId = option?.unitData.id;
+    const newPrice = Number(option?.unitData?.sallprice);
+    const newCode = option?.unitData?.barcodes[0]?.code || "";
+    const totalUsedForProduct = prevProducts
+  .filter(p => p.id === productId)
+  .reduce((sum, p) => sum + (p.number || 0), 0);
+  console.log(totalUsedForProduct)
 
-      if (existingIndex !== -1) {
-        return prevProducts.map((product, idx) => {
-          if (idx === existingIndex) {
+     const currentIndex = prevProducts.findIndex(p => p.rowKey === rowKey);
+
+    if (currentIndex === -1) return prevProducts;
+
+    const currentProduct = prevProducts[currentIndex];
+
+    const existingUnitIndex = prevProducts.findIndex(
+      p => p.id === productId && p.baseUnit?.value === unitId
+    );
+    const existingProduct = prevProducts[existingUnitIndex];
+      const existNumber = existingProduct?.number;
+      const currNumber = currentProduct?.number;
+      const totalNumber = existNumber + currNumber;
+    console.log(currentProduct.quantity)
+    console.log(currentProduct.quantity)
+    if (existingUnitIndex !== -1) {
+      
+
+      if(currentProduct != existingProduct){
+        return prevProducts
+        .filter((_, idx) => idx !== currentIndex) 
+        .map((product, idx) => {
+          if (idx === existingUnitIndex) {
             return {
-              ...product,
-              weight: product.is_weight ? product.quantity : 0.0,
-      stock: product.quantity,
-      is_weight: product.is_weight,
-      is_stock: product.is_stock,
-      quantity: product?.quantity || 0,
-              baseUnit: {
-                value: unitId,
-                label: `${option?.unitData.name} - ${newPrice}${product?.unit_name}`,
-                unitData: option?.unitData,
-              },
-              price: newPrice,
-              total: newPrice * product?.number,
-              code: newCode,
-              rowKey: `${product.id}-${unitId}`,
-              selectedUnit: {
-                ...product?.selectedUnit,
-                [unitId]: {
-                  value: unitId,
-                  label: option?.unitData.name,
-                  unitData: option?.unitData,
-                },
-              },
+              ...existingProduct,
+              number: totalNumber,
+              weight: existingProduct.is_weight ? totalNumber : existingProduct.weight,
+              total: newPrice * totalNumber,
+              quantity: existingProduct.stock - totalUsedForProduct,
             };
           }
-          
-
-
-
           return product;
         });
       }
-      const baseProduct = prevProducts.find((p) => p.id === productId);
-      if (!baseProduct) return prevProducts;
-      const newRow = {
-        id: baseProduct.id,
-        name: baseProduct.name,
-        image: baseProduct.image,
-        unit_name: baseProduct.unit_name,
-        weight: baseProduct.is_weight ? baseProduct.quantity : 0.0,
-      stock: baseProduct.quantity,
-      quantity: baseProduct?.quantity || 0,
-      is_weight: baseProduct.is_weight,
-      is_stock: baseProduct.is_stock,
-        Units: baseProduct.Units,
-        decrementAbility: baseProduct.number > 1,
-        number: 1,
+    }
+
+    return prevProducts.map((product, idx) => {
+      if (idx !== currentIndex) return product;
+
+      return {
+        ...product,
+        number: currentProduct.number,
+        weight: product.is_weight ? currentProduct.number : product.weight,
         price: newPrice,
-        total: newPrice,
+        total: newPrice * currentProduct.number,
         code: newCode,
-        rowKey: `${productId}-${unitId}`,
+        rowKey: `${product.id}-${unitId}`,
         baseUnit: {
           value: unitId,
-          label: `${option.unitData.name} - ${newPrice}${baseProduct.unit_name}`,
+          label: `${option.unitData.name} - ${newPrice}${product.unit_name}`,
           unitData: option.unitData,
         },
-
         selectedUnit: {
           [unitId]: {
             value: unitId,
@@ -306,39 +330,81 @@ export default function useProductsLogic() {
             unitData: option.unitData,
           },
         },
+        quantity: product.stock - totalUsedForProduct,
       };
-      return [...prevProducts, newRow];
     });
-  };
+  });
+};
+
+
 
   {
     /* Function To Increment The Quantity Of A Product */
   }
+ 
   const incrementQuantity = (rowKey) => {
-    setSelectedProducts((prevProducts) =>
-      prevProducts.map((product) => {
-        if (product.rowKey === rowKey) {
-          if (
-            product.quantity > 0 ||
-            (!product?.is_stock && !product?.is_weight)
-          ) {
-            const newQuantity = product.number + 1;
+  setSelectedProducts((prevProducts) =>
+    prevProducts.map((product) => {
+      const usedByOtherUnits = prevProducts
+        .filter(p => p.id === product.id)
+        .reduce((sum, p) => 
+          product?.is_weight
+            ? sum + (p.weight || 0)
+            : sum + (p.number || 0)
+        , 0);
+
+      const availableStock = product.stock - usedByOtherUnits;
+
+      if (product.rowKey === rowKey) {
+        let newQuantity = availableStock
+        if ((availableStock > 0) || (!product?.is_stock && !product?.is_weight)) {
+          if((availableStock < (product.weight + 1) && product?.weight + 1 >product?.stock) || (availableStock < (product.number + 1)  && product?.weight + 1 >product?.stock)){
+             newQuantity = product?.is_weight ? product?.weight +availableStock : product?.number + availableStock;
+          }else{
+            newQuantity = product?.is_weight ? product?.weight +1 : product?.number + 1;
+          }
+
+          if (product.is_weight) {
+            return {
+              ...product,
+              weight: newQuantity,
+              number: newQuantity,
+              canDecrement: newQuantity > 1,
+              total: product.price * newQuantity,
+              quantity: availableStock - 1,
+            };
+          }
+
+          if (product.is_stock) {
+            return {
+              ...product,
+              weight: newQuantity,
+              number: newQuantity,
+              canDecrement: newQuantity > 1,
+              total: product.price * newQuantity,
+              quantity: availableStock - 1,
+            };
+          }
+
+          if (!product.is_stock && !product.is_weight) {
             return {
               ...product,
               number: newQuantity,
               canDecrement: newQuantity > 1,
               total: product.price * newQuantity,
-              quantity: product.quantity - 1,
+              quantity: availableStock - 1,
             };
-          } else {
-            notify("الكمية لا تسمح", "warn");
-            return product;
           }
+        } else {
+          notify("الكمية لا تسمح", "warn");
+          return product;
         }
-        return product;
-      }),
-    );
-  };
+      }
+
+      return product;
+    })
+  );
+};
 
   {
     /* Function To Decrement The Quantity Of A Product */
@@ -347,14 +413,36 @@ export default function useProductsLogic() {
     setSelectedProducts((prevProducts) =>
       prevProducts.map((product) => {
         if (product?.rowKey === rowKey) {
-          const newQuantity = Math.max(1, product?.number - 1);
-          return {
+          const newQuantity = product.is_stock ? Math.max(1, product?.weight - 1) : Math.max(1, product?.number - 1);
+          if(product.is_weight){
+            return {
+            ...product,
+            weight: newQuantity,
+            canDecrement: newQuantity > 1,
+            total: product?.price * newQuantity,
+            quantity: product.quantity + 1,
+            number: newQuantity,
+          };
+          }
+          if(product.is_stock){
+            return {
             ...product,
             number: newQuantity,
             canDecrement: newQuantity > 1,
             total: product?.price * newQuantity,
             quantity: product.quantity + 1,
+            weight:newQuantity,
           };
+          }
+          if(!product.is_stock && !product.is_weight){
+              return {
+              ...product,
+              number: newQuantity,
+              canDecrement: newQuantity > 1,
+              total: product.price * newQuantity,
+              quantity: product.quantity - 1,
+            };
+            }
         }
         return product;
       }),
@@ -376,17 +464,26 @@ export default function useProductsLogic() {
     sessionStorage.removeItem("draftFormData");
     setDraftData(null);
     sessionStorage.removeItem("FormData");
-    let backendSerial = JSON.parse(localStorage.getItem("Invoice Serial"));
-    localStorage.setItem("Invoice Serial", JSON.stringify(++backendSerial));
+      function safeJSONParse(value, fallback = null) {
+  try {
+    if (!value) return fallback; 
+    return JSON.parse(value);
+  } catch (error) {
+    console.warn("Invalid JSON detected:", value);
+    return fallback;
+  }
+}
+    let backendSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+    localStorage.setItem("Invoice Serial", JSON.stringify(++backendSerial || 1));
 
     setFormData({
       serialInput: backendSerial || "",
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: "كاش",
+      paymentMethod: invoiceSettings?.defaultPaymentMethod,
       paymentMethods: {},
-      invoiceType: "تيك أواى",
+      invoiceType: invoiceSettings?.defaultInvoiceType,
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -399,9 +496,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: "كاش",
+      paymentMethod: invoiceSettings?.defaultPaymentMethod,
       paymentMethods: {},
-      invoiceType: "تيك أواى",
+      invoiceType: invoiceSettings?.defaultInvoiceType,
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -428,6 +525,7 @@ export default function useProductsLogic() {
       notes,
       invoiceType,
       paymentMethod,
+      paymentMethods,
       address1,
       newAddress,
       optionalAddress,
@@ -443,6 +541,7 @@ export default function useProductsLogic() {
       notes: notes,
       invoiceType: invoiceType,
       paymentMethod: paymentMethod,
+      paymentMethods: paymentMethods,
       items: selectedProducts,
       address1: address1,
       newAddress: newAddress,
@@ -464,9 +563,9 @@ export default function useProductsLogic() {
   {
     /* Function When Pressing Enter Inside BarCode Input */
   }
-  const handleSearchEnter = (val) => {
+  const handleSearchEnter = async (val) => {
     if (val[0].toString() === "*") {
-      const regEx = /^\*[0-9]+$/;
+      const regEx = /^\*[0-9]+(\.[0-9]+)?$/;
       if (regEx.test(val) && selectedProducts.length > 0) {
         const newQuantity = Number(val.slice(1));
         const lastProduct = selectedProducts[selectedProducts.length - 1];
@@ -475,65 +574,61 @@ export default function useProductsLogic() {
         }
       }
     } else {
-      let eleCode = val;
+      try{
+         let eleCode = val;
+         let quantityCode = val;
 
       if (val.length === 13) {
         eleCode = val?.slice(1, 7);
+        quantityCode = val?.slice(7, 12)
       }
-      let result = null;
-      data?.forEach((cat) => {
-        cat?.products?.forEach((prod) => {
-          prod?.Units?.forEach((unit) => {
-            unit?.barcodes?.forEach((bc) => {
-              if (
-                bc?.code?.toString().toLowerCase() ===
-                eleCode?.toString().toLowerCase()
-              ) {
-                result = { product: prod, unit };
-              }
-            });
-          });
-        });
-      });
-      if (!result) {
-        notify("الصنف غير موجود", "warn")
-        return result;
-      }
-      const { product, unit } = result;
-      
-      const newObj = {
-        ...product,
+        const resultAction = await dispatch(searchProductsByBarcode(eleCode));
+
+const barcodeProduct = resultAction.payload.data; 
+        const newObj = {
+        ...barcodeProduct,
         number: 1,
-        weight: Number(val?.slice(7, 12)) / 1000,
-        price: Number(unit.sallprice),
-        total: Number(unit.sallprice),
-        stock: product.quantity,
-        code: unit?.barcodes[0]?.code || "",
-        rowKey: `${product.id}-${unit.id}`,
-        baseUnit: { value: unit.id, label: unit.name },
+        weight: Number(quantityCode) / 1000,
+        price: Number(barcodeProduct?.Units?.[0]?.sallprice),
+        total: Number((barcodeProduct?.Units?.[0]?.sallprice * (quantityCode / 1000) || 1)),
+        stock: barcodeProduct?.quantity,
+        code: barcodeProduct?.Units?.[0]?.barcodes?.[0]?.code || "",
+        rowKey: `${barcodeProduct?.id}-${barcodeProduct?.Units?.[0]?.id}`,
+        baseUnit: { value: barcodeProduct?.Units?.[0]?.id, label: barcodeProduct?.Units?.[0]?.name },
         selectedUnit: {
-          ...product.selectedUnit,
-          [unit.id]: {
-            value: unit.id,
-            label: unit.name,
-            unitData: unit,
+          ...barcodeProduct?.selectedUnit,
+          [barcodeProduct?.Units?.[0]?.id]: {
+            value: barcodeProduct?.Units?.[0]?.id,
+            label: barcodeProduct?.Units?.[0]?.name,
+            unitData: barcodeProduct?.Units?.[0],
           },
         },
         unit: {
-          id: unit?.id,
-          name: unit?.name || "",
-          price: Number(unit?.sallprice || 0),
-          code: unit?.barcodes?.[0]?.code || "",
+          id: barcodeProduct?.Units?.[0]?.id,
+          name: barcodeProduct?.Units?.[0]?.name || "",
+          price: Number(barcodeProduct?.Units?.[0]?.sallprice || 0),
+          code: barcodeProduct?.Units?.[0]?.barcodes?.[0]?.code || "",
         },
-        Units: product?.Units,
-        unit_name: product?.unit_name,
+        Units: barcodeProduct?.Units,
+        unit_name: barcodeProduct?.unit_name,
         chosenUnit: {
-          value: unit?.id,
-          label: unit?.name,
-          unitData: Number(unit?.sallprice || 0),
+          value: barcodeProduct?.Units?.[0]?.id,
+          label: barcodeProduct?.Units?.[0]?.name,
+          unitData: Number(barcodeProduct?.Units?.[0]?.sallprice || 0),
         },
       };
+      if (!barcodeProduct) {
+        notify("الصنف غير موجود", "warn")
+        return;
+      }
       handleAddObj(newObj);
+      }
+      catch(err){
+                notify(err, "warn")
+
+      }
+      
+      
     }
     setSearchValue("");
     focusInput();
@@ -544,26 +639,15 @@ export default function useProductsLogic() {
   }
   const handleSearchByNameEnter = (val) => {
     if (!val) return [];
-    const matches = [];
-    data.forEach((cat) =>
-      cat.products.forEach((prod) =>
-        prod.Units.forEach((unit) => {
-          if (prod.name.toLowerCase().includes(val.toLowerCase())) {
-            matches.push({
-              product: prod,
-              unit,
-              displayName: `${prod.name} - ${unit.name} - ${unit.sallprice}${prod.unit_name}`,
-            });
-          }
-        }),
-      ),
-    );
-
-    return matches;
+    dispatch(searchProductsByName(val));
+  };
+  const handleSearchByNameEnterInGrid = (val) => {
+    if (!val) return [];
+    dispatch(searchProductsByNameInGrid(val));
   };
 
   {
-    /* Function When Pressing Enter On A Product Of The Result Of The Search By Name */
+    /* Function Returns The Result Of The Search By Name */
   }
   const handleSearchClientName = (val) => {
     if (!val) return [];
@@ -577,7 +661,7 @@ export default function useProductsLogic() {
   };
 
   {
-    /* Function When Pressing Enter On A Product Of The Result Of The Search By Phone */
+    /* Function Returns The Result Of The Search By Phone */
   }
   const handleSearchClientPhone = (val) => {
     if (!val) return [];
@@ -593,12 +677,14 @@ export default function useProductsLogic() {
   {
     /* Function When Selecting A Product Of The Result Of The Search By Name */
   }
-  const handleSelectProduct = ({ product, unit }) => {
+  const handleSelectProduct = ( product, unit ) => {
     const newObj = {
       ...product,
       number: 1,
       price: Number(unit.sallprice),
       total: Number(unit.sallprice),
+      stock: product?.quantity,
+      quantity: product?.quantity || 0,
       code: unit?.barcodes[0]?.code || "",
       rowKey: `${product.id}-${unit.id}`,
       baseUnit: { value: unit.id, label: unit.name },
@@ -685,6 +771,7 @@ export default function useProductsLogic() {
     searchClientPhoneResult,
     phoneSearchRef,
     invSerial,
+    productsPerPage,
 
     setFormData,
     setSelectedProducts,
@@ -703,6 +790,7 @@ export default function useProductsLogic() {
     setSearchClientPhone,
     setSearchClientPhoneResult,
     setInvSerial,
+    setProductsPerPage,
 
     focusInput,
     ChangeQuantity,
@@ -715,6 +803,7 @@ export default function useProductsLogic() {
     handleFreeze,
     handleSearchEnter,
     handleSearchByNameEnter,
+    handleSearchByNameEnterInGrid,
     handleSelectProduct,
     handleKeypadInput,
     handleSearchClientName,

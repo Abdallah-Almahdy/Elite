@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MdImageSearch } from "react-icons/md";
 import { useProducts } from "../../contexts/ProductsContext";
+import { useSelector } from "react-redux";
 
 export default function ProductsSearch() {
   const {
@@ -16,12 +17,26 @@ export default function ProductsSearch() {
     setSearchResults,
     handleSelectProduct,
   } = useProducts();
+  const results = useSelector((state)=> state?.product?.searchedResults);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const itemRefs = useRef([]);
 
   const changeVal = (e) => {
     handleKeypadInput(e?.target?.value);
   };
+
+  useEffect(() => {
+  setSearchResults(results);
+}, [results]);
+useEffect(() => {
+  const timer = setTimeout(() => {
+    if (searchNameValue.trim() !== "") {
+      handleSearchByNameEnter(searchNameValue);
+    }
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, [searchNameValue]);
 
   useEffect(() => {
     if (highlightIndex >= 0 && itemRefs.current[highlightIndex]) {
@@ -55,13 +70,12 @@ export default function ProductsSearch() {
           type="text"
           placeholder="ابحث بالاسم"
           value={searchNameValue}
-          onChange={(e) => {
-            const value = e.target.value;
-            setSearchNameValue(value);
-            const results = handleSearchByNameEnter(value);
-            setSearchResults(results);
-            setHighlightIndex(-1);
-          }}
+         onChange={(e) => {
+  const value = e.target.value;
+  setSearchNameValue(value);
+  setHighlightIndex(-1);
+  
+}}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -83,20 +97,22 @@ export default function ProductsSearch() {
           }}
           className="border p-1 rounded w-full focus:outline-blue-500"
         />
-        {searchResults.length > 0 && (
+        {searchResults.length > 0 && searchNameValue.length !== 0 && (
           <div className="border bg-white absolute w-[30%] z-50 max-h-60 overflow-y-auto shadow">
-            {searchResults.map((item, index) => (
-              <div
-                key={index}
-                ref={(el) => (itemRefs.current[index] = el)}
-                className={`p-2 cursor-pointer ${
-                  index === highlightIndex ? "bg-blue-100" : "hover:bg-gray-100"
-                }`}
-                onClick={() => handleSelectProduct(item)}
-              >
-                {item.displayName}
-              </div>
-            ))}
+           {searchResults.map((product) =>
+  product.Units?.map((unit, index) => (
+    <div
+      key={`${product.id}-${index}`}
+      ref={(el) => (itemRefs.current[index] = el)}
+      className={`p-2 cursor-pointer ${
+        index === highlightIndex ? "bg-blue-100" : "hover:bg-gray-100"
+      }`}
+      onClick={() => handleSelectProduct(product, unit)}
+    >
+      {product.name} - {unit.name} - {unit.sallprice}
+    </div>
+  ))
+)}
           </div>
         )}
       </div>

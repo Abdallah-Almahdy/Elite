@@ -1,5 +1,6 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { UIPreferencesProvider } from "./contexts/UIPreferencesContext.jsx";
+import { InvoiceSettingsProvider } from "./contexts/InvoiceSettingsContext.jsx";
 import Home from "./pages/Home";
 import DraftPage from "./pages/DraftPage.jsx";
 import { useState, useEffect, useContext } from "react";
@@ -17,8 +18,13 @@ import { ProductsProvider, useProducts } from "./contexts/ProductsContext.jsx";
 import PrintBarcodePage from "./pages/PrintBarcodePage.jsx";
 import { ToastContainer } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { fetchProducts } from "./store/reducers/productSlice.js";
+// import { fetchProducts } from "./store/reducers/productSlice.js";
+import { fetchCategory } from "./store/reducers/productSlice.js";
 import { fetchClientsNames } from "./store/reducers/userSlice.js";
+import { SettingsPreferenceProvider } from "./contexts/SettingsPreferenceContext.jsx";
+import { UserSettingsPreferenceProvider } from "./contexts/UserSettingsPreferenceContext.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
+import UserSettingsPage from "./pages/UserSettingsPage.jsx";
 
 export default function App() {
   const { setSelectedProducts } = useSelectedProducts();
@@ -29,7 +35,7 @@ export default function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchCategory());
   }, [dispatch]);
 
   useEffect(() => {
@@ -87,10 +93,13 @@ export default function App() {
     <>
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <SelectedProductsProvider>
+      <SettingsPreferenceProvider>
+        <UserSettingsPreferenceProvider>
+          <SelectedProductsProvider>
         <FormDataProvider>
           <ProductsProvider>
-            <UIPreferencesProvider>
+            <InvoiceSettingsProvider>
+              <UIPreferencesProvider>
               <Routes>
                 <Route
                   path="/"
@@ -104,11 +113,16 @@ export default function App() {
                 />
                 <Route path="/order-details" element={<OrderDetailsPage />} />
                 <Route path="/print-barcode" element={<PrintBarcodePage />} />
+                <Route path="/invoice-settings" element={<SettingsPage />} />
+                <Route path="/user-settings" element={<UserSettingsPage />} />
               </Routes>
             </UIPreferencesProvider>
+            </InvoiceSettingsProvider>
           </ProductsProvider>
         </FormDataProvider>
       </SelectedProductsProvider>
+        </UserSettingsPreferenceProvider>
+      </SettingsPreferenceProvider>
     </>
   );
 }
