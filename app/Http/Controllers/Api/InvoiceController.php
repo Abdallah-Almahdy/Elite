@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceProduct;
 use App\Models\Product;
 use App\Models\ProductUnits;
+use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseProduct;
 use App\Services\API\ShiftService;
@@ -152,5 +153,67 @@ class InvoiceController extends Controller
             $WarehouseProduct->save();
         }
     }
-    public function destroy() {}
+
+
+    public function inviceConfig()
+    {
+
+        $config =User::find(1)->inviceConfig;
+        if(!$config){
+            return response()->json([
+                'message' => 'No config found for this user.'
+            ], 404);
+        }
+
+        return response()->json([
+            'config' => $config
+        ]);
+    }
+
+    public function editInviceConfig(Request $request)
+    {
+        $request->validate([
+            'printerName' => 'string|nullable',
+            'password' => 'string|nullable',
+            'taxValue' => 'numeric|nullable',
+            'defaultPaymentMethod' => 'string|in:cash,credit_card,instapay,wallet,remaining|nullable',
+            'defaultInvoiceType' => 'string|in:take_away,hall,delvery|nullable',
+            'applyTax' => 'boolean|nullable',
+            'taxTypes' => 'string|in:%,pound|nullable',
+
+        ]);
+
+        $config = User::find(1)->inviceConfig;
+
+        if (!$config) {
+            $config = User::find(1)->inviceConfig()->create($request->all());
+        } else {
+            $config->update($request->all());
+        }
+
+        return response()->json([
+            'message' => 'Config updated successfully.',
+            'config' => $config
+        ]);
+    }
+
+    public function checkPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $user = User::find(1);
+
+        if($user->inviceConfig && $user->inviceConfig->password === $request->password){
+            return response()->json([
+                'message' => 'Password is correct.'
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'Password is incorrect.'
+            ], 400);
+        }
+
+    }
 }

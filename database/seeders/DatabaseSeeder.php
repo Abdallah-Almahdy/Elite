@@ -14,39 +14,95 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
+
+            // شاشه البيع
+            'showProductsSidebar',
+            'showGenralProducts',
             'product.create',
             'product.delete',
             'product.edit',
+
+            // الاقسام
+            'showSectionsSidebar',
             'section.create',
             'section.delete',
             'section.edit',
+
+            //الطلبيات
+
             'showOrdersSidebar',
-            'showPermessionsSidebar',
-            'showProductsSidebar',
-            'showQntOption',
-            'showSectionsSidebar',
+            'order.show',
+            'order.cancel',
+            'order.prepare',
+            'order.shipment',
+            'order.finish',
+
+            //التقارير
+            'reports.show',
+
+            // شاشه  البيع
+            'pos.show',
+            'pos.priceChangeAuth',
+            'pos.changeDiscount',
+            'pos.deleteProdWithPass ',
+            'pos.InvoiceTypeChangeAuth',
+            'pos.paymentMethodChangeAuth',
+            'pos.saveNoPrintAuth',
+            'pos.editDate',
+            'pos.chooseClient',
+            'pos.InviceFreeze',
+            'pos.InviceCall',
+            'pos.priceChange',
+            'pos.changeTax',
+            'pos.InviceCancel',
+            'pos.shiiftClose',
+
+            // شاشه المستخدمين
             'user.create',
-            'config.update',
-            'showStatics',
+
+
+            //شاشه الدليفري
             'showDelevary',
-            'showAdds',
+            'delevary.addArea',
+            'delevary.freeDelevary',
+            'delivery.edit',
+            'delivery.delete',
+
+
+            //شاشه الاعلانات
+            'showAds',
+
+
+            //شاشه الاشعارات
+
             'showNotifications',
-            'showPromoCode',
+
+
+            //شاشه البروموكود
+
+            'showPromoCodes',
+
+            //شاشه المخازن
+
+            'warehouse.show',
+            'warehouse.edit',
+            'warehouse.delete',
+
+            'showUnits',
+            'showSuppliers',
+            'showCustomers',
+            'showAboutUs',
+
+            'showClientsVote',
+            'showCustomersMessages',
+            'config.update',
             'showKitchen',
             'showPrinters',
-            'showStock',
-            'showCashier',
-            'showRecips',
-            'showUnits',
-            'showGredients',
-            'showSuppliers',
-            'showClients',
-            'showAboutUs',
-            'showReviews',
-            'showComplaints'
 
 
+            // شاشه الإحصائيات
 
+            'showStatistics',
         ];
 
         foreach ($permissions as $permission) {

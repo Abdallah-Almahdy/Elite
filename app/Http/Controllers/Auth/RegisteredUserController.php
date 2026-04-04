@@ -30,10 +30,6 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if($request->user->is_admin == false )
-            {
-                    return abort(404);
-            }
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
@@ -44,16 +40,18 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_admin' => true, // Set the user as admin
         ]);
         //  create roles once user is created and assigning it (role name == user name)
         $role = Role::create(['name' => $request->name]);
         $user->assignRole($role);
 
+
         event(new Registered($user));
 
-        Auth::login($user);
 
-        return redirect(route('/', absolute: false));
+
+        return redirect(route('/dashboard/register', absolute: false));
     }
 
 

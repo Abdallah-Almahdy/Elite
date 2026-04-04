@@ -17,7 +17,7 @@
             </div>
             <div class="info mr-2">
                 <a href="#" class="d-block text-success fw-bold">{{ Auth::user()->name }}</a>
-                <small class="text-muted">Administrator</small>
+
             </div>
         </div>
 
@@ -26,15 +26,7 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                 data-accordion="false">
                 <!-- كل القائمة تبقى كما هي -->
-                @can('showProductsSidebar')
-                    <li class="nav-item mb-1">
-                        <a href="{{ route('products.index') }}"
-                            class="nav-link {{ Request::is('dashboard/productds*') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-home ml-2"></i>
-                            <p>الرئيسية</p>
-                        </a>
-                    </li>
-                @endcan
+
 
                 <!-- الإعدادات -->
                 @can('config.update')
@@ -47,16 +39,6 @@
                     </li>
                 @endcan
 
-
-                @can('showPermessionsSidebar')
-                    <li class="nav-item mb-1">
-                        <a href="{{ route('Permissions.index') }}"
-                            class="nav-link {{ Request::is('dashboard/Permissions*') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-user-shield ml-2"></i>
-                            <p>الصلاحيات</p>
-                        </a>
-                    </li>
-                @endcan
 
 
                 @can('user.create')
@@ -102,112 +84,117 @@
                         </a>
                     </li>
                 @endcan
-                <li class="nav-item has-treeview">
 
-                    <a href="#" class="nav-link text-white">
-                        <i class="nav-icon fas fa-chart-line"></i>
-                        <p>
-                            التقارير
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
+                @can('reports.show')
+                    <li class="nav-item has-treeview">
 
-                    <ul class="nav nav-treeview">
+                        <a href="#" class="nav-link text-white">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>
+                                التقارير
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
 
-                        <!-- المبيعات -->
-                        <li class="nav-item has-treeview">
+                        <ul class="nav nav-treeview">
 
-                            <a href="#" class="nav-link text-white">
-                                <i class="nav-icon fas fa-shopping-cart"></i>
-                                <p>
-                                    المبيعات
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
+                            <!-- المبيعات -->
+                            <li class="nav-item has-treeview">
 
-                            <ul class="nav nav-treeview">
+                                <a href="#" class="nav-link text-white">
+                                    <i class="nav-icon fas fa-shopping-cart"></i>
+                                    <p>
+                                        المبيعات
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
 
-                                <li class="nav-item">
-                                    <a href="{{ route('invoices.index') }}"
-                                        class="nav-link {{ Request::is('dashboard/invoices*') ? 'bg-success' : '' }}">
-                                        <i class="far fa-file-alt nav-icon"></i>
-                                        <p>كشف مستندات البيع</p>
-                                    </a>
-                                </li>
+                                <ul class="nav nav-treeview">
 
-                            </ul>
-                        </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('invoices.index') }}"
+                                            class="nav-link {{ Request::is('dashboard/invoices*') ? 'bg-success' : '' }}">
+                                            <i class="far fa-file-alt nav-icon"></i>
+                                            <p>كشف مستندات البيع</p>
+                                        </a>
+                                    </li>
 
-
-                        <!-- الورديات -->
-                        <li class="nav-item has-treeview">
-
-                            <a href="#" class="nav-link text-white">
-                                <i class="nav-icon fas fa-user-clock"></i>
-                                <p>
-                                    الورديات
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-
-                            <ul class="nav nav-treeview">
-
-                                <li class="nav-item">
-                                    <a href="{{ route('shifts.index') }}"
-                                        class="nav-link {{ Request::is('dashboard/shifts*') ? 'bg-success' : '' }}">
-                                        <i class="far fa-file-alt nav-icon"></i>
-                                        <p>تقرير الورديات</p>
-                                    </a>
-                                </li>
-
-                            </ul>
-                        </li>
+                                </ul>
+                            </li>
 
 
-                        <!-- المخازن -->
-                        <li class="nav-item has-treeview">
+                            <!-- الورديات -->
+                            <li class="nav-item has-treeview">
 
-                            <a href="#" class="nav-link text-white">
-                                <i class="nav-icon fas fa-warehouse"></i>
-                                <p>
-                                    المخازن
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
+                                <a href="#" class="nav-link text-white">
+                                    <i class="nav-icon fas fa-user-clock"></i>
+                                    <p>
+                                        الورديات
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
 
-                            <ul class="nav nav-treeview">
+                                <ul class="nav nav-treeview">
 
-                                <li class="nav-item">
-                                    <a  href="{{ route('products.balance') }}"
-                                        class="nav-link {{ Request::is('dashboard/products/balance*') ? 'bg-success' : '' }}"   >
-                                        <i class="far fa-file-alt nav-icon"></i>
-                                        <p>كشف المخازن</p>
-                                    </a>
-                                </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('shifts.index') }}"
+                                            class="nav-link {{ Request::is('dashboard/shifts*') ? 'bg-success' : '' }}">
+                                            <i class="far fa-file-alt nav-icon"></i>
+                                            <p>تقرير الورديات</p>
+                                        </a>
+                                    </li>
 
-                            </ul>
-                        </li>
-
-                    </ul>
-
-                </li>
-
-                <li class="nav-item mb-1">
-                    <a href="{{ route('pos.index') }}"
-                        class="nav-link {{ Request::is('dashboard/POS*') ? 'bg-success' : '' }}">
-                        <i class="nav-icon fas fa-file-invoice ml-2"></i>
-                        <p class="ml-1">شاشه البيع</p>
+                                </ul>
+                            </li>
 
 
-                    </a>
-                </li>
+                            <!-- المخازن -->
+                            <li class="nav-item has-treeview">
+
+                                <a href="#" class="nav-link text-white">
+                                    <i class="nav-icon fas fa-warehouse"></i>
+                                    <p>
+                                        المخازن
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+
+                                <ul class="nav nav-treeview">
+
+                                    <li class="nav-item">
+                                        <a href="{{ route('products.balance') }}"
+                                            class="nav-link {{ Request::is('dashboard/products/balance*') ? 'bg-success' : '' }}">
+                                            <i class="far fa-file-alt nav-icon"></i>
+                                            <p>كشف المخازن</p>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+
+                        </ul>
+
+                    </li>
+                @endcan
+
+                @can('pos.show')
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('pos.index') }}"
+                            class="nav-link {{ Request::is('dashboard/POS*') ? 'bg-success' : '' }}">
+                            <i class="nav-icon fas fa-file-invoice ml-2"></i>
+                            <p class="ml-1">شاشه البيع</p>
+
+
+                        </a>
+                    </li>
+                @endcan
 
                 <!-- الصلاحيات -->
 
 
                 <!-- Special Admin Features -->
 
-                @can('showStatics')
+                @can('showStatistics')
                     <!-- الإحصائيات -->
                     <li class="nav-item mb-1">
                         <a href="{{ route('statices.index') }}"
@@ -229,7 +216,7 @@
                     </li>
                 @endcan
 
-                @can('showAdds')
+                @can('showAds')
                     <!-- الإعلانات -->
                     <li class="nav-item mb-1">
                         <a href="{{ route('banares.index') }}"
@@ -253,7 +240,7 @@
                 @endcan
 
 
-                @can('showPromoCode')
+                @can('showPromoCodes')
                     <!-- البرومو كود -->
                     <li class="nav-item mb-1">
                         <a href="{{ route('promocodes.index') }}"
@@ -289,7 +276,7 @@
 
 
                 <!-- المخازن -->
-                @can('showStock')
+                @can('warehouse.show')
                     <li class="nav-item mb-1">
                         <a href="{{ route('warehouses.index') }}"
                             class="nav-link {{ Request::is('dashboard/warehouses*') ? 'bg-success' : '' }}">
@@ -299,15 +286,7 @@
                     </li>
                 @endcan
 
-                <!-- الكاشير -->
-                @can('showCashier')
-                    <li class="nav-item mb-1">
-                        <a href="http://localhost:5174/" target="_blank" class="nav-link">
-                            <i class="nav-icon fas fa-cash-register ml-2"></i>
-                            <p>الكاشير</p>
-                        </a>
-                    </li>
-                @endcan
+
 
                 <!-- الوصفات -->
 
@@ -358,7 +337,7 @@
                 @endcan
 
                 <!-- تقييمات العملاء -->
-                @can('showReviews')
+                @can('showClientsVotes')
                     <li class="nav-item mb-1">
                         <a href="{{ route('rates.index') }}"
                             class="nav-link {{ Request::is('dashboard/rates*') ? 'bg-success' : '' }}">
@@ -369,7 +348,7 @@
                 @endcan
 
                 <!-- شكاوي العملاء -->
-                @can('showComplaints')
+                @can('showCustomersMessages')
                     <li class="nav-item mb-1">
                         <a href="{{ route('contactus.index') }}"
                             class="nav-link {{ Request::is('dashboard/ContactUs*') ? 'bg-success' : '' }}">
@@ -380,8 +359,21 @@
                 @endcan
 
             </ul>
+
         </nav>
+
     </div>
+    <li class="nav-item" style="border-top: 1px solid white">
+        <a href="{{ route('logout') }}" class=""
+            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <i class="glyphicon glyphicon-log-out"></i> <!-- بدل Font Awesome ممكن Glyphicon -->
+            <span class="ml-2"style="color: white;">تسجيل خروج</span>
+        </a>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </li>
 </aside>
 <!-- Responsive Sidebar Overlay -->
 

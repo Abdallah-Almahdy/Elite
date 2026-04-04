@@ -1,0 +1,67 @@
+{
+  "_POSInterface-Wkik3l-7.js": {
+    "file": "assets/POSInterface-Wkik3l-7.js",
+    "name": "POSInterface",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_index-I3UM_3YE.js": {
+    "file": "assets/index-I3UM_3YE.js",
+    "name": "index"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CjyeYW5f.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/Pages/Test.jsx": {
+    "file": "assets/Test-B3eSoFD8.js",
+    "name": "Test",
+    "src": "resources/js/Pages/Test.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_POSInterface-Wkik3l-7.js",
+      "_index-I3UM_3YE.js"
+    ],
+    "css": [
+      "assets/app-CjyeYW5f.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CI6-uPST.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_index-I3UM_3YE.js"
+    ]
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-Cm6QaeCF.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true,
+    "imports": [
+      "_index-I3UM_3YE.js"
+    ],
+    "dynamicImports": [
+      "_POSInterface-Wkik3l-7.js",
+      "resources/js/Pages/Test.jsx"
+    ],
+    "css": [
+      "assets/app-CuAb6TG5.css",
+      "assets/app-CjyeYW5f.css"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-D9CcZvde.css",
+    "src": "resources/sass/app.scss"
+  }
+}

@@ -30,6 +30,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin',
     ];
 
     /**
@@ -55,6 +56,10 @@ class User extends Authenticatable
         ];
     }
 
+    public function inviceConfig(): HasOne
+    {
+        return $this->hasOne(InviceConfig::class, 'user_id');
+    }
 
     public function ratings(): HasMany
     {
