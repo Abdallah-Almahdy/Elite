@@ -48,7 +48,7 @@ class InvoiceController extends Controller
             $invoice = Invoice::create([
                 'address' => $request->address,
                 'cashier_id' => 1,
-                 'shift_id' => $shift->id,
+                'shift_id' => $shift->id,
                 'total' => 0,
                 'safe_id' => $shift->safe_id
             ]);
@@ -123,7 +123,6 @@ class InvoiceController extends Controller
             $invoice->save();
             DB::commit();
             return new InvoiceResource($invoice);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -158,8 +157,8 @@ class InvoiceController extends Controller
     public function inviceConfig()
     {
 
-        $config =User::find(1)->inviceConfig;
-        if(!$config){
+        $config = User::find(1)->inviceConfig;
+        if (!$config) {
             return response()->json([
                 'message' => 'No config found for this user.'
             ], 404);
@@ -191,11 +190,43 @@ class InvoiceController extends Controller
 
 
         $config = User::find($request->user_id)->inviceConfig;
+        $allowedPaymentMethods = collect($request->allowedPaymentMethods)
+            ->push($request->defaultPaymentMethod)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $allowedInvoiceTypes = collect($request->allowedInvoiceTypes)
+            ->push($request->defaultInvoiceType)
+            ->unique()
+            ->values()
+            ->toArray();
 
         if (!$config) {
-            $config = User::find($request->user_id)->inviceConfig()->create($request->all());
+            $config = User::find($request->user_id)->inviceConfig()->create([
+                'printerName' => $request->printerName ?? $config->printerName,
+                'password' => $request->password ?? $config->password,
+                'taxValue' => $request->taxValue ?? $config->taxValue,
+                'defaultPaymentMethod' => $request->defaultPaymentMethod ?? $config->defaultPaymentMethod,
+                'defaultInvoiceType' => $request->defaultInvoiceType ?? $config->defaultInvoiceType,
+                'applyTax' => $request->applyTax ?? $config->applyTax,
+                'taxTypes' => $request->taxTypes ?? $config->taxTypes,
+                'allowedPaymentMethods' => $allowedPaymentMethods,
+                'allowedInvoiceTypes' => $allowedInvoiceTypes
+            ]);
         } else {
-            $config->update($request->all());
+
+            $config->update([
+                'printerName' => $request->printerName ?? $config->printerName,
+                'password' => $request->password ?? $config->password,
+                'taxValue' => $request->taxValue ?? $config->taxValue,
+                'defaultPaymentMethod' => $request->defaultPaymentMethod ?? $config->defaultPaymentMethod,
+                'defaultInvoiceType' => $request->defaultInvoiceType ?? $config->defaultInvoiceType,
+                'applyTax' => $request->applyTax ?? $config->applyTax,
+                'taxTypes' => $request->taxTypes ?? $config->taxTypes,
+                'allowedPaymentMethods' => $allowedPaymentMethods,
+                'allowedInvoiceTypes' => $allowedInvoiceTypes
+            ]);
         }
 
         return response()->json([
@@ -213,15 +244,14 @@ class InvoiceController extends Controller
 
         $user = User::find(1);
 
-        if($user->inviceConfig && $user->inviceConfig->password === $request->password){
+        if ($user->inviceConfig && $user->inviceConfig->password === $request->password) {
             return response()->json([
                 'message' => 'Password is correct.'
             ]);
-        }else{
+        } else {
             return response()->json([
                 'message' => 'Password is incorrect.'
             ], 400);
         }
-
     }
 }
