@@ -46,5 +46,7 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
     Route::post('/invice-config', [InvoiceController::class, 'editInviceConfig']);
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
+    Route::get('/admins', [AuthController::class, 'getAdmins']);
+
 // });
 

@@ -271,6 +271,18 @@ class AuthController extends Controller
             'status' => 'success',
         ], 200);
     }
+
+
+    public function getAdmins()
+    {
+        $admins = User::where('is_admin', true)->get();
+
+        return response()->json([
+            'admins' => $admins,
+            'message' => 'Admins fetched successfully',
+            'status' => 'success',
+        ], 200);
+    }
 }
 
 
