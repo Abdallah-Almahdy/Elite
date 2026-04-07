@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Services\Dashboard\WarehouseService;
 use App\Http\Requests\Api\NewWarehouseRequest;
+use Illuminate\Support\Facades\Gate;
 
 class WarehouseController extends Controller
 {
@@ -38,6 +39,8 @@ class WarehouseController extends Controller
 
     public function index()
     {
+        Gate::authorize('warehouse.show');
+
         $warehouses = Warehouse::with(['addresses', 'phones'])->latest()->get();
         return view(
             'pages.warehouses.index',
@@ -49,12 +52,13 @@ class WarehouseController extends Controller
 
     public function create()
     {
+        Gate::authorize('warehouse.create');
         return view('pages.warehouses.create');
     }
 
     public function store(Request $request)
     {
-
+        Gate::authorize('warehouse.create');
         try {
             $this->warehouseService->create($request);
 
@@ -78,12 +82,15 @@ class WarehouseController extends Controller
 
     public function edit(Warehouse $warehouse)
     {
+        Gate::authorize('warehouse.edit');
         $warehouse->load(['addresses', 'phones']);
         return view('pages.warehouses.edit', compact('warehouse'));
     }
 
     public function update(Request $request, Warehouse $warehouse)
     {
+        Gate::authorize('warehouse.edit');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:50', Rule::unique('warehouses')->ignore($warehouse->id)],
@@ -116,8 +123,8 @@ class WarehouseController extends Controller
             'is_active' => $validated['is_active'] ?? true,
             'is_default' => $validated['is_default'] ?? false,
         ]);
-        
-        if(isset($validated['is_default']) && $validated['is_default']){
+
+        if (isset($validated['is_default']) && $validated['is_default']) {
             // Set other warehouses to not default
             Warehouse::where('id', '!=', $warehouse->id)->update(['is_default' => false]);
         }
@@ -164,6 +171,8 @@ class WarehouseController extends Controller
 
     public function destroy(Warehouse $warehouse)
     {
+
+        Gate::authorize('warehouse.delete');
         // Delete related addresses and phones
         $warehouse->addresses()->delete();
         $warehouse->phones()->delete();

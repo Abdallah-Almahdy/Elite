@@ -3,6 +3,7 @@
 namespace App\Livewire\Delivery;
 
 use App\Models\Delivery;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -36,6 +37,7 @@ class Index extends Component
 
     public function addDelivery()
     {
+        Gate::authorize('delevary.addArea');
         $this->validate();
 
         Delivery::create([
@@ -51,6 +53,7 @@ class Index extends Component
 
     public function editDelivery($id)
     {
+       Gate::authorize('delivery.edit');
         $this->showDeliveryForm = true;
         $delivery = Delivery::findOrFail($id);
         $this->edit_id = $delivery->id;
@@ -60,8 +63,9 @@ class Index extends Component
 
     public function updateDelivery()
     {
-        $this->validate();
 
+        $this->validate();
+        Gate::authorize('delivery.edit');
         $delivery = Delivery::findOrFail($this->edit_id);
         $delivery->update([
             'name' => $this->name,
@@ -79,6 +83,8 @@ class Index extends Component
     }
     public function deleteDelivery($id)
     {
+
+        Gate::authorize('delivery.delete');
         $delivery = Delivery::findOrFail($id);
         $delivery->delete();
 
@@ -94,7 +100,7 @@ class Index extends Component
     public function render()
     {
         count($this->deliveries) == 0 && $this->search == '' ? $this->deliveries = Delivery::all() : $this->deliveries;
-
+        Gate::authorize('showDelevary');
         return view('livewire.delivery.index', [
             'deliveries' => $this->deliveries,
         ]);

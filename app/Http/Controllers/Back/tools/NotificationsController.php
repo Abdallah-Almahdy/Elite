@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Back\tools;
 
 use App\Http\Controllers\Controller;
 use App\Services\notificationsService;
+use Illuminate\Support\Facades\Gate;
 
 class NotificationsController extends Controller
 {
@@ -14,6 +15,7 @@ class NotificationsController extends Controller
 
     public function index()
     {
+        Gate::authorize('showNotifications');
         // Create an instance of the notifications service
         $notificationsService = new notificationsService();
 

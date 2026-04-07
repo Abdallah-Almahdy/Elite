@@ -180,13 +180,19 @@ class InvoiceController extends Controller
             'defaultInvoiceType' => 'string|in:take_away,hall,delvery|nullable',
             'applyTax' => 'boolean|nullable',
             'taxTypes' => 'string|in:%,pound|nullable',
+            'user_id' => 'required|integer|exists:users,id',
+            'allowedPaymentMethods' => 'array|nullable',
+            'allowedPaymentMethods.*' => 'string|in:cash,credit_card,instapay,wallet,remaining',
+            'allowedInvoiceTypes' => 'array|nullable',
+            'allowedInvoiceTypes.*' => 'string|in:take_away,hall,delvery',
 
         ]);
 
-        $config = User::find(1)->inviceConfig;
+
+        $config = User::find($request->user_id)->inviceConfig;
 
         if (!$config) {
-            $config = User::find(1)->inviceConfig()->create($request->all());
+            $config = User::find($request->user_id)->inviceConfig()->create($request->all());
         } else {
             $config->update($request->all());
         }

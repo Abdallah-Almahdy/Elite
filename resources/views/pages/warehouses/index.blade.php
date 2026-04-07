@@ -41,6 +41,7 @@
             </div>
 
             <!-- زر الإضافة -->
+            @can('warehouse.create')
             <a href="{{ route('warehouses.create') }}"
                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,6 +49,7 @@
                 </svg>
                 إضافة مخزن جديد
             </a>
+            @endcan
         </div>
 
         <!-- شريط التبويب -->
@@ -194,6 +196,7 @@
                                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                         </a>
+                                        @can('warehouse.edit')
                                         <a href="{{ route('warehouses.edit', $warehouse->id) }}"
                                            class="inline-flex items-center p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors duration-200"
                                            title="تعديل">
@@ -202,6 +205,8 @@
                                                       d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                             </svg>
                                         </a>
+                                        @endcan
+                                        @can('warehouse.delete')
                                         <form action="{{ route('warehouses.destroy', $warehouse->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
@@ -215,6 +220,7 @@
                                                 </svg>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

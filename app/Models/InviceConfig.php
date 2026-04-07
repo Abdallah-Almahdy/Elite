@@ -17,6 +17,8 @@ class InviceConfig extends Model
         'applyTax',
         'taxTypes',
         'user_id',
+        'allowedPaymentMethods',
+        'allowedInvoiceTypes',
 
     ];
 }

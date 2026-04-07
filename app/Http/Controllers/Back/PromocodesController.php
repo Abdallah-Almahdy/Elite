@@ -7,12 +7,13 @@ use App\Models\Product;
 use App\Models\PromoCode;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class PromocodesController extends Controller
 {
     public function index()
     {
-
+        Gate::authorize('showPromoCodes');
 
         $data = PromoCode::all();
         $products = Product::all();
@@ -31,7 +32,7 @@ class PromocodesController extends Controller
             return $user;
         });
         $products = Product::all();
-        return view('pages.promocodes.create', ['users' => $users,'products' => $products]);
+        return view('pages.promocodes.create', ['users' => $users, 'products' => $products]);
     }
 
     public function edit($id)
@@ -116,7 +117,7 @@ class PromocodesController extends Controller
         // ✅ إنشاء الكود
         $promo = PromoCode::create($validated);
 
- 
+
         // ✅ لو تم اختيار منتجات
         if (!empty($request->product_ids)) {
             $promo->products()->attach($request->product_ids);

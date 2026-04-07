@@ -251,7 +251,7 @@
                                     <td class="px-3 py-2 border border-gray-200">
                                         {{ optional($product->section)->name ?? 'غير متاح' }}
                                     </td>
-
+                                    
                                     <td class="px-3 py-2 border border-gray-200 text-center">
                                         <div class="inline-flex items-center justify-center gap-1">
 
@@ -285,6 +285,7 @@
                                                     </span>
                                                 </a>
                                             @endcan
+                                            @can('product.delete')
                                             @if ($product->qnt > 0)
                                                 <button wire:click="changeAvailability({{ $product->id }}, 0)"
                                                     class="   btn btn-outline-danger right fas p-1 ">
@@ -308,6 +309,7 @@
 
                                                 </button>
                                             @endif
+                                            @endcan
 
                                         </div>
                                     </td>

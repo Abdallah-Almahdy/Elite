@@ -33,10 +33,11 @@ class permissionsController extends Controller
         // 1️⃣ Validate
         $request->validate([
             'permissions' => 'required|array',
+            'user_id' => 'required|integer|exists:users,id',
         ]);
 
         // 2️⃣ جلب المستخدم
-        $user = User::findOrFail(1); // استخدم findOrFail بدل find للتأكد إنه موجود
+        $user = User::findOrFail($request->user_id); // استخدم findOrFail بدل find للتأكد إنه موجود
 
         // 3️⃣ أخذ فقط البرمشنز اللي true
         // array_filter يحذف كل false, null, 0

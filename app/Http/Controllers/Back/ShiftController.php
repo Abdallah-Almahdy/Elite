@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ShiftController extends Controller
 {
@@ -11,6 +12,7 @@ class ShiftController extends Controller
 
     public function index()
     {
+        Gate::authorize('reports.show');
         return view('pages.shifts.index');
     }
 

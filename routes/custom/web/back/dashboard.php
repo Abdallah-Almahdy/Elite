@@ -47,6 +47,7 @@ use App\Http\Controllers\Back\WarehouseTransactionsController;
 use App\Http\Controllers\UnitController;
 use App\Livewire\WarehouseTransactions\Create as WarehouseTransactionsCreate;
 use App\Models\Config;
+use Illuminate\Support\Facades\Gate;
 
 // use App\Livewire\Recipe\Create as CreateRecipe;
 // use App\Livewire\Recipe\Index as IndexRecipe;
@@ -63,12 +64,13 @@ use App\Models\Config;
 Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     Route::get('home', function () {
+
         $data = SubSection::first();
         return view('/admin/dashboardHome', ['data' => $data]);
     })->name('dashboard');
 
     Route::get('/POS', function () {
-
+        Gate::authorize('pos.show');
         return file_get_contents(public_path('POS/dist/index.html'));
     })->where('any', '.*')->name('pos.index');
 

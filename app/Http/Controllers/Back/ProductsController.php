@@ -28,8 +28,7 @@ class ProductsController extends Controller
      */
     public function create()
     {
-
-
+        Gate::authorize('product.create');
         $sections = SubSection::all();
         $companies = Company::all();
         return view(
@@ -66,6 +65,7 @@ class ProductsController extends Controller
      */
     public function edit($id)
     {
+        Gate::authorize('user.edit');
         $data = Product::findOrFail($id);
         $sections = SubSection::all();
 

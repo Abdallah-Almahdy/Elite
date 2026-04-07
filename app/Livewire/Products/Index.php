@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Products;
 
+use Illuminate\Support\Facades\Gate;
 use App\Models\Product;
 use App\Models\Favorit;
 use App\Models\SubSection;
@@ -35,6 +36,7 @@ class Index extends Component
     }
     public function deleteSelected()
     {
+        Gate::authorize('product.delete');
         if (empty($this->selectedProducts)) {
             session()->flash('error', 'اختر منتجات للحذف!');
             return;

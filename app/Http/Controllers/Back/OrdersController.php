@@ -16,7 +16,7 @@ class OrdersController extends Controller
      */
     public function index()
     {
-
+        Gate::authorize('showOrdersSidebar');
 
         $orders = Order::all();
 

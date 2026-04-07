@@ -10,6 +10,7 @@
 
         <!-- أزرار التحكم الرئيسية -->
         <div class="flex flex-wrap gap-3 mb-6">
+            @can('delevary.freeDelevary')
             <button wire:click="$toggle('showDeliverySection')"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -17,7 +18,8 @@
                 </svg>
                 {{ $showDeliverySection ? 'إخفاء خيار التوصيل المجاني' : 'إظهار خيار التوصيل المجاني' }}
             </button>
-
+            @endcan
+             @can('delevary.addArea');
             <button wire:click="$toggle('showDeliveryForm')"
                     class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -25,9 +27,11 @@
                 </svg>
                 {{ $showDeliveryForm ? 'إخفاء نموذج المنطقة' : 'إظهار نموذج المنطقة' }}
             </button>
+            @endcan
         </div>
 
         <!-- قسم التوصيل المجاني -->
+        @can('delevary.freeDelevary')
         @if ($showDeliverySection)
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
                 <h3 class="text-lg font-semibold mb-4 text-gray-700">إعدادات التوصيل المجاني</h3>
@@ -54,7 +58,10 @@
                 </div>
             </div>
         @endif
+        @endcan
 
+
+         @can('delevary.addArea');
         <!-- نموذج إضافة/تعديل منطقة -->
         @if ($showDeliveryForm)
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
@@ -102,6 +109,7 @@
                 </form>
             </div>
         @endif
+        @endcan
 
         <!-- قائمة المناطق -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
@@ -132,6 +140,7 @@
                                 <td class="py-3 px-4 border-b text-gray-800">{{ $delivery->delivery_price }}</td>
                                 <td class="py-3 px-4 border-b">
                                     <div class="flex gap-2 justify-end">
+                                        @can('delivery.edit')
                                         <button wire:click="editDelivery({{ $delivery->id }})"
                                                 class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition flex items-center gap-1 text-sm">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -139,6 +148,9 @@
                                             </svg>
                                             تعديل
                                         </button>
+                                        @endcan
+
+                                        @can('delivery.delete')
                                         <button wire:click="deleteDelivery({{ $delivery->id }})"
                                                 onclick="return confirm('هل أنت متأكد من أنك تريد حذف هذه المنطقة؟')"
                                                 class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition flex items-center gap-1 text-sm">
@@ -147,6 +159,7 @@
                                             </svg>
                                             حذف
                                         </button>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

@@ -17,6 +17,7 @@ class SectionsController extends Controller
      */
     public function index()
     {
+        Gate::authorize('showSectionsSidebar');
 
         return view('pages.sections.index');
     }
@@ -26,7 +27,8 @@ class SectionsController extends Controller
      */
     public function create()
     {
-        
+
+        Gate::authorize('section.create');
         return view('pages.sections.create');
     }
 
@@ -81,8 +83,8 @@ class SectionsController extends Controller
      */
     public function edit($id)
     {
-        Gate::authorize('update', Section::class);
-
+        Gate::authorize('section.edit', Section::class);
+    
 
         $checkIfManin = Section::find($id);
 
