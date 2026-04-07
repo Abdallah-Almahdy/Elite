@@ -166,7 +166,8 @@ class InvoiceController extends Controller
         }
 
         return response()->json([
-            'config' => $config
+            'config' => $config,
+            'mainWarehouse' => Warehouse::where('is_default', true)->first()->name
         ]);
     }
 
@@ -199,7 +200,8 @@ class InvoiceController extends Controller
 
         return response()->json([
             'message' => 'Config updated successfully.',
-            'config' => $config
+            'config' => $config,
+            'mainWarehouse' => Warehouse::where('is_default', true)->first()->name
         ]);
     }
 
