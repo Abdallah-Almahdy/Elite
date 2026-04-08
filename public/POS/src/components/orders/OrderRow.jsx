@@ -4,6 +4,7 @@ import { ImBin } from "react-icons/im";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { useProducts } from "../../contexts/ProductsContext";
+import { useEffect, useState } from "react";
 
 export default function OrderRow({ quantityRefs }) {
   const {
@@ -13,9 +14,77 @@ export default function OrderRow({ quantityRefs }) {
     decrementQuantity,
     ChangeQuantity,
     handleChangeUnit,
+    ChangePrice,
   } = useProducts();
 
-   
+  const [activeRow, setActiveRowLocal] = useState(
+    selectedProducts[selectedProducts.length - 1]?.rowKey,
+  );
+  const [currentIndex, setCurrentIndexLocal] = useState(0);
+  useEffect(() => {
+    const handleKey = (e) => {
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement.tagName === "INPUT";
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const nextIndex = Math.min(
+          selectedProducts.length - 1,
+          currentIndex + 1,
+        );
+        setActiveRowLocal(selectedProducts[nextIndex]?.rowKey);
+        setCurrentIndexLocal(nextIndex);
+
+        if (isInputFocused) {
+          const nextRowKey = selectedProducts[nextIndex].rowKey;
+          const inputEl = quantityRefs.current[nextRowKey];
+          if (inputEl) inputEl.focus();
+        }
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prevIndex = Math.max(0, currentIndex - 1);
+        setActiveRowLocal(selectedProducts[prevIndex].rowKey);
+        setCurrentIndexLocal(prevIndex);
+
+        if (isInputFocused) {
+          const prevRowKey = selectedProducts[prevIndex].rowKey;
+          const inputEl = quantityRefs.current[prevRowKey];
+          if (inputEl) inputEl.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [currentIndex, selectedProducts, quantityRefs]);
+
+  // useEffect(() => {
+  //   const handleKey = (e) => {
+  //     const activeElement = document.activeElement;
+
+  //     if (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA") return;
+
+  //     if (e.key === "ArrowDown") {
+  //       e.preventDefault();
+  //       const nextIndex = Math.min(selectedProducts.length - 1, currentIndex + 1);
+  //       setActiveRowLocal(selectedProducts[nextIndex].rowKey);
+  //       setCurrentIndexLocal(nextIndex);
+  //     }
+
+  //     if (e.key === "ArrowUp") {
+  //       e.preventDefault();
+  //       const prevIndex = Math.max(0, currentIndex - 1);
+  //       setActiveRowLocal(selectedProducts[prevIndex].rowKey);
+  //       setCurrentIndexLocal(prevIndex);
+  //     }
+  //   };
+
+  //   document.addEventListener("keydown", handleKey);
+
+  //   return () => document.removeEventListener("keydown", handleKey);
+  // }, [currentIndex, selectedProducts]);
 
   // Function To Go to Increment Quantity
   const incQuantity = (objID) => {
@@ -37,20 +106,35 @@ export default function OrderRow({ quantityRefs }) {
     handleDelete(objID);
   };
 
+  useEffect(() => {
+    const handleKeyEnter = (e) => {
+      if (e.ctrlKey && e.key === "Delete") {
+        deleteProduct(activeRow);
+        setActiveRowLocal(
+          selectedProducts[selectedProducts.length - 1]?.rowKey,
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyEnter);
+    return () => {
+      window.removeEventListener("keydown", handleKeyEnter);
+    };
+  }, [activeRow]);
   return (
     <>
       {selectedProducts?.length > 0 ? (
         selectedProducts?.map((product, index) => {
           const usedByOtherUnits = selectedProducts
-        .filter(p => p.id === product.id)
-        .reduce((sum, p) => 
-          product?.is_weight
-            ? sum + (p.weight || 0)
-            : sum + (p.number || 0)
-        , 0);
+            .filter((p) => p.id === product.id)
+            .reduce(
+              (sum, p) =>
+                product?.is_weight
+                  ? sum + (p.weight || 0)
+                  : sum + (p.number || 0),
+              0,
+            );
 
-  
-        const availableStock = product.stock - usedByOtherUnits;
+          const availableStock = product.stock - usedByOtherUnits;
           const unitOptions = product?.Units?.map((u) => ({
             value: u?.id,
             label: `${u?.name} - ${u?.sallprice}${product?.unit_name}`,
@@ -59,14 +143,27 @@ export default function OrderRow({ quantityRefs }) {
 
           return (
             <tr
-              className={`h-[38px] ${(index + 1) % 2 === 0 ? `bg-blue-100 bg-opacity-50` : ``}`}
-              key={product?.rowKey}
+              key={product.rowKey}
+              onClick={() => {
+                setActiveRowLocal(product.rowKey);
+                setCurrentIndexLocal(index);
+              }}
+              className={`h-[38px] cursor-pointer transition-all duration-150
+            ${
+              activeRow === product.rowKey
+                ? "bg-blue-200 border-l-4 border-blue-600 ring-1 ring-blue-300"
+                : ""
+            }
+            ${(index + 1) % 2 === 0 ? "bg-blue-100/50" : ""}
+          `}
             >
               <td className=" px-1  border border-gray-300">{index + 1}</td>
               <td className="px-1  border border-gray-300">
                 {product?.code || ""}
               </td>
-              <td className="px-1 border border-gray-300 font-semibold">{product?.name}</td>
+              <td className="px-1 border border-gray-300 font-semibold">
+                {product?.name}
+              </td>
               <td className=" border border-gray-300 w-44">
                 <div className="flex gap-x-2 justify-center items-center">
                   <button
@@ -79,6 +176,7 @@ export default function OrderRow({ quantityRefs }) {
 
                   <input
                     type="number"
+                    ref={(el) => (quantityRefs.current[product.rowKey] = el)}
                     // disabled={product?.is_weight}
                     // value={
                     //    product?.number
@@ -87,10 +185,7 @@ export default function OrderRow({ quantityRefs }) {
                       product?.is_weight ? product?.weight : product?.number
                     }
                     onChange={(e) => {
-                      chngQuantity(
-                        product?.rowKey,
-                        e?.target?.value,
-                      );
+                      chngQuantity(product?.rowKey, e?.target?.value);
                     }}
                     className={`w-[70px] px-1 border border-gray-300 rounded text-center text-sm appearance-none`}
                   />
@@ -137,8 +232,26 @@ export default function OrderRow({ quantityRefs }) {
                   />
                 </div>
               </td>
-              <td className="px-1 border border-gray-300">
-                {product?.price?.toFixed(2)}
+              <td className=" border border-gray-300 text-center">
+                <input
+                  type="number"
+                  step="0.01"
+                  className="w-[100px] rounded text-center appearance-none text-base"
+                  value={product?.price ?? ""}
+                  onChange={(e) => {
+                    ChangePrice(product?.rowKey, e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    const value = e.target.value;
+
+                    if (value !== "") {
+                      ChangePrice(
+                        product?.rowKey,
+                        Number(e.target.value).toFixed(2),
+                      );
+                    }
+                  }}
+                />
               </td>
               <td className="px-1 border border-gray-300">
                 {product?.total?.toFixed(2)}

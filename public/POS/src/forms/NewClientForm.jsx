@@ -131,7 +131,7 @@ export default function NewClientForm({ setIsPopupOpen }) {
 
         setIsPopupOpen(false);
       } catch (err) {
-        notify("حدث مشكلة يرجى المحاولة مرة اخرى", "error")
+        notify("حدث مشكلة يرجى المحاولة مرة اخرى", "error");
       }
     },
   });

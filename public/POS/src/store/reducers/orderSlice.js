@@ -7,7 +7,9 @@ import {
 import { sendOrderToBackend } from "../../api/baseURL";
 
 const initialState = {
-  offlineOrders: [], // optional: track offline orders in Redux
+  offlineOrders: [],
+  loading: false,
+  error: null,
 };
 
 const orderSlice = createSlice({
@@ -17,16 +19,28 @@ const orderSlice = createSlice({
     setOfflineOrders: (state, action) => {
       state.offlineOrders = action.payload;
     },
+    setLoading: (state, action) =>{
+      state.loading = action?.payload;
+    },
+    setError: (state, action) =>{
+      state.error = action?.payload;
+    }
   },
 });
 
-export const { setOfflineOrders } = orderSlice.actions;
+export const {
+  setOfflineOrders,
+  setLoading,
+  setError,
+} = orderSlice.actions;
 
-// Thunk: Save order (online/offline)
 export const saveOrder = (order) => async (dispatch) => {
   if (navigator.onLine) {
+     dispatch(setLoading(true));
+  dispatch(setError(null));
     try {
       const returnedInvoice = await sendOrderToBackend(order);
+      dispatch(setLoading(false))
       return returnedInvoice;
     } catch (err) {
       await saveOrderOffline(order);
@@ -38,6 +52,7 @@ export const saveOrder = (order) => async (dispatch) => {
     const offlineOrders = await getOfflineOrders();
     dispatch(setOfflineOrders(offlineOrders));
   }
+  dispatch(setLoading(false))
 };
 
 // Thunk: Sync offline orders when online
@@ -54,5 +69,6 @@ export const syncOfflineOrders = () => async (dispatch) => {
   const updatedOfflineOrders = await getOfflineOrders();
   dispatch(setOfflineOrders(updatedOfflineOrders));
 };
+
 
 export default orderSlice.reducer;

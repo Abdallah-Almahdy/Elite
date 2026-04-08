@@ -1,6 +1,5 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { UIPreferencesProvider } from "./contexts/UIPreferencesContext.jsx";
-import { InvoiceSettingsProvider } from "./contexts/InvoiceSettingsContext.jsx";
 import Home from "./pages/Home";
 import DraftPage from "./pages/DraftPage.jsx";
 import { useState, useEffect, useContext } from "react";
@@ -21,10 +20,6 @@ import { useDispatch } from "react-redux";
 // import { fetchProducts } from "./store/reducers/productSlice.js";
 import { fetchCategory } from "./store/reducers/productSlice.js";
 import { fetchClientsNames } from "./store/reducers/userSlice.js";
-import { SettingsPreferenceProvider } from "./contexts/SettingsPreferenceContext.jsx";
-import { UserSettingsPreferenceProvider } from "./contexts/UserSettingsPreferenceContext.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
-import UserSettingsPage from "./pages/UserSettingsPage.jsx";
 
 export default function App() {
   const { setSelectedProducts } = useSelectedProducts();
@@ -86,6 +81,7 @@ export default function App() {
       address1: draftFormData?.address1 ?? prev.address1,
       newAddress: draftFormData?.newAddress ?? prev.newAddress,
       optionalAddress: draftFormData?.optionalAddress ?? prev.optionalAddress,
+      warehouseName: draftFormData?.warehouseName ?? prev.warehouseName,
     }));
   }, [draftFormData]);
 
@@ -93,36 +89,23 @@ export default function App() {
     <>
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <SettingsPreferenceProvider>
-        <UserSettingsPreferenceProvider>
-          <SelectedProductsProvider>
+      <SelectedProductsProvider>
         <FormDataProvider>
           <ProductsProvider>
-            <InvoiceSettingsProvider>
-              <UIPreferencesProvider>
+            <UIPreferencesProvider>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Home />
-                  }
-                />
+                <Route path="/" element={<Home />} />
                 <Route
                   path="/draft"
                   element={<DraftPage handleReturn={handleReturn} />}
                 />
                 <Route path="/order-details" element={<OrderDetailsPage />} />
                 <Route path="/print-barcode" element={<PrintBarcodePage />} />
-                <Route path="/invoice-settings" element={<SettingsPage />} />
-                <Route path="/user-settings" element={<UserSettingsPage />} />
               </Routes>
             </UIPreferencesProvider>
-            </InvoiceSettingsProvider>
           </ProductsProvider>
         </FormDataProvider>
       </SelectedProductsProvider>
-        </UserSettingsPreferenceProvider>
-      </SettingsPreferenceProvider>
     </>
   );
 }

@@ -20,10 +20,6 @@ import { closeShift, syncOfflineUsers } from "../store/reducers/userSlice";
 import PrintBarcodePage from "./PrintBarcodePage";
 import { getOfflineDrafts } from "../services/indexedDB";
 import { useProducts } from "../contexts/ProductsContext";
-import SettingsPage from "./SettingsPage";
-import { useInvoiceSettings } from "../contexts/InvoiceSettingsContext";
-import UserSettingsPage from "./UserSettingsPage";
-import { useUserSettingsPreference } from "../contexts/UserSettingsPreferenceContext";
 import notify from "../hooks/Notification";
 import ShiftModal from "../components/confirm/ShiftModal";
 export default function Home() {
@@ -39,12 +35,9 @@ export default function Home() {
     setDraftFormData,
   } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
 
-  
   const { preference, updatePreference } = useUIPreferences();
-  const { invoiceSetting, updateUserSettings } = useInvoiceSettings();
-  const {passwordReq, errors, password, confirmPassword, printerName} =  useUserSettingsPreference();
   const loading = useSelector((state) => state.product.loading);
   const isFirstRun = useRef(true);
   const dispatch = useDispatch();
@@ -98,6 +91,12 @@ export default function Home() {
     );
     sessionStorage.setItem("Total", JSON.stringify(total));
   }, [selectedProducts, total]);
+  const invoiceSettings = useSelector((state) => state.setting.invoiceSettings);
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
 
   useNetworkStatus();
   useEffect(() => {
@@ -144,17 +143,15 @@ export default function Home() {
     setIsShiftModalOpen(false);
   };
 
-  const handleConfirmCloseShift = (amount) =>{
-    try{
-      dispatch(closeShift({amount}));
-    handleShiftModalClose()
-    notify("تم إغلاق الوردية بنجاح", "success")
+  const handleConfirmCloseShift = (amount) => {
+    try {
+      dispatch(closeShift({ amount }));
+      handleShiftModalClose();
+      notify("تم إغلاق الوردية بنجاح", "success");
+    } catch (err) {
+      notify("حدثت مشكلة فى اغلاق الورديه!", "warn");
     }
-    catch(err){
-      notify("حدثت مشكلة فى اغلاق الورديه!", "warn")
-    }
-  }
-
+  };
 
   if (loading) {
     return (
@@ -173,7 +170,11 @@ export default function Home() {
   return (
     <>
       <Modal isOpen={isModalOpen} onConfirm={handleModalConfirm} />
-      <ShiftModal isOpen={isShiftModalOpen} onClose={handleShiftModalClose} onConfirm={handleConfirmCloseShift}/>
+      <ShiftModal
+        isOpen={isShiftModalOpen}
+        onClose={handleShiftModalClose}
+        onConfirm={handleConfirmCloseShift}
+      />
       <div
         className={`w-full p-1 lg:pb-0 flex flex-col-reverse md:flex-row ${!isModalOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}  ${!isPopupOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}`}
       >

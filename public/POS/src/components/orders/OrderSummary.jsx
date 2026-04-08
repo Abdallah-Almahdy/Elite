@@ -1,17 +1,23 @@
 import React from "react";
 import OrderActions from "./OrderActions";
-import { calculateTotals } from "../../utils/calculateTotals";
+import { useCalculateTotals } from "../../utils/useCalculateTotals";
 import { useSelectedProducts } from "../../contexts/SelectedProductsContext";
+import { useSelector } from "react-redux";
 
 export default function OrderSummary() {
   const { selectedProducts } = useSelectedProducts();
-  const { subtotal, tax, total } = calculateTotals(selectedProducts);
+  const { subtotal, tax, total } = useCalculateTotals(selectedProducts);
   const discountPercentage = 0;
   const discountValue = 0;
   const deliveryService = 0;
   const dineInService = 0;
-  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"));
-
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+  const TaxMapping = {
+    "%": "%",
+    "pound":"ج.م",
+  };
 
   return (
     <div className="w-full border-t border-gray-300 py-2 lg:pt-0  lg:pb-1">
@@ -46,15 +52,18 @@ export default function OrderSummary() {
             <tr className="font-normal pt-2">
               <td colSpan={2}>الإجمالى</td>
               <td className="text-end pl-5" colSpan={2}>
-                {subtotal.toFixed(2)}
+                {Number(subtotal).toFixed(2)}
               </td>
             </tr>
 
             {/* القيمة المضافة */}
             <tr className="font-normal">
-              <td colSpan={2}>القيمة المضافة ({invoiceSettings?.taxType}{invoiceSettings?.taxValue})</td>
+              <td colSpan={2}>
+                القيمة المضافة (
+                {invoiceSettings?.taxValue}{TaxMapping[invoiceSettings?.taxTypes]})
+              </td>
               <td className="text-end pl-5" colSpan={2}>
-                {tax.toFixed(2)}
+                {Number(tax).toFixed(2)}
               </td>
             </tr>
 
@@ -62,7 +71,7 @@ export default function OrderSummary() {
             <tr className="font-bold text-[18px]">
               <td colSpan={2}>المبلغ المستحق</td>
               <td className="text-end pl-5" colSpan={2}>
-                {total.toFixed(2)}
+                {Number(total).toFixed(2)}
               </td>
             </tr>
           </tbody>

@@ -26,12 +26,14 @@ import { SlLocationPin } from "react-icons/sl";
 import Select from "react-select";
 import { IoSearchSharp } from "react-icons/io5";
 import SearchByPhone from "../components/ui/SearchByPhone";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useProducts } from "../contexts/ProductsContext";
 import { useSelectedProducts } from "../contexts/SelectedProductsContext";
+import { fetchConfigs } from "../store/reducers/settingSlice";
 
 const UserForm = forwardRef((props, ref) => {
   const users = useSelector((state) => state?.user?.user);
+  const dispatch = useDispatch();
   const date = new Date();
   const {
     draftFormData,
@@ -53,7 +55,6 @@ const UserForm = forwardRef((props, ref) => {
     phoneSearchRef,
   } = useProducts();
   const { selectedProducts } = useSelectedProducts();
-
   const { formData, setFormData } = useContext(FormDataContext);
   const inputRef = useRef();
   const [showAddressEditor, setShowAddressEditor] = useState(false);
@@ -62,18 +63,39 @@ const UserForm = forwardRef((props, ref) => {
   const streetInputRef = useRef(null);
   const clientResultRef = useRef(null);
   const selectedUser = JSON.stringify(sessionStorage.getItem("selectedUser"));
-    function safeJSONParse(value, fallback = null) {
-  try {
-    if (!value) return fallback;
-    return JSON.parse(value);
-  } catch (error) {
-    console.warn("Invalid JSON detected:", value);
-    return fallback;
+  function safeJSONParse(value, fallback = null) {
+    try {
+      if (!value) return fallback;
+      return JSON.parse(value);
+    } catch (error) {
+      console.warn("Invalid JSON detected:", value);
+      return fallback;
+    }
   }
-}
+  const warehouseNames = ["مخزن 1", "مخزن 2", "مخزن 3", "مخزن 4", "مخزن 5"];
   const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
-  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
-  const userSettings = JSON.parse(localStorage.getItem("User Settings"))
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+  const warehouseName = useSelector((state) => state?.setting?.warehouseName);
+  useEffect(() => {
+    dispatch(fetchConfigs());
+  }, [dispatch]);
+  const paymentMapping = {
+    cash: "كاش",
+    credit_card: "بطاقة ائتمان",
+    instapay: "انستا باى",
+    wallet: "محفظة",
+    remaining: "اجل",
+  };
+
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
+  // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  const userSettings = JSON.parse(localStorage.getItem("User Settings"));
   const formik = useFormik({
     initialValues: {
       serialInput:
@@ -83,18 +105,25 @@ const UserForm = forwardRef((props, ref) => {
         formData.dateInput ||
         `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}` ||
         "",
+      warehouseName:
+        draftFormData?.warehouseName ||
+        formData.warehouseName ||
+        warehouseName ||
+        "",
       clientName: draftFormData?.clientName || formData.clientName || "",
       phone1: draftFormData?.phone1 || formData.phone1 || "",
       address1: draftFormData?.address1 || formData.address1 || "",
       notes: draftFormData?.notes || formData.notes || "",
       invoiceType:
-        draftFormData?.invoiceType || formData.invoiceType || invoiceSettings?.defaultInvoiceType,
+        draftFormData?.invoiceType ||
+        formData.invoiceType ||
+        invoiceMapping[invoiceSettings?.defaultInvoiceType],
       paymentMethod:
         draftFormData?.paymentMethod ||
         formData?.paymentMethod ||
         (formData?.paymentMethods &&
           Object.keys(formData?.paymentMethods)[0]) ||
-        invoiceSettings?.defaultPaymentMethod, // new field
+        paymentMapping[invoiceSettings?.defaultPaymentMethod],
     },
 
     enableReinitialize: true,
@@ -102,6 +131,8 @@ const UserForm = forwardRef((props, ref) => {
       serialInput: Yup.string()
         .max(15, "Must be 15 characters or less")
         .required("Required*"),
+      warehouseName: Yup.string().max(15, "Must be 15 characters or less"),
+      // .required("Required*"),
       dateInput: Yup.date()
         .typeError("Invalid date format")
         .min(new Date(2000, 0, 1), "Date must be after Jan 1, 2000")
@@ -147,6 +178,7 @@ const UserForm = forwardRef((props, ref) => {
       formik.setTouched({
         serialInput: true,
         dateInput: true,
+        warehouseName: true,
         clientName: true,
         notes: true,
         invoiceType: true,
@@ -165,12 +197,36 @@ const UserForm = forwardRef((props, ref) => {
     }));
   }, [formik.values, setFormData]);
 
+  const paymentMethodOptions = [
+    { id: 1, code: "cash", label: "كاش" },
+    { id: 2, code: "credit_card", label: "بطاقة ائتمان" },
+    { id: 3, code: "instapay", label: "انستا باى" },
+    { id: 4, code: "wallet", label: "محفظة" },
+    { id: 5, code: "remaining", label: "اجل" },
+  ];
+  const invoiceTypeOptions = [
+    { id: 1, code: "take_away", label: "تيك أواى" },
+    { id: 2, code: "delvery", label: "دليفرى" },
+    { id: 3, code: "hall", label: "صالة" },
+  ];
 
+  const allowedPaymentMethodCodes = invoiceSettings?.allowedPaymentMethods || [
+    "كاش",
+  ];
+  const allowedInvoiceTypeCodes = invoiceSettings?.allowedInvoiceTypes || [
+    "تيك أواى",
+  ];
+  const allowedPaymentMethodLabels = paymentMethodOptions
+    .filter((method) => allowedPaymentMethodCodes.includes(method.code))
+    .map((method) => method.label);
+  const allowedInvoiceTypeLabels = invoiceTypeOptions
+    .filter((method) => allowedInvoiceTypeCodes.includes(method.code))
+    .map((method) => method.label);
 
-  const invoiceTypes = invoiceSettings?.allowedInvoiceType; 
-  const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"]; 
-  // const invoiceTypes = ["تيك أواى", "دليفرى", "صالة"]; 
-  // const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"]; 
+  const invoiceTypes = allowedInvoiceTypeLabels || ["تيك أواى"];
+  const paymentMethods = allowedPaymentMethodLabels || ["كاش"];
+  // const invoiceTypes = ["تيك أواى", "دليفرى", "صالة"];
+  // const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"];
   useEffect(() => {
     sessionStorage.setItem("FormData", JSON.stringify(formik.values));
   }, [formik.values]);
@@ -260,17 +316,70 @@ const UserForm = forwardRef((props, ref) => {
                   )}
                 </div>
               </td>
+              {/* makhazeeeen */}
+              <td className=" pr-2 ">المخزن</td>
+              <td className="" colSpan={3}>
+                <div className="w-full max-w-full relative flex justify-between">
+                  {/* WareHouse Input */}
+                  <select
+                    className="
+   text-black block w-full pr-8 ps-7 lg:ps-2 py-3 lg:py-1 
+  border text-heading text-sm rounded-md shadow-xs placeholder:text-body
+  focus:border-blue-600 focus:ring-1 outline-none
+"
+                    value={formik.values.warehouseName}
+                    onBlur={() => formik.setFieldTouched("warehouseName", true)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("warehouseName", value);
+                      // setSearchClientName(value);
+
+                      // setHighlightIndex(-1);
+                      // if (value === "") {
+                      //   formik.setValues({
+                      //     ...formik.values,
+                      //     clientName: "",
+                      //     phone1: "",
+                      //     address1: "",
+                      //     optionalPhone: "",
+                      //     optionalAddress: "",
+                      //   });
+                      // }
+                    }}
+                    // onChange={(e) =>
+                    //   formik.setFieldValue("paymentMethod", e.target.value)
+                    // }
+                  >
+                    <option value="" disabled className="bg-white">
+                      اختر اسم المخزن
+                    </option>
+                    {warehouseNames.map((method) => (
+                      <option key={method} value={method} className="bg-white">
+                        {method}
+                      </option>
+                    ))}
+                  </select>
+
+                  {formik.touched.warehouseName &&
+                    formik.errors.warehouseName && (
+                      <span className="absolute text-left font-semibold left-5 top-1/2 bg-transparent -translate-y-1/2 text-red-600 text-xs">
+                        {formik.errors.warehouseName}
+                      </span>
+                    )}
+                </div>
+              </td>
             </tr>
             <tr className="border-b border-gray-300">
               <td className="pr-2 bg-blue-100 bg-opacity-50">نوع الفاتورة</td>
-              <td className="relative bg-blue-100 bg-opacity-50" colSpan={2}>
+              <td className="relative bg-blue-100 bg-opacity-50" colSpan={5}>
                 <div className="flex justify-evenly items-center gap-2 ">
                   {invoiceTypes?.map((type) => (
                     <button
                       key={type}
                       type="button"
-                      className={`px-3 py-1 text-xs font-bold rounded-lg border ${formik.values.invoiceType === type ? "bg-blue-600 text-white" : "bg-white text-gray-900 hover:bg-blue-400 hover:text-white"}`}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg border ${formik.values.invoiceType === type ? "bg-blue-600 text-white" : `bg-white text-gray-900 ${!userSettings?.invoiceTypeChangeAuth ? `` : `hover:bg-blue-400 hover:text-white`}`}`}
                       onClick={() => formik.setFieldValue("invoiceType", type)}
+                      disabled={!userSettings?.invoiceTypeChangeAuth}
                     >
                       {type}
                     </button>
@@ -283,7 +392,7 @@ const UserForm = forwardRef((props, ref) => {
                 )}
               </td>
               <td className="pr-2 bg-blue-100 bg-opacity-50">طريقة الدفع</td>
-              <td colSpan={2} className="relative">
+              <td colSpan={3} className="relative">
                 <select
                   className="w-full text-gray-900 px-2.5 py-1.5 text-sm border rounded focus:outline-blue-500 bg-blue-100 bg-opacity-50 appearance-none"
                   value={formik.values.paymentMethod}
@@ -292,27 +401,26 @@ const UserForm = forwardRef((props, ref) => {
                   //   formik.setFieldValue("paymentMethod", e.target.value)
                   // }
                   onChange={(e) => {
-  const value = e.target.value;
+                    const value = e.target.value;
 
-  // Update Formik field
-  formik.setFieldValue("paymentMethod", value);
+                    // Update Formik field
+                    formik.setFieldValue("paymentMethod", value);
 
-  setFormData((prev) => {
-    // If key already exists → keep paymentMethods unchanged
-    if (prev.paymentMethods?.hasOwnProperty(value)) {
-      return prev;
-    }
+                    setFormData((prev) => {
+                      // If key already exists → keep paymentMethods unchanged
+                      if (prev.paymentMethods?.hasOwnProperty(value)) {
+                        return prev;
+                      }
 
-    // Otherwise → reset paymentMethods with the new key
-    return {
-      ...prev,
-      paymentMethods: {
-        [value]: "",
-      },
-    };
-  });
-}}
-
+                      // Otherwise → reset paymentMethods with the new key
+                      return {
+                        ...prev,
+                        paymentMethods: {
+                          [value]: "",
+                        },
+                      };
+                    });
+                  }}
                   onBlur={() => formik.setFieldTouched("paymentMethod", true)}
                 >
                   <option value="" disabled className="bg-white">
@@ -329,15 +437,17 @@ const UserForm = forwardRef((props, ref) => {
                 </div>
                 {formik.touched.paymentMethod &&
                   formik.errors.paymentMethod && (
-                    <span className="text-red-600 text-xs font-semibold">
+                    <span className="text-red-600 text-xs font-semibold absolute left-10 top-2">
                       {formik.errors.paymentMethod}
                     </span>
                   )}
               </td>
             </tr>
             <tr className="border-b border-gray-300 relative">
-              <td className="pr-2 w-3/4">اسم العميل</td>
-              <td className="w-3/4" colSpan={5}>
+              <td className="pr-2 w-3/4" colSpan={1}>
+                اسم العميل
+              </td>
+              <td className="w-3/4" colSpan={9}>
                 <input
                   ref={inputRef}
                   type="text"
@@ -451,7 +561,7 @@ const UserForm = forwardRef((props, ref) => {
             </tr>
             <tr className="relative bg-blue-100 bg-opacity-50">
               <td className=" pr-2">رقم الهاتف</td>
-              <td className=" align-top" colSpan={2}>
+              <td className=" align-top" colSpan={4}>
                 <div className="relative">
                   <FiPhone className="absolute top-1/2 text-blue-600 -translate-y-1/2 right-3 pointer-events-none" />
                   <input
@@ -486,7 +596,7 @@ const UserForm = forwardRef((props, ref) => {
                 </div>
               </td>
               <td className=" pr-2"> العنوان</td>
-              <td className=" align-top" colSpan={2}>
+              <td className=" align-top" colSpan={4}>
                 <div className="relative">
                   <SlLocationPin className="absolute top-1/2 text-blue-600 -translate-y-1/2 right-3 pointer-events-none" />
                   <input
@@ -514,7 +624,7 @@ const UserForm = forwardRef((props, ref) => {
             </tr>
             <tr className="relative">
               <td className=" pr-2">ملاحظات</td>
-              <td colSpan={5}>
+              <td colSpan={9}>
                 {/* Notes Input */}
                 <textarea
                   id="notes"

@@ -2,27 +2,50 @@ import React, { createContext, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedUser } from "../store/reducers/userSlice";
 import notify from "../hooks/Notification";
+import { fetchConfigs } from "../store/reducers/settingSlice";
 export const FormDataContext = createContext();
 
 export const FormDataProvider = ({ children }) => {
   const savedData = JSON.parse(sessionStorage.getItem("FormData")) || {};
+  const dispatch = useDispatch();
+
   // const draftFormData = JSON.parse(sessionStorage.getItem("draftFormData"));
   const [draftFormData, setDraftFormData] = useState(
     JSON.parse(sessionStorage.getItem("draftFormData")),
   );
-  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  useEffect(() => {
+    dispatch(fetchConfigs());
+  }, [dispatch]);
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+  const warehouseName = useSelector((state) => state?.setting?.warehouseName);
+
+  const paymentMapping = {
+    cash: "كاش",
+    credit_card: "بطاقة ائتمان",
+    instapay: "انستا باى",
+    wallet: "محفظة",
+    remaining: "اجل",
+  };
+
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
   const user = useSelector((state) => state?.user?.user);
-  const dispatch = useDispatch();
   const date = new Date();
   function safeJSONParse(value, fallback = null) {
-  try {
-    if (!value) return fallback;
-    return JSON.parse(value);
-  } catch (error) {
-    console.warn("Invalid JSON detected:", value);
-    return fallback;
+    try {
+      if (!value) return fallback;
+      return JSON.parse(value);
+    } catch (error) {
+      console.warn("Invalid JSON detected:", value);
+      return fallback;
+    }
   }
-}
   const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
   useEffect(() => {
     const storedUser = sessionStorage.getItem("selectedUser");
@@ -42,13 +65,18 @@ export const FormDataProvider = ({ children }) => {
       "",
     clientName: savedData?.clientName || user?.name || "",
     notes: savedData?.notes || "",
-    invoiceType: savedData?.invoiceType || invoiceSettings?.defaultInvoiceType,
-    paymentMethod: savedData?.paymentMethod || invoiceSettings?.defaultPaymentMethod,
+    invoiceType:
+      savedData?.invoiceType ||
+      invoiceMapping[invoiceSettings?.defaultInvoiceType],
+    paymentMethod:
+      savedData?.paymentMethod ||
+      paymentMapping[invoiceSettings?.defaultPaymentMethod],
     paymentMethods: savedData?.paymentMethods || {},
     address1: savedData?.address1 || "",
     newAddress: savedData?.newAddress || "",
     optionalAddress: savedData?.optionalAddress || "",
     phone1: savedData?.phone1 || user?.customer_info?.phone || "",
+    warehouseName: savedData?.warehouseName || warehouseName || "",
     newPhone: savedData?.newPhone || "",
     optionalPhone:
       savedData?.optionalPhone || user?.customer_info?.phone2 || "",
@@ -73,6 +101,7 @@ export const FormDataProvider = ({ children }) => {
         address1: draftFormData.address1 ?? prev.address1,
         newAddress: draftFormData.newAddress ?? prev.newAddress,
         optionalAddress: draftFormData.optionalAddress ?? prev.optionalAddress,
+        warehouseName: draftFormData.warehouseName ?? prev.warehouseName,
       };
 
       // prevent state update if nothing changed

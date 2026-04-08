@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchCategoryProducts } from "../../store/reducers/productSlice";
 
 export default function ProductGrid({ userPreference }) {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const {
     handleAddObj,
     filteredProductsByName,
@@ -17,10 +17,10 @@ export default function ProductGrid({ userPreference }) {
     setSearchNameValueInGrid,
     setProductsPerPage,
     selectedCategory,
-    handleSearchByNameEnterInGrid
+    handleSearchByNameEnterInGrid,
   } = useProducts();
-  const maxPage = useSelector((state)=> state?.product?.maxPage)
-  const results = useSelector((state)=> state?.product?.searchedResultsInGrid)
+  const maxPage = useSelector((state) => state?.product?.maxPage);
+  const results = useSelector((state) => state?.product?.searchedResultsInGrid);
   let totalPages = maxPage;
   let productsPerPage = 8;
   if (userPreference === "textWrap") {
@@ -30,67 +30,62 @@ export default function ProductGrid({ userPreference }) {
   } else {
     productsPerPage = 12;
   }
-  useEffect(()=>{
+  useEffect(() => {
     setProductsPerPage(productsPerPage);
-  }, [productsPerPage])
+  }, [productsPerPage]);
   // Total Number of Pages
- 
-  let filteredProducts = filteredProductsByName
 
+  let filteredProducts = filteredProductsByName;
 
-    if(searchNameValueInGrid.trim() === ""){
-      filteredProducts = filteredProductsByName;
-      totalPages = maxPage
-      console.log(filteredProducts)
-    }else{
-      filteredProducts = results;
-      totalPages = Math.round(results?.length / productsPerPage);
-    }
+  if (searchNameValueInGrid.trim() === "") {
+    filteredProducts = filteredProductsByName;
+    totalPages = maxPage;
+  } else {
+    filteredProducts = results;
+    totalPages = Math.round(results?.length / productsPerPage);
+  }
 
-    useEffect(() => {
-  const timer = setTimeout(() => {
-    if (searchNameValueInGrid.trim() !== "") {
-      handleSearchByNameEnterInGrid(searchNameValueInGrid);
-    }
-  }, 300);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchNameValueInGrid.trim() !== "") {
+        handleSearchByNameEnterInGrid(searchNameValueInGrid);
+      }
+    }, 300);
 
-  return () => clearTimeout(timer);
-}, [searchNameValueInGrid]);
+    return () => clearTimeout(timer);
+  }, [searchNameValueInGrid]);
 
-
-//  const totalPages = Math.ceil(maxPage / productsPerPage);
-
+  //  const totalPages = Math.ceil(maxPage / productsPerPage);
 
   // To Control The Pagination
   const startIndex = (currentPage - 1) * productsPerPage;
- let visibleProducts;
+  let visibleProducts;
 
-if (searchNameValueInGrid.trim() !== "") {
-  // مفيش بحث، اعمل pagination عادي
-  const startIndex = (currentPage - 1) * productsPerPage;
-  visibleProducts = filteredProducts.slice(
-    startIndex,
-    startIndex + productsPerPage
-  );
-} else {
-  // في بحث، عرض كل المنتجات اللي رجعت من السيرش بدون slice
-  visibleProducts = filteredProducts;
-}
+  if (searchNameValueInGrid.trim() !== "") {
+    // مفيش بحث، اعمل pagination عادي
+    const startIndex = (currentPage - 1) * productsPerPage;
+    visibleProducts = filteredProducts.slice(
+      startIndex,
+      startIndex + productsPerPage,
+    );
+  } else {
+    // في بحث، عرض كل المنتجات اللي رجعت من السيرش بدون slice
+    visibleProducts = filteredProducts;
+  }
 
   const onAddProducts = (newObj) => {
     handleAddObj(newObj);
   };
 
-  
-   const handlePageChange = (page) => {
-  dispatch(
-    fetchCategoryProducts({
-      id: selectedCategory,
-      pageNum: page,
-      itemNum: productsPerPage,
-    })
-  );
-};
+  const handlePageChange = (page) => {
+    dispatch(
+      fetchCategoryProducts({
+        id: selectedCategory,
+        pageNum: page,
+        itemNum: productsPerPage,
+      }),
+    );
+  };
 
   return (
     <div className="flex h-full flex-col items-center w-full">
@@ -104,37 +99,37 @@ if (searchNameValueInGrid.trim() !== "") {
             type="text"
             placeholder="ابحث بالاسم"
             value={searchNameValueInGrid}
-           onChange={(e) => {
-  const value = e.target.value;
-  setSearchNameValueInGrid(value);
-  setCurrentPage(1);
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchNameValueInGrid(value);
+              setCurrentPage(1);
 
-  if (value.trim() === "") {
-    dispatch(
-      fetchCategoryProducts({
-        id: selectedCategory,
-        pageNum: 1,
-        itemNum: productsPerPage,
-      })
-    );
-  }
-}}
+              if (value.trim() === "") {
+                dispatch(
+                  fetchCategoryProducts({
+                    id: selectedCategory,
+                    pageNum: 1,
+                    itemNum: productsPerPage,
+                  }),
+                );
+              }
+            }}
             className="border p-1 rounded-lg w-full focus:outline-blue-500"
           />
           <button
             className="absolute left-2 bottom-2"
             onClick={() => {
-  setSearchNameValueInGrid("");
-  setCurrentPage(1);
+              setSearchNameValueInGrid("");
+              setCurrentPage(1);
 
-  dispatch(
-    fetchCategoryProducts({
-      id: selectedCategory,
-      pageNum: 1,
-      itemNum: productsPerPage,
-    })
-  );
-}}
+              dispatch(
+                fetchCategoryProducts({
+                  id: selectedCategory,
+                  pageNum: 1,
+                  itemNum: productsPerPage,
+                }),
+              );
+            }}
           >
             <IoClose className=" text-gray-600 text-lg" />
           </button>
@@ -159,7 +154,9 @@ if (searchNameValueInGrid.trim() !== "") {
       <div className="flex flex-col lg:flex-row justify-between items-end w-full">
         <p className="w-full">
           يتم اظهار {visibleProducts.length} منتج من اصل{" "}
-          {searchNameValueInGrid.length === 0 ? maxPage * visibleProducts.length : results?.length}
+          {searchNameValueInGrid.length === 0
+            ? maxPage * visibleProducts.length
+            : results?.length}
         </p>
         <Pagination
           currentPage={currentPage}

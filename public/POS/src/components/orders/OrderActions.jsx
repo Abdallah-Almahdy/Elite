@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { useProducts } from "../../contexts/ProductsContext";
 
 export default function OrderActions() {
-  const { handleSubmit } = useProducts();
+  const { handleSubmit, handleCancel } = useProducts();
   return (
     <div className="w-full flex gap-x-5 mt-1 text-white">
       <button
@@ -14,7 +14,10 @@ export default function OrderActions() {
         <span>حفظ</span>
         <HiOutlineDesktopComputer className="inline text-xl group transition-all duration-300 transform -translate-x-4 group-hover:translate-x-0" />
       </button>
-      <button className="bg-red-600 bg-opacity-80 hover:bg-opacity-95 w-[20%] rounded  flex justify-center items-center gap-2 relative group overflow-hidden">
+      <button
+        onClick={handleCancel}
+        className="bg-red-600 bg-opacity-80 hover:bg-opacity-95 w-[20%] rounded  flex justify-center items-center gap-2 relative group overflow-hidden"
+      >
         <span>الغاء</span>
         <IoClose className="inline text-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-10 group-hover:translate-x-0" />
       </button>

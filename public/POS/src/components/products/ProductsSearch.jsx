@@ -4,6 +4,7 @@ import { useProducts } from "../../contexts/ProductsContext";
 import { useSelector } from "react-redux";
 
 export default function ProductsSearch() {
+  const [isBarcodeInputFocused, setIsBarcodeInputFocused] = useState(true);
   const {
     searchValue,
     handleKeypadInput,
@@ -17,7 +18,7 @@ export default function ProductsSearch() {
     setSearchResults,
     handleSelectProduct,
   } = useProducts();
-  const results = useSelector((state)=> state?.product?.searchedResults);
+  const results = useSelector((state) => state?.product?.searchedResults);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const itemRefs = useRef([]);
 
@@ -26,17 +27,17 @@ export default function ProductsSearch() {
   };
 
   useEffect(() => {
-  setSearchResults(results);
-}, [results]);
-useEffect(() => {
-  const timer = setTimeout(() => {
-    if (searchNameValue.trim() !== "") {
-      handleSearchByNameEnter(searchNameValue);
-    }
-  }, 300);
+    setSearchResults(results);
+  }, [results]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchNameValue.trim() !== "") {
+        handleSearchByNameEnter(searchNameValue);
+      }
+    }, 300);
 
-  return () => clearTimeout(timer);
-}, [searchNameValue]);
+    return () => clearTimeout(timer);
+  }, [searchNameValue]);
 
   useEffect(() => {
     if (highlightIndex >= 0 && itemRefs.current[highlightIndex]) {
@@ -45,6 +46,20 @@ useEffect(() => {
       });
     }
   }, [highlightIndex]);
+
+  useEffect(() => {
+    if (isBarcodeInputFocused === true) {
+      const handleKeyEnter = (e) => {
+        if (e.key === "F9") {
+          inputNameRef?.current?.focus();
+        }
+      };
+      window.addEventListener("keydown", handleKeyEnter);
+      return () => {
+        window.removeEventListener("keydown", handleKeyEnter);
+      };
+    }
+  }, [isBarcodeInputFocused]);
 
   return (
     <div className="w-full flex justify-between items-center gap-x-1">
@@ -58,6 +73,8 @@ useEffect(() => {
           autoFocus
           className="border p-1 rounded w-full focus:outline-blue-500"
           ref={inputRef}
+          onFocus={() => setIsBarcodeInputFocused(true)}
+          onBlur={() => setIsBarcodeInputFocused(false)}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSearchEnter(searchValue);
           }}
@@ -70,12 +87,11 @@ useEffect(() => {
           type="text"
           placeholder="ابحث بالاسم"
           value={searchNameValue}
-         onChange={(e) => {
-  const value = e.target.value;
-  setSearchNameValue(value);
-  setHighlightIndex(-1);
-  
-}}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchNameValue(value);
+            setHighlightIndex(-1);
+          }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -99,20 +115,22 @@ useEffect(() => {
         />
         {searchResults.length > 0 && searchNameValue.length !== 0 && (
           <div className="border bg-white absolute w-[30%] z-50 max-h-60 overflow-y-auto shadow">
-           {searchResults.map((product) =>
-  product.Units?.map((unit, index) => (
-    <div
-      key={`${product.id}-${index}`}
-      ref={(el) => (itemRefs.current[index] = el)}
-      className={`p-2 cursor-pointer ${
-        index === highlightIndex ? "bg-blue-100" : "hover:bg-gray-100"
-      }`}
-      onClick={() => handleSelectProduct(product, unit)}
-    >
-      {product.name} - {unit.name} - {unit.sallprice}
-    </div>
-  ))
-)}
+            {searchResults.map((product) =>
+              product.Units?.map((unit, index) => (
+                <div
+                  key={`${product.id}-${index}`}
+                  ref={(el) => (itemRefs.current[index] = el)}
+                  className={`p-2 cursor-pointer ${
+                    index === highlightIndex
+                      ? "bg-blue-100"
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => handleSelectProduct(product, unit)}
+                >
+                  {product.name} - {unit.name} - {unit.sallprice}
+                </div>
+              )),
+            )}
           </div>
         )}
       </div>

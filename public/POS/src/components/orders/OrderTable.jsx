@@ -15,7 +15,7 @@ export default function OrderTable({ quantityRefs }) {
             <th className="p-1">الاسم</th>
             <th>الكمية</th>
             <th className="p-1">الوحدة</th>
-            <th className="p-1">سعر القطعة</th>
+            <th className="p-1">سعر البيع</th>
             <th className="p-1">الاجمالى</th>
             <th></th>
           </tr>

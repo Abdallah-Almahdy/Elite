@@ -34,12 +34,28 @@
                         <a href="{{ route('config.update') }}"
                             class="nav-link {{ Request::is('dashboard/prodducts*') ? 'bg-success' : '' }}">
                             <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>الإعدادات</p>
+                            <p>الإعدادات التطبيق</p>
                         </a>
                     </li>
                 @endcan
-
-
+                @can('config.update')
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('pos.invoice-settings') }}"
+                            class="nav-link {{ Request::is('dashboard/invoice-settings') ? 'bg-success' : '' }}">
+                            <i class="nav-icon fas fa-cog ml-2"></i>
+                            <p>اعدادات عامه</p>
+                        </a>
+                    </li>
+                @endcan
+                    @can('config.update')
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('pos.user-settings') }}"
+                            class="nav-link {{ Request::is('dashboard/invoice-settings/user-settings*') ? 'bg-success' : '' }}">
+                            <i class="nav-icon fas fa-cog ml-2"></i>
+                            <p>اعدادات شاشه البيع</p>
+                        </a>
+                    </li>
+                @endcan
 
                 @can('user.create')
                     <li class="nav-item mb-1">

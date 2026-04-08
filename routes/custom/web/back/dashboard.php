@@ -74,15 +74,17 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         return file_get_contents(public_path('POS/dist/index.html'));
     })->where('any', '.*')->name('pos.index');
 
-    Route::get('/POS/invoice-settings', function () {
+    Route::get('/invoice-settings', function () {
 
-        return file_get_contents(public_path('POS/dist/index.html'));
-    })->where('any', '.*')->name('pos.se');
+        return file_get_contents(public_path('settings/dist/index.html'));
+    })->where('any', '.*')->name('pos.invoice-settings');
 
-    Route::get('/POS/user-settings', function () {
+    Route::get('/invoice-settings/user-settings', function () {
 
-        return file_get_contents(public_path('POS/dist/index.html'));
-    })->where('any', '.*')->name('pos.se');
+        return file_get_contents(public_path('settings/dist/index.html'));
+    })->where('any', '.*')->name('pos.user-settings');
+
+
 
     // CRUD
     Route::get('delivery', DeliveryIndex::class)->name('delivery.index');
