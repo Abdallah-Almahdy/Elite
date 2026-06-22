@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseProduct;
 use App\Services\API\ShiftService;
+use DragonCode\Contracts\Cashier\Auth\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -154,8 +155,10 @@ class InvoiceController extends Controller
     }
 
 
-    public function inviceConfig()
+    public function inviceConfig(Request $request)
     {
+
+
 
         $config = User::find(1)->inviceConfig;
         if (!$config) {

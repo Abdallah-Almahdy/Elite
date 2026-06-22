@@ -74,6 +74,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         return file_get_contents(public_path('POS/dist/index.html'));
     })->where('any', '.*')->name('pos.index');
 
+
     Route::get('/invoice-settings', function () {
 
         return file_get_contents(public_path('settings/dist/index.html'));
@@ -83,6 +84,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
         return file_get_contents(public_path('settings/dist/index.html'));
     })->where('any', '.*')->name('pos.user-settings');
+
+    Route::get('/invoice-settings/printer-settings', function () {
+
+        return file_get_contents(public_path('settings/dist/index.html'));
+    })->where('any', '.*')->name('pos.printer-settings');
+    Route::get('/', function () {
+
+        return file_get_contents(public_path('settings/dist/index.html'));
+    })->where('any', '.*')->name('pos.general');
 
 
 
