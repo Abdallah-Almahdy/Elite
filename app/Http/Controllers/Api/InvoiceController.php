@@ -158,7 +158,7 @@ class InvoiceController extends Controller
     public function inviceConfig(Request $request)
     {
 
-        $config = User::find(auth()->user()->id)->inviceConfig;
+        $config = User::find(1)->inviceConfig;
 
         if (!$config) {
             return response()->json([
@@ -189,7 +189,7 @@ class InvoiceController extends Controller
             'allowedInvoiceTypes.*' => 'string|in:take_away,hall,delvery',
         ]);
 
-        $user = User::findOrFail(auth()->user()->id);
+        $user = User::findOrFail(1);
 
         $allowedPaymentMethods = collect($request->allowedPaymentMethods ?? []);
 
@@ -257,7 +257,7 @@ class InvoiceController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::find(auth()->user()->id);
+        $user = User::find(1);
 
         if ($user->inviceConfig && $user->inviceConfig->password === $request->password) {
             return response()->json([
