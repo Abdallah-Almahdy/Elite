@@ -58,4 +58,20 @@ class permissionsController extends Controller
             'permissions' => $permissionsArray,
         ]);
     }
+
+    public function getUserPermissions(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        $allPermissions = \Spatie\Permission\Models\Permission::pluck('name');
+        $permissionsArray = $allPermissions->mapWithKeys(function ($permission) use ($user) {
+            return [$permission => $user->hasPermissionTo($permission)];
+        });
+
+        return response()->json([
+            'permissions' => $permissionsArray,
+            'message' => 'User permissions fetched successfully',
+            'status' => 'success',
+        ], 200);
+    }
 }

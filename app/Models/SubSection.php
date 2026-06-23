@@ -32,5 +32,10 @@ class SubSection extends Model
         return $this->belongsTo(Section::class,  'main_section_id', 'id');
     }
 
+    public function sectionPrinterSettings(): HasMany
+    {
+        return $this->hasMany(SectionPrinterSetting::class, 'sub_sections_id', 'id');
+    }
+
 
 }

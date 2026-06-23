@@ -61,6 +61,16 @@ class User extends Authenticatable
         return $this->hasOne(InviceConfig::class, 'user_id');
     }
 
+    public function userConfig(): HasOne
+    {
+        return $this->hasOne(userConfig::class, 'user_id');
+    }
+
+    public function warahouses()
+    {
+        return $this->belongsToMany(Warehouse::class,'warehouse_permissions','user_id','warehouse_id');
+    }
+
     public function ratings(): HasMany
     {
         return $this->HasMany(Rating::class);

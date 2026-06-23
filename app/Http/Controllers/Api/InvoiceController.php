@@ -12,7 +12,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseProduct;
 use App\Services\API\ShiftService;
-use DragonCode\Contracts\Cashier\Auth\Auth;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -158,9 +158,8 @@ class InvoiceController extends Controller
     public function inviceConfig(Request $request)
     {
 
+        $config = User::find(auth()->user()->id)->inviceConfig;
 
-
-        $config = User::find(1)->inviceConfig;
         if (!$config) {
             return response()->json([
                 'message' => 'No config found for this user.'
@@ -188,54 +187,67 @@ class InvoiceController extends Controller
             'allowedPaymentMethods.*' => 'string|in:cash,credit_card,instapay,wallet,remaining',
             'allowedInvoiceTypes' => 'array|nullable',
             'allowedInvoiceTypes.*' => 'string|in:take_away,hall,delvery',
-
         ]);
 
+        $user = User::findOrFail(auth()->user()->id);
 
-        $config = User::find($request->user_id)->inviceConfig;
-        $allowedPaymentMethods = collect($request->allowedPaymentMethods)
-            ->push($request->defaultPaymentMethod)
+        $allowedPaymentMethods = collect($request->allowedPaymentMethods ?? []);
+
+        if ($request->defaultPaymentMethod) {
+            $allowedPaymentMethods->push($request->defaultPaymentMethod);
+        }
+
+        $allowedPaymentMethods = $allowedPaymentMethods
             ->unique()
             ->values()
             ->toArray();
 
-        $allowedInvoiceTypes = collect($request->allowedInvoiceTypes)
-            ->push($request->defaultInvoiceType)
+
+        $allowedInvoiceTypes = collect($request->allowedInvoiceTypes ?? []);
+
+        if ($request->defaultInvoiceType) {
+            $allowedInvoiceTypes->push($request->defaultInvoiceType);
+        }
+
+        $allowedInvoiceTypes = $allowedInvoiceTypes
             ->unique()
             ->values()
             ->toArray();
+
+
+
+        $data = [
+            'printerName' => $request->printerName,
+            'password' => $request->password,
+            'taxValue' => $request->taxValue,
+            'defaultPaymentMethod' => $request->defaultPaymentMethod,
+            'defaultInvoiceType' => $request->defaultInvoiceType,
+            'applyTax' => $request->applyTax,
+            'taxTypes' => $request->taxTypes,
+            'allowedPaymentMethods' => $allowedPaymentMethods,
+            'allowedInvoiceTypes' => $allowedInvoiceTypes,
+        ];
+
+        $config = $user->inviceConfig;
 
         if (!$config) {
-            $config = User::find($request->user_id)->inviceConfig()->create([
-                'printerName' => $request->printerName ?? $config->printerName,
-                'password' => $request->password ?? $config->password,
-                'taxValue' => $request->taxValue ?? $config->taxValue,
-                'defaultPaymentMethod' => $request->defaultPaymentMethod ?? $config->defaultPaymentMethod,
-                'defaultInvoiceType' => $request->defaultInvoiceType ?? $config->defaultInvoiceType,
-                'applyTax' => $request->applyTax ?? $config->applyTax,
-                'taxTypes' => $request->taxTypes ?? $config->taxTypes,
-                'allowedPaymentMethods' => $allowedPaymentMethods,
-                'allowedInvoiceTypes' => $allowedInvoiceTypes
-            ]);
+            $config = $user->inviceConfig()->create($data);
         } else {
+            $config->update(
+                collect($data)
+                    ->filter(fn($value) => $value !== null)
+                    ->toArray()
+            );
 
-            $config->update([
-                'printerName' => $request->printerName ?? $config->printerName,
-                'password' => $request->password ?? $config->password,
-                'taxValue' => $request->taxValue ?? $config->taxValue,
-                'defaultPaymentMethod' => $request->defaultPaymentMethod ?? $config->defaultPaymentMethod,
-                'defaultInvoiceType' => $request->defaultInvoiceType ?? $config->defaultInvoiceType,
-                'applyTax' => $request->applyTax ?? $config->applyTax,
-                'taxTypes' => $request->taxTypes ?? $config->taxTypes,
-                'allowedPaymentMethods' => $allowedPaymentMethods,
-                'allowedInvoiceTypes' => $allowedInvoiceTypes
-            ]);
+            $config->save();
         }
 
         return response()->json([
             'message' => 'Config updated successfully.',
             'config' => $config,
-            'mainWarehouse' => Warehouse::where('is_default', true)->first()->name
+            'mainWarehouse' => optional(
+                Warehouse::where('is_default', true)->first()
+            )->name,
         ]);
     }
 
@@ -245,7 +257,7 @@ class InvoiceController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::find(1);
+        $user = User::find(auth()->user()->id);
 
         if ($user->inviceConfig && $user->inviceConfig->password === $request->password) {
             return response()->json([

@@ -80,19 +80,16 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         return file_get_contents(public_path('settings/dist/index.html'));
     })->where('any', '.*')->name('pos.invoice-settings');
 
-    Route::get('/invoice-settings/user-settings', function () {
-
-        return file_get_contents(public_path('settings/dist/index.html'));
-    })->where('any', '.*')->name('pos.user-settings');
 
     Route::get('/invoice-settings/printer-settings', function () {
 
         return file_get_contents(public_path('settings/dist/index.html'));
     })->where('any', '.*')->name('pos.printer-settings');
-    Route::get('/', function () {
+
+    Route::get('/invoice-settings/invoice-settings', function () {
 
         return file_get_contents(public_path('settings/dist/index.html'));
-    })->where('any', '.*')->name('pos.general');
+    })->where('any', '.*')->name('pos.invoice-settings-general');
 
 
 

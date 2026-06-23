@@ -43,16 +43,25 @@
                         <a href="{{ route('pos.invoice-settings') }}"
                             class="nav-link {{ Request::is('dashboard/invoice-settings') ? 'bg-success' : '' }}">
                             <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>اعدادات عامه</p>
+                            <p>صلاحيات المستخدمين</p>
                         </a>
                     </li>
                 @endcan
                     @can('config.update')
                     <li class="nav-item mb-1">
-                        <a href="{{ route('pos.user-settings') }}"
-                            class="nav-link {{ Request::is('dashboard/invoice-settings/user-settings*') ? 'bg-success' : '' }}">
+                        <a href="{{ route('pos.printer-settings') }}"
+                            class="nav-link {{ Request::is('dashboard/invoice-settings/printer-settings*') ? 'bg-success' : '' }}">
                             <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>اعدادات شاشه البيع</p>
+                            <p>اعدادات المستخدم</p>
+                        </a>
+                    </li>
+                @endcan
+                  @can('config.update')
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('pos.invoice-settings-general') }}"
+                            class="nav-link {{ Request::is('dashboard/invoice-settings/invoice-settings*') ? 'bg-success' : '' }}">
+                            <i class="nav-icon fas fa-cog ml-2"></i>
+                            <p>اعدادات الفاتورة العامة</p>
                         </a>
                     </li>
                 @endcan

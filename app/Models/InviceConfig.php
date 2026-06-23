@@ -19,9 +19,7 @@ class InviceConfig extends Model
         'user_id',
         'allowedPaymentMethods',
         'allowedInvoiceTypes',
-
     ];
-
 
     protected $casts = [
         'allowedPaymentMethods' => 'array',

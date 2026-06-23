@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\permissionsController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\Api\ShiftController ;
+use App\Http\Controllers\Api\systemSettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front\react\pos\IndexPosController;
 
@@ -24,10 +25,16 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
 
 
+Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 
-
+Route::get('/userPrinterSettings', [systemSettingsController::class, 'userPrinterSettings']);
+Route::post('/updateUserPrinterSettings', [systemSettingsController::class, 'updateUserPrinterSettings']);
+route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectionsPrinterSettings']);
+Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
+Route::get('/InvicePrinterSettings', [systemSettingsController::class, 'InvicePrinterSettings']);
+Route::post('/updateInvicePrinterSettings', [systemSettingsController::class, 'updateInvicePrinterSettings']);
 // شاشه الكاشير
-//Route::middleware('auth:web', 'web')->group(function (){
+Route::middleware('auth:web', 'web')->group(function (){
 
     Route::get('/sections', [ProductsController::class, 'GetAllSections']);
     Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
@@ -48,5 +55,6 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
 
-// });
+});
+
 
