@@ -34,7 +34,7 @@ Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, '
 Route::get('/InvicePrinterSettings', [systemSettingsController::class, 'InvicePrinterSettings']);
 Route::post('/updateInvicePrinterSettings', [systemSettingsController::class, 'updateInvicePrinterSettings']);
 // شاشه الكاشير
-Route::middleware('auth:web', 'web')->group(function (){
+// Route::middleware('auth:web', 'web')->group(function (){
 
     Route::get('/sections', [ProductsController::class, 'GetAllSections']);
     Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
@@ -55,6 +55,6 @@ Route::middleware('auth:web', 'web')->group(function (){
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
 
-});
+// });
 
 
