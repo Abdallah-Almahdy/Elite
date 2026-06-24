@@ -86,6 +86,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         return file_get_contents(public_path('settings/dist/index.html'));
     })->where('any', '.*')->name('pos.printer-settings');
 
+    
     Route::get('/invoice-settings/invoice-settings', function () {
 
         return file_get_contents(public_path('settings/dist/index.html'));
