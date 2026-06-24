@@ -33,6 +33,12 @@ route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectio
 Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
 Route::get('/InvicePrinterSettings', [systemSettingsController::class, 'InvicePrinterSettings']);
 Route::post('/updateInvicePrinterSettings', [systemSettingsController::class, 'updateInvicePrinterSettings']);
+
+Route::get('/getWarehouse', [systemSettingsController::class, 'getWarehouse']);
+Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
+Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
+Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDefaultWarehouse']);
+
 // شاشه الكاشير
 // Route::middleware('auth:web', 'web')->group(function (){
 

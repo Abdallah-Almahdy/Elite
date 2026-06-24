@@ -1,4 +1,4 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4" dir="rtl">
+<aside class="main-sidebar sidebar-dark-primary elevation-4" dir="rtl" style="width: 300px;">
     <!-- Brand Logo -->
     <div class="brand-link bg-dark border-bottom border-secondary">
         <div class="brand-text d-flex align-items-center justify-content-center py-3">
@@ -29,25 +29,13 @@
 
 
                 <!-- الإعدادات -->
+
                 @can('config.update')
                     <li class="nav-item mb-1">
-                        <a href="{{ route('config.update') }}"
-                            class="nav-link {{ Request::is('dashboard/prodducts*') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>الإعدادات التطبيق</p>
-                        </a>
+
                     </li>
                 @endcan
                 @can('config.update')
-                    <li class="nav-item mb-1">
-                        <a href="{{ route('pos.invoice-settings') }}"
-                            class="nav-link {{ Request::is('dashboard/invoice-settings') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>صلاحيات المستخدمين</p>
-                        </a>
-                    </li>
-                @endcan
-                    @can('config.update')
                     <li class="nav-item mb-1">
                         <a href="{{ route('pos.printer-settings') }}"
                             class="nav-link {{ Request::is('dashboard/invoice-settings/printer-settings*') ? 'bg-success' : '' }}">
@@ -56,15 +44,65 @@
                         </a>
                     </li>
                 @endcan
-                  @can('config.update')
-                    <li class="nav-item mb-1">
-                        <a href="{{ route('pos.invoice-settings-general') }}"
-                            class="nav-link {{ Request::is('dashboard/invoice-settings/invoice-settings*') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>اعدادات الفاتورة العامة</p>
-                        </a>
-                    </li>
-                @endcan
+
+                <li class="nav-item has-treeview">
+
+                    <a href="#" class="nav-link text-white">
+                        <i class="nav-icon fas fa-cog ml-2"></i>
+                        <p>
+                            الاعدادت
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+
+                    <ul class="nav nav-treeview">
+
+                        <li class="nav-item has-treeview">
+
+                            <a href="#" class="nav-link text-white">
+                                <i class="nav-icon fas fa-cog ml-2"></i>
+                                <p>
+                                    اعدادات عامة
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+
+                            <ul class="nav nav-treeview">
+                                @can('config.update')
+                                    <li class="nav-item mb-1">
+                                        <a href="{{ route('pos.invoice-settings-general') }}"
+                                            class="nav-link {{ Request::is('dashboard/invoice-settings/invoice-settings*') ? 'bg-success' : '' }}">
+                                            <i class="nav-icon fas fa-cog ml-2"></i>
+                                            <p>اعدادات الفاتورة العامة</p>
+                                        </a>
+                                    </li>
+                                @endcan
+
+
+                            </ul>
+
+                        </li>
+                        <li class="nav-item has-treeview">
+                            <a href="{{ route('pos.invoice-settings') }}"
+                                class="nav-link {{ Request::is('dashboard/invoice-settings') ? 'bg-success' : '' }}">
+                                <i class="nav-icon fas fa-cog ml-2"></i>
+                                <p>صلاحيات المستخدمين</p>
+                            </a>
+
+                        </li>
+                        @can('config.update')
+                            <li class="nav-item mb-1">
+                                <a href="{{ route('config.update') }}"
+                                    class="nav-link {{ Request::is('dashboard/prodducts*') ? 'bg-success' : '' }}">
+                                    <i class="nav-icon fas fa-cog ml-2"></i>
+                                    <p>الإعدادات التطبيق</p>
+                                </a>
+                            </li>
+                        @endcan
+
+                    </ul>
+                </li>
+
 
                 @can('user.create')
                     <li class="nav-item mb-1">

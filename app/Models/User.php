@@ -66,7 +66,7 @@ class User extends Authenticatable
         return $this->hasOne(userConfig::class, 'user_id');
     }
 
-    public function warahouses()
+    public function warehouses()
     {
         return $this->belongsToMany(Warehouse::class,'warehouse_permissions','user_id','warehouse_id');
     }

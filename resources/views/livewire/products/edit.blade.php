@@ -10,7 +10,6 @@
         </div>
     @endif
 
-
     {{-- Success Message --}}
     @if (session()->has('success'))
         <div class="alert alert-success">
@@ -19,7 +18,7 @@
     @endif
 
     <div class="card-header bg-primary text-white py-3">
-        <h5 class="text-center mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>إضافة صنف جديد</h5>
+        <h5 class="text-center mb-0 fw-bold"><i class="fas fa-edit me-2"></i>تعديل صنف</h5>
     </div>
 
     <form wire:submit="updateProduct" role="form" class="flex-grow-1 d-flex flex-column">
@@ -32,7 +31,7 @@
                     <div class="form-group">
                         <label for="name" class="form-label fw-semibold">الاسم <span
                                 class="text-danger">*</span></label>
-                        <input wire:model="name" type="text" class="form-control " id="name"
+                        <input wire:model="name" type="text" class="form-control" id="name"
                             placeholder="ادخل الاسم">
                         @error('name')
                             <div class="text-danger small mt-1">{{ $message }}</div>
@@ -43,7 +42,7 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="description" class="form-label fw-semibold">الوصف</label>
-                        <input wire:model="description" type="text" class="form-control " id="description"
+                        <input wire:model="description" type="text" class="form-control" id="description"
                             placeholder="ادخل الوصف">
                     </div>
                 </div>
@@ -52,7 +51,6 @@
                         <label for="section" class="form-label fw-semibold">
                             القسم <span class="text-danger">*</span>
                         </label>
-
                         <div class="input-group">
                             <select wire:model="section" id="section" class="form-select">
                                 <option value="" class="text-muted">اختر القسم...</option>
@@ -60,19 +58,15 @@
                                     <option value="{{ $section->id }}">{{ $section->name }}</option>
                                 @endforeach
                             </select>
-
-                            <!-- زر الإضافة -->
                             <a href="{{ route('sections.create') }}" class="btn btn-success btn-sm">
                                 <i class="fa fa-plus"></i>
                             </a>
                         </div>
-
                         @error('section_id')
                             <div class="text-danger small mt-1">الرجاء اختيار القسم</div>
                         @enderror
                     </div>
                 </div>
-
             </div>
 
             <!-- الصف الثاني: المنتج المركب والصورة وإضافة قسم -->
@@ -94,8 +88,19 @@
                         <input type="checkbox" wire:model.live="is_weight" id="is_weight" class="form-check-input">
                         <label for="is_weight" class="form-check-label fw-semibold">منتج بوزن</label>
                     </div>
+                    @if($is_weight)
 
+                    <div class="input-group mt-3" style="max-width: 250px;">
+                        <select wire:model="defaultUnit" class="form-select" >
+                            <option value="">اختر الوحدة الافتراضية</option>
+                            @foreach ($MeasureUnits as $measure)
+                                <option value="{{ $measure->id }}">{{ $measure->name }}
+                                </option>
+                            @endforeach
+                        </select>
 
+                    </div>
+                    @endif
                 </div>
 
                 <div class="col-md-4">
@@ -105,7 +110,6 @@
                         @error('photo')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
-
                         @if ($photo)
                             <div class="mt-2">
                                 <img class="img-thumbnail" src="{{ $photo->temporaryUrl() }}"
@@ -119,7 +123,6 @@
                         <label for="company" class="form-label fw-semibold">
                             الشركة التابع لها المنتج <span class="text-danger">*</span>
                         </label>
-
                         <div class="input-group">
                             <select wire:model="company" id="company" class="form-select">
                                 <option value="" class="text-muted">اختر الشركة...</option>
@@ -127,8 +130,6 @@
                                     <option value="{{ $company->id }}">{{ $company->name }}</option>
                                 @endforeach
                             </select>
-
-                            <!-- زر الإضافة -->
                             <a href="{{ route('companies.create') }}" class="btn btn-success btn-sm">
                                 <i class="fa fa-plus"></i>
                             </a>
@@ -156,7 +157,7 @@
                                     <th>معامل التحويل</th>
                                 @endif
                                 <th>سعر البيع</th>
-                                <th> سعر الشرا</th>
+                                <th>سعر الشراء</th>
                                 <th>الباركود</th>
                                 @if ($hasRecipe)
                                     <th>إجمالي التكلفة</th>
@@ -201,41 +202,35 @@
                                         </td>
                                     @endif
 
-                                    <!-- السعر -->
-                                    <td>
-                                        <input type="number" step="0.001" wire:model.lazy="units.{{ $index }}.sallPrice"
-                                            class="form-control text-center">
-                                    </td>
-
                                     <!-- سعر البيع -->
                                     <td>
-                                        <input type="number" step="0.001"  wire:model.lazy="units.{{ $index }}.price"
+                                        <input type="number" step="0.001"
+                                            wire:model.lazy="units.{{ $index }}.sallPrice"
                                             class="form-control text-center">
                                     </td>
 
-                                    <!-- الباركود -->
+                                    <!-- سعر الشراء -->
                                     <td>
-                                        @foreach ($unit['bar_codes'] as $bIndex => $barcode)
-                                            <div class="input-group mb-2">
+                                        <input type="number" step="0.001"
+                                            wire:model.lazy="units.{{ $index }}.price"
+                                            class="form-control text-center">
+                                    </td>
 
-                                                <input type="text"
-                                                    wire:model="units.{{ $index }}.bar_codes.{{ $bIndex }}"
-                                                    class="form-control text-center" placeholder="barcode">
-
-                                                @if ($bIndex != 0)
-                                                    <button type="button"
-                                                        wire:click="removeBarCode({{ $index }}, {{ $bIndex }})"
-                                                        class="btn btn-danger btn-sm"><i
-                                                            class="fa fa-times"></i></button>
-                                                @endif
-                                                @if ($bIndex == 0)
-                                                    <button type="button"
-                                                        wire:click="addBarCode({{ $index }})"
-                                                        class="btn btn-success btn-sm"><i
-                                                            class="fa fa-plus"></i></button>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                                    <!-- الباركود (يظهر الأول مع زر + لفتح المودال) -->
+                                    <td>
+                                        @php
+                                            $firstBarcode = $unit['bar_codes'][0] ?? '';
+                                        @endphp
+                                        <div class="input-group mb-2">
+                                            <input type="text"
+                                                wire:model.defer="units.{{ $index }}.bar_codes.0"
+                                                class="form-control text-center" placeholder="الباركود الافتراضي">
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#barcodeModal-{{ $index }}">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
                                     </td>
 
                                     <!-- إجمالي التكلفة -->
@@ -248,7 +243,6 @@
                                             </div>
                                         </td>
                                     @endif
-
 
                                     <!-- خيارات -->
                                     <td>
@@ -273,8 +267,6 @@
                                             @endif
                                         </div>
                                     </td>
-
-
                                 </tr>
 
                                 <!-- جدول الوصفة الداخلي -->
@@ -285,7 +277,6 @@
                                                 <h6 class="fw-semibold text-secondary mb-3">
                                                     <i class="fa fa-utensils me-1"></i>الوصفة
                                                 </h6>
-
                                                 <table
                                                     class="table table-sm table-bordered align-middle text-center mb-0">
                                                     <thead class="table-secondary">
@@ -352,19 +343,12 @@
                                                                         @endforeach
                                                                     </select>
                                                                 </td>
-
-                                                                <!-- الكمية -->
                                                                 <td>
                                                                     <input type="number"
                                                                         wire:model.live="units.{{ $index }}.components.{{ $cIndex }}.quantity"
                                                                         class="form-control form-control-sm text-center"
                                                                         placeholder="الكمية">
                                                                 </td>
-
-                                                                <!-- الوحدة -->
-
-
-                                                                <!-- التحكم -->
                                                                 <td>
                                                                     <button type="button"
                                                                         wire:click="removeComponent({{ $index }}, {{ $cIndex }})"
@@ -390,8 +374,6 @@
                                         </td>
                                     </tr>
                                 @endif
-
-
                             @endforeach
                         </tbody>
                     </table>
@@ -402,7 +384,6 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card border-primary">
-
                         <div
                             class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold"><i class="fas fa-cogs me-2"></i>خيارات المنتج</h6>
@@ -410,11 +391,8 @@
                                 <i class="fa fa-plus me-1"></i>إضافة خيار
                             </button>
                         </div>
-
                         <div class="card-body">
-
                             @if (count($options) > 0)
-
                                 <table class="table table-bordered table-striped align-middle text-center">
                                     <thead class="table-light">
                                         <tr>
@@ -425,33 +403,25 @@
                                             <th>إجراء</th>
                                         </tr>
                                     </thead>
-
                                     <tbody>
                                         @foreach ($options as $optionIndex => $option)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-
                                                 <td>
                                                     <input type="text"
                                                         wire:model="options.{{ $optionIndex }}.name"
                                                         class="form-control" placeholder="مثل: اللون ، المقاس">
                                                 </td>
-
                                                 <td>
                                                     <input type="checkbox"
                                                         wire:model="options.{{ $optionIndex }}.active"
                                                         class="form-check-input">
                                                 </td>
-
                                                 <td>
-
-                                                    <!-- زر إضافة قيمة -->
                                                     <button type="button" class="btn btn-sm btn-outline-primary mb-2"
                                                         wire:click="addValue({{ $optionIndex }})">
                                                         <i class="fa fa-plus me-1"></i>إضافة قيمة
                                                     </button>
-
-                                                    <!-- جدول القيم -->
                                                     @if (isset($option['values']) && count($option['values']) > 0)
                                                         <table class="table table-sm table-bordered">
                                                             <thead class="table-secondary">
@@ -461,7 +431,6 @@
                                                                     <th>حذف</th>
                                                                 </tr>
                                                             </thead>
-
                                                             <tbody>
                                                                 @foreach ($option['values'] as $valueIndex => $value)
                                                                     <tr>
@@ -471,14 +440,12 @@
                                                                                 class="form-control"
                                                                                 placeholder="أحمر، كبير، ...">
                                                                         </td>
-
                                                                         <td>
                                                                             <input type="number"
                                                                                 wire:model="options.{{ $optionIndex }}.values.{{ $valueIndex }}.price"
                                                                                 class="form-control" step="0.01"
                                                                                 placeholder="0.00">
                                                                         </td>
-
                                                                         <td>
                                                                             <button type="button"
                                                                                 class="btn btn-sm btn-outline-danger w-100"
@@ -489,14 +456,11 @@
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>
-
                                                         </table>
                                                     @else
                                                         <div class="text-muted small">لا توجد قيم مضافة</div>
                                                     @endif
-
                                                 </td>
-
                                                 <td>
                                                     <button type="button"
                                                         wire:click="removeOption({{ $optionIndex }})"
@@ -507,20 +471,18 @@
                                             </tr>
                                         @endforeach
                                     </tbody>
-
                                 </table>
                             @else
                                 <div class="text-center text-muted py-3">
                                     <i class="fas fa-info-circle me-1"></i>لا توجد خيارات مضافة حالياً
                                 </div>
-
                             @endif
-
                         </div>
-
                     </div>
                 </div>
             </div>
+
+            <!-- قسم الإضافات (Addons) -->
             <div class="card border-success mb-4">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2"></i>الإضافات (Addons)</h6>
@@ -528,7 +490,6 @@
                         <i class="fa fa-plus me-1"></i>إضافة إضافة
                     </button>
                 </div>
-
                 <div class="card-body">
                     @if (count($addons) > 0)
                         <table class="table table-bordered table-striped align-middle text-center">
@@ -574,21 +535,12 @@
                     @endif
                 </div>
             </div>
-
-
-            <!-- رسالة النجاح -->
-            @if (session('done'))
-                <div class="alert alert-success d-flex align-items-center mt-3" role="alert">
-                    <i class="fa fa-check-circle me-2" aria-hidden="true"></i>
-                    <div>تم اضافة منتج جديد بنجاح</div>
-                </div>
-            @endif
         </div>
 
         <!-- زر الإرسال -->
         <div class="card-footer bg-light py-3">
-            <button type="submit" id="done" class="btn btn-primary btn-lg px-5">
-                <i class="fas fa-save me-2"></i>اضافة المنتج
+            <button type="submit" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-save me-2"></i>تحديث المنتج
             </button>
         </div>
     </form>
@@ -612,17 +564,13 @@
                                 <div class="text-danger small">{{ $message }}</div>
                             @enderror
                         </div>
-
                         <div class="form-check mb-3">
                             <input type="checkbox" wire:model="newUnit.is_active" class="form-check-input"
                                 id="isActive">
                             <label class="form-check-label" for="isActive">نشطة</label>
                         </div>
-
                         <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">
-                                حفظ
-                            </button>
+                            <button type="submit" class="btn btn-primary">حفظ</button>
                         </div>
                     </form>
                 </div>
@@ -630,47 +578,94 @@
         </div>
     </div>
 
+    <!-- مودال الباركود لكل وحدة -->
+    @foreach ($units as $index => $unit)
+        <div wire:ignore.self class="modal fade" id="barcodeModal-{{ $index }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            باركودات الوحدة {{ $loop->iteration }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @foreach ($unit['bar_codes'] as $bIndex => $barcode)
+                            <div class="input-group mb-2"
+                                wire:key="unit-{{ $index }}-barcode-{{ $bIndex }}">
+                                <input type="text" id="unit-{{ $index }}-barcode-{{ $bIndex }}"
+                                    name="units[{{ $index }}][bar_codes][{{ $bIndex }}]"
+                                    data-unit="{{ $index }}"
+                                    wire:key="unit-{{ $index }}-barcode-{{ $bIndex }}"
+                                    wire:model.defer="units.{{ $index }}.bar_codes.{{ $bIndex }}"
+                                    wire:keydown.enter.prevent="addBarcodeOnEnter({{ $index }})"
+                                    class="form-control text-center" placeholder="ادخل الباركود هنا">
 
-</div>
+                                @if (!($index == 0 && $bIndex == 0))
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        wire:click="removeBarCode({{ $index }}, {{ $bIndex }})">
+                                        ✖
+                                    </button>
+                                @endif
+                            </div>
+                        @endforeach
 
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:init', () => {
-            // استماع للـ event من Livewire
-            Livewire.on('prices-updated', (data) => {
-                if (!data.units) return;
+                        <button type="button" class="btn btn-outline-success btn-sm w-100"
+                            wire:click="addBarCode({{ $index }})">
+                            + إضافة باركود
+                        </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">تم</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 
-                data.units.forEach((unit, index) => {
-                    // نجيب input سعر الشراء
-                    const priceInput = document.querySelector(
-                        `[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
-                    // نجيب input سعر البيع
-                    const sellInput = document.querySelector(
-                        `[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
+    @push('scripts')
+        <script>
+            document.addEventListener('livewire:init', () => {
+                // تحديث الأسعار تلقائياً
+                Livewire.on('prices-updated', (data) => {
+                    if (!data.units) return;
+                    data.units.forEach((unit, index) => {
+                        const priceInput = document.querySelector(
+                            `[wire\\:model\\.lazy="units\\.${index}\\.price"]`);
+                        const sellInput = document.querySelector(
+                            `[wire\\:model\\.lazy="units\\.${index}\\.sallPrice"]`);
 
-                    if (priceInput) {
-                        // نحدّث القيمة يدوياً
-                        priceInput.value = unit.price;
-                        // نرسل حدث input عشان Livewire يعرف التغيير
-                        priceInput.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    }
+                        if (priceInput) {
+                            priceInput.value = unit.price;
+                            priceInput.dispatchEvent(new Event('input', {
+                                bubbles: true
+                            }));
+                        }
+                        if (sellInput) {
+                            sellInput.value = unit.sallPrice;
+                            sellInput.dispatchEvent(new Event('input', {
+                                bubbles: true
+                            }));
+                        }
+                    });
+                });
 
-                    if (sellInput) {
-                        sellInput.value = unit.sallPrice;
-                        sellInput.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    }
+                // التركيز التلقائي عند إضافة باركود
+                Livewire.on('focus-last-barcode', (data) => {
+                    const unitIndex = data.unitIndex;
+                    setTimeout(() => {
+                        const inputs = document.querySelectorAll(`[data-unit="${unitIndex}"]`);
+                        if (inputs.length) {
+                            const lastInput = inputs[inputs.length - 1];
+                            lastInput.focus();
+                        }
+                    }, 50);
                 });
             });
-        });
 
-
-
-        window.addEventListener('reload-page', () => {
-            location.reload();
-        });
-    </script>
-@endpush
+            window.addEventListener('reload-page', () => {
+                location.reload();
+            });
+        </script>
+    @endpush
+</div>

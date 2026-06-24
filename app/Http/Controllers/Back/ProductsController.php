@@ -65,7 +65,7 @@ class ProductsController extends Controller
      */
     public function edit($id)
     {
-        Gate::authorize('user.edit');
+        Gate::authorize('product.edit');
         $data = Product::findOrFail($id);
         $sections = SubSection::all();
 
