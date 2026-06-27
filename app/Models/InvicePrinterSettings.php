@@ -9,9 +9,17 @@ class InvicePrinterSettings extends Model
     protected $table = 'invice_printer_settings';
 
     protected $fillable = [
-        'printerName',
-        'formName',
-        'permssionName',
-        'numOfCopies',
+        'cashierPrinterName',
+        'allowSaveWithoutPrint',
+        'barcodePrinterName',
+        'reportPrinterName',
+        'user_id',
+        'type'
     ];
+
+    public function invicePrinters()
+    {
+        return $this->hasMany(invicePrinter::class, 'invoice_printer_setting_id');
+    }
+
 }

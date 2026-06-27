@@ -27,16 +27,25 @@ Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsBy
 
 Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 
+// userSettings
 Route::get('/userPrinterSettings', [systemSettingsController::class, 'userPrinterSettings']);
 Route::post('/updateUserPrinterSettings', [systemSettingsController::class, 'updateUserPrinterSettings']);
-route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectionsPrinterSettings']);
-Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
-Route::get('/InvicePrinterSettings', [systemSettingsController::class, 'InvicePrinterSettings']);
-Route::post('/updateInvicePrinterSettings', [systemSettingsController::class, 'updateInvicePrinterSettings']);
 
-Route::get('/getWarehouse', [systemSettingsController::class, 'getWarehouse']);
 Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
 Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
+Route::get('/invicePrintersUserSettings', [systemSettingsController::class, 'invicePrintersUserSettings']);
+
+
+// systemSettings
+Route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectionsPrinterSettings']);
+Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
+
+Route::get('/invicePrintersSystemSettings', [systemSettingsController::class, 'invicePrintersSystemSettings']);
+Route::post('/updateInvicePrintersSettings', [systemSettingsController::class, 'updateInvicePrintersSettings']);
+Route::get('/inviceConfigSystemSettings', [InvoiceController::class, 'invoiceConfig']);
+
+
+Route::get('/getWarehouse', [systemSettingsController::class, 'getWarehouse']);
 Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDefaultWarehouse']);
 
 // شاشه الكاشير
@@ -55,7 +64,7 @@ Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDef
     Route::get('/permissions', [permissionsController::class, 'userPermissions']);
     Route::post('/permissions', [permissionsController::class, 'edit']);
 
-    Route::get('/invice-config', [InvoiceController::class, 'inviceConfig']);
+    Route::get('/invice-config', [InvoiceController::class, 'userInviceConfig']);
     Route::post('/invice-config', [InvoiceController::class, 'editInviceConfig']);
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 

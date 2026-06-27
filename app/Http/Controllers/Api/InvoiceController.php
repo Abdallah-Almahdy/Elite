@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
+use App\Models\InviceConfig;
 use App\Models\Invoice;
 use App\Models\InvoiceProduct;
 use App\Models\Product;
@@ -154,8 +155,22 @@ class InvoiceController extends Controller
         }
     }
 
+    public function invoiceConfig()
+    {
+       $config = InviceConfig::where('type','system')->get();
 
-    public function inviceConfig(Request $request)
+        if (!$config) {
+            return response()->json([
+                'message' => 'No config found for this user.'
+            ], 404);
+        }
+
+        return response()->json([
+            'config' => $config,
+            'mainWarehouse' => Warehouse::where('is_default', true)->first()->name
+        ]);
+    }
+    public function userInvioceConfig(Request $request)
     {
 
         $config = User::find(1)->inviceConfig;
@@ -175,6 +190,7 @@ class InvoiceController extends Controller
     public function editInviceConfig(Request $request)
     {
         $request->validate([
+            "type" => "string|in:user,system|required",
             'printerName' => 'string|nullable',
             'password' => 'string|nullable',
             'taxValue' => 'numeric|nullable',
@@ -182,7 +198,7 @@ class InvoiceController extends Controller
             'defaultInvoiceType' => 'string|in:take_away,hall,delvery|nullable',
             'applyTax' => 'boolean|nullable',
             'taxTypes' => 'string|in:%,pound|nullable',
-            'user_id' => 'required|integer|exists:users,id',
+            'user_id' => 'nullable|integer|exists:users,id',
             'allowedPaymentMethods' => 'array|nullable',
             'allowedPaymentMethods.*' => 'string|in:cash,credit_card,instapay,wallet,remaining',
             'allowedInvoiceTypes' => 'array|nullable',
@@ -228,7 +244,14 @@ class InvoiceController extends Controller
             'allowedInvoiceTypes' => $allowedInvoiceTypes,
         ];
 
-        $config = $user->inviceConfig;
+       if ($request->type === 'system') {
+            $data['type'] = 'system';
+            $config = InviceConfig::where('type', 'system')->first();
+           
+        } else {
+            $data['type'] = 'user';
+            $config = $user->inviceConfig;
+        }
 
         if (!$config) {
             $config = $user->inviceConfig()->create($data);

@@ -120,37 +120,132 @@ class systemSettingsController extends Controller
     }
 
 
-    public function InvicePrinterSettings()
+    public function invicePrintersUserSettings()
+    {
+        $requestedSettings = InvicePrinterSettings::where('user_id',1)->where('type','user')->get();
+        if ($requestedSettings->isEmpty()) {
+            return response()->json(['message' => 'No printer settings found.'], 404);
+        }
+        return response()->json([
+            'message' => 'Invoice printer settings retrieved successfully.',
+            'data' => $requestedSettings->map(function ($setting) {
+                return [
+                    'id' => $setting->id,
+                    'cashierPrinterName' => $setting->cashierPrinterName,
+                    'allowSaveWithoutPrint' => $setting->allowSaveWithoutPrint,
+                    'barcodePrinterName' => $setting->barcodePrinterName,
+                    'reportPrinterName' => $setting->reportPrinterName,
+                    'type' => $setting->type,
+                    'user_id' => $setting->user_id,
+                    'invicePrinters' => $setting->invicePrinters->map(function ($printer) {
+                        return [
+                            'id' => $printer->id,
+                            'formName' => $printer->formName,
+                            'printerName' => $printer->printerName,
+                            'permssionName' => $printer->permssionName,
+                            'numOfCopies' => $printer->numOfCopies,
+                            'isActive' => $printer->isActive,
+                        ];
+                    }),
+                ];
+            })
+        ]);
+    }
+    public function invicePrintersSystemSettings()
     {
         $requestedSettings = InvicePrinterSettings::all();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
         }
-        return response()->json($requestedSettings);
+        return response()->json([
+            'message' => 'Invoice printer settings retrieved successfully.',
+            'data' => $requestedSettings->map(function ($setting) {
+                return [
+                    'id' => $setting->id,
+                    'cashierPrinterName' => $setting->cashierPrinterName,
+                    'allowSaveWithoutPrint' => $setting->allowSaveWithoutPrint,
+                    'barcodePrinterName' => $setting->barcodePrinterName,
+                    'reportPrinterName' => $setting->reportPrinterName,
+                    'type' => $setting->type,
+                    'user_id' => $setting->user_id,
+                    'invicePrinters' => $setting->invicePrinters->map(function ($printer) {
+                        return [
+                            'id' => $printer->id,
+                            'formName' => $printer->formName,
+                            'printerName' => $printer->printerName,
+                            'permssionName' => $printer->permssionName,
+                            'numOfCopies' => $printer->numOfCopies,
+                            'isActive' => $printer->isActive,
+                        ];
+                    }),
+                ];
+            })
+        ]);
     }
 
-    public function updateInvicePrinterSettings(Request $request)
+    public function updateInvicePrintersSettings(Request $request)
     {
         $validatedData = $request->validate([
-            'data' => 'required|array',
-            'data.*.formName' => 'required|string|max:255',
-            'data.*.printerName' => 'required|string|max:255',
-            'data.*.permssionName' => 'required|string|max:255',
-            'data.*.numOfCopies' => 'nullable|integer|min:1',
-            'data.*.isActive' => 'required|boolean',
+            'invoicePrinterSettings' => 'required|array',
+            'invoicePrinterSettings.*.formName' => 'required|string|max:255',
+            'invoicePrinterSettings.*.printerName' => 'required|string|max:255',
+            'invoicePrinterSettings.*.permssionName' => 'required|string|max:255',
+            'invoicePrinterSettings.*.numOfCopies' => 'nullable|integer|min:1',
+            'invoicePrinterSettings.*.isActive' => 'required|boolean',
+            'cashierPrinterName' => 'nullable|string|max:255',
+            'allowSaveWithoutPrint' => 'nullable|boolean',
+            'barcodePrinterName' => 'nullable|string|max:255',
+            'reportPrinterName' => 'nullable|string|max:255',
+            'type' => 'string|in:user,system|required',
+            'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
-        foreach ($validatedData['data'] as $settingData) {
-            InvicePrinterSettings::updateOrCreate(
-                ['permssionName' => $settingData['permssionName']],
+
+        if ($validatedData['type'] == "system") {
+            $invicePrinterSettings = InvicePrinterSettings::where('type', 'system')->first();
+            $validatedData['user_id'] = 1;
+        } else {
+            $invicePrinterSettings = InvicePrinterSettings::where('user_id', $validatedData['user_id'])->first();
+        }
+
+  if(!$invicePrinterSettings)
+        {
+
+            $invicePrinterSettings = InvicePrinterSettings::create([
+                'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName,
+                'allowSaveWithoutPrint' => $validatedData['allowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
+                'barcodePrinterName' => $validatedData['barcodePrinterName'] ?? $invicePrinterSettings->barcodePrinterName,
+                'reportPrinterName' => $validatedData['reportPrinterName'] ?? $invicePrinterSettings->reportPrinterName,
+                'type' => $validatedData['type'] ?? $invicePrinterSettings->type,
+                'user_id' => $validatedData['user_id'] ?? $invicePrinterSettings->user_id
+            ]);
+        }else
+        {
+            $invicePrinterSettings->update([
+                'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName,
+                'allowSaveWithoutPrint' => $validatedData['allowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
+                'barcodePrinterName' => $validatedData['barcodePrinterName'] ?? $invicePrinterSettings->barcodePrinterName,
+                'reportPrinterName' => $validatedData['reportPrinterName'] ?? $invicePrinterSettings->reportPrinterName,
+                'type' => $validatedData['type'] ?? $invicePrinterSettings->type,
+                'user_id' => $validatedData['user_id'] ?? $invicePrinterSettings->user_id
+            ]);
+        }
+
+
+
+
+        foreach ($validatedData['invoicePrinterSettings'] as $printerSetting) {
+            $invicePrinterSettings->invicePrinters()->updateOrCreate(
+                ['permssionName' => $printerSetting['permssionName']],
                 [
-                    'printerName' => $settingData['printerName'],
-                    'formName' => $settingData['formName'],
-                    'numOfCopies' => $settingData['numOfCopies'] ?? null,
-                    'isActive' => $settingData['isActive'],
+                    'formName' => $printerSetting['formName'],
+                    'printerName' => $printerSetting['printerName'],
+                    'numOfCopies' => $printerSetting['numOfCopies'] ?? null,
+                    'isActive' => $printerSetting['isActive'],
                 ]
             );
         }
+
 
         return response()->json(['message' => 'Invoice printer settings updated successfully.']);
     }
@@ -188,9 +283,10 @@ class systemSettingsController extends Controller
 
         // Attach the new warehouses with pivot data
         foreach ($validatedData['warehouses'] as $warehouseData) {
-            $user->warehouses()->attach($warehouseData['id'],
-            ['is_default' => $warehouseData['is_default'], 'warehouse_name' => $warehouseData['warehouse_name']],
-          );
+            $user->warehouses()->attach(
+                $warehouseData['id'],
+                ['is_default' => $warehouseData['is_default'], 'warehouse_name' => $warehouseData['warehouse_name']],
+            );
         }
 
         return response()->json(['message' => 'User warehouse settings updated successfully.']);
@@ -206,7 +302,7 @@ class systemSettingsController extends Controller
 
         $warehouses = Warehouse::all();
         foreach ($warehouses as $warehouse) {
-          if ($warehouse->id == $validatedData['warehouse_id']) {
+            if ($warehouse->id == $validatedData['warehouse_id']) {
                 $warehouse->is_default = true;
             } else {
                 $warehouse->is_default = false;
@@ -216,5 +312,4 @@ class systemSettingsController extends Controller
 
         return response()->json(['message' => 'Default warehouse set successfully.']);
     }
-
 }

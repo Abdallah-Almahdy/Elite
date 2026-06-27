@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('invice_printer_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('formName');
-            $table->string('printerName');
-            $table->string('permssionName')->unique();
-            $table->string('numOfCopies')->nullable();
+            $table->string('cashierPrinterName')->nullable();
+            $table->boolean('allowSaveWithoutPrint')->default(false);
+            $table->string('barcodePrinterName')->nullable();
+            $table->string('reportPrinterName')->nullable();
+  
             $table->timestamps();
         });
     }

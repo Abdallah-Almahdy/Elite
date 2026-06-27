@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invice_printer_settings', function (Blueprint $table) {
-            $table->boolean('isActive')->default(true);
+            $table->enum('type', ['user', 'system'])->default('system');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+
         });
     }
 
@@ -22,7 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invice_printer_settings', function (Blueprint $table) {
-            //
+            $table->dropColumn('type');
+            $table->dropColumn('user_id');
+
         });
     }
 };

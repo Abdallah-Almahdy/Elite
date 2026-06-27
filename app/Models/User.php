@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasOne(InviceConfig::class, 'user_id');
     }
 
+    public function InvicePrinterSettings()
+    {
+        return $this->hasOne(InvicePrinterSettings::class, 'user_id');
+    }
+
     public function userConfig(): HasOne
     {
         return $this->hasOne(userConfig::class, 'user_id');
