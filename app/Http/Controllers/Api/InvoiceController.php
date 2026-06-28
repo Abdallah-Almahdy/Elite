@@ -172,7 +172,7 @@ class InvoiceController extends Controller
     }
     public function userInvioceConfig(Request $request)
     {
-
+dd("asd")
         $config = User::find(1)->inviceConfig;
 
         if (!$config) {
@@ -247,7 +247,7 @@ class InvoiceController extends Controller
        if ($request->type === 'system') {
             $data['type'] = 'system';
             $config = InviceConfig::where('type', 'system')->first();
-           
+
         } else {
             $data['type'] = 'user';
             $config = $user->inviceConfig;

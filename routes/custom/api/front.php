@@ -64,7 +64,7 @@ Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDef
     Route::get('/permissions', [permissionsController::class, 'userPermissions']);
     Route::post('/permissions', [permissionsController::class, 'edit']);
 
-    Route::get('/invice-config', [InvoiceController::class, 'userInviceConfig']);
+    Route::get('/invice-config', [InvoiceController::class, 'userInvioceConfig']);
     Route::post('/invice-config', [InvoiceController::class, 'editInviceConfig']);
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
