@@ -25,8 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invice_printer_settings', function (Blueprint $table) {
-            $table->dropColumn('type');
-            $table->dropColumn('user_id');
+
 
         });
     }

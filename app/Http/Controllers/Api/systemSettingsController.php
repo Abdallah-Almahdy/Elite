@@ -153,7 +153,7 @@ class systemSettingsController extends Controller
     }
     public function invicePrintersSystemSettings()
     {
-        $requestedSettings = InvicePrinterSettings::all();
+        $requestedSettings = InvicePrinterSettings::where('type','system')->get();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
         }

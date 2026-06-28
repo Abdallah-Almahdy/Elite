@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('permssionName')->unique();
             $table->string('numOfCopies')->nullable();
             $table->boolean('isActive')->default(true);
+    
+
             $table->timestamps();
         });
     }
