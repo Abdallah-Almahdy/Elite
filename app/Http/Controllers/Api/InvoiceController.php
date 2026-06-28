@@ -172,7 +172,7 @@ class InvoiceController extends Controller
     }
     public function userInvioceConfig(Request $request)
     {
-dd("asd")
+
         $config = User::find(1)->inviceConfig;
 
         if (!$config) {
