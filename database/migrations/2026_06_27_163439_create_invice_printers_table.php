@@ -16,10 +16,10 @@ return new class extends Migration
             $table->foreignId('invoice_printer_setting_id')->constrained('invice_printer_settings')->onDelete('cascade');
             $table->string('formName');
             $table->string('printerName');
-            $table->string('permssionName')->unique();
+            $table->string('permssionName');
             $table->string('numOfCopies')->nullable();
             $table->boolean('isActive')->default(true);
-    
+
 
             $table->timestamps();
         });

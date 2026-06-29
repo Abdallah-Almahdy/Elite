@@ -45,7 +45,7 @@ Route::post('/updateInvicePrintersSettings', [systemSettingsController::class, '
 Route::get('/inviceConfigSystemSettings', [InvoiceController::class, 'invoiceConfig']);
 
 
-Route::get('/getWarehouse', [systemSettingsController::class, 'getWarehouse']);
+Route::get('/getWarehouses', [systemSettingsController::class, 'getWarehouses']);
 Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDefaultWarehouse']);
 
 // شاشه الكاشير

@@ -251,7 +251,7 @@ class systemSettingsController extends Controller
     }
 
 
-    public function getWarehouse()
+    public function getWarehouses()
     {
         $warehouses = Warehouse::all(['id', 'name', 'is_active', 'is_default']);
         return response()->json($warehouses);
