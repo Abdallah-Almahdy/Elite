@@ -34,6 +34,8 @@ Route::post('/updateUserPrinterSettings', [systemSettingsController::class, 'upd
 Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
 Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
 Route::get('/invicePrintersUserSettings', [systemSettingsController::class, 'invicePrintersUserSettings']);
+Route::get('/sectionUserSettings', [systemSettingsController::class, 'sectionUserSettings']);
+Route::post('/updateSectionUserSettings', [systemSettingsController::class, 'updateSectionUserSettings']);
 
 
 // systemSettings
@@ -51,10 +53,8 @@ Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDef
 // شاشه الكاشير
 // Route::middleware('auth:web', 'web')->group(function (){
 
-    Route::get('/sections', [ProductsController::class, 'GetAllSections']);
-    Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
-    Route::get('/product/searchByname',[ProductsController::class, 'searchByname']);
-    Route::get('/product/searchByBarcode',[ProductsController::class, 'searchByBarcode']);
+
+
     Route::get('/users', [AuthController::class, 'getUsersInfo']);
     Route::post('/specialRegister', [AuthController::class, 'speacialRegister']);
     Route::post('/invoices', [InvoiceController::class, 'store']);
@@ -73,3 +73,7 @@ Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDef
 // });
 
 
+Route::get('/sections', [ProductsController::class, 'GetAllSections']);
+Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
+Route::get('/product/searchByname',[ProductsController::class, 'searchByname']);
+Route::get('/product/searchByBarcode',[ProductsController::class, 'searchByBarcode']);

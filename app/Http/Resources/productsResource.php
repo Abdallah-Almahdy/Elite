@@ -16,7 +16,7 @@ class productsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-       
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -34,8 +34,8 @@ class productsResource extends JsonResource
             'section' => $this->section->name ?? null,
             'number'=>1,
             'Units' => ProductUnitResource::collection($this->units),
-            //'options' => OptionsResource::collection($this->options),
-            //'addsOn' =>  AddsOnsResource::collection($this->addsOn),
+            'options' => OptionsResource::collection($this->options),
+            'addsOn' =>  AddsOnsResource::collection($this->addsOn),
 
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\InvicePrinterSettings;
 use App\Models\SectionPrinterSetting;
+use App\Models\sectionUserSettings;
 use App\Models\SubSection;
 use App\Models\Warehouse;
 use App\Models\User;
@@ -12,16 +13,7 @@ use Illuminate\Http\Request;
 
 class systemSettingsController extends Controller
 {
-    // public function getSystemSettings()
-    // {
-    //     $settings = [
-    //         'invoiceConfig' => auth()->user()->inviceConfig,
-    //         'userConfig' => auth()->user()->userConfig,
-    //         'warehouses' => auth()->user()->warahouses,
-    //     ];
 
-    //     return response()->json($settings);
-    // }
 
     public function userPrinterSettings()
     {
@@ -83,7 +75,6 @@ class systemSettingsController extends Controller
             'data.*.section_id' => 'required|exists:sub_sections,id',
             'data.*.printer_name' => 'required|string|max:255',
 
-
         ]);
 
 
@@ -119,6 +110,77 @@ class systemSettingsController extends Controller
         ]);
     }
 
+    public function sectionUserSettings()
+    {
+
+        $setting = sectionUserSettings::where('user_id', 1)->first();
+
+        if(!$setting)
+            {
+                return response()->json([
+                    'settings not setting'
+                ]);
+            }
+
+
+        return response()->json([
+            'message' => 'Section user settings created successfully.',
+            'data' => [
+                'allowdSectionsId' => $setting->allowdSections,
+                'seenSectionsId' => $setting->seenSections,
+                'sectionPrinters' => $setting->sectionPrinter->map(function ($sectionPrinter) {
+                    return [
+                        'printerName' => $sectionPrinter->printer_name,
+                        'sectionName' => $sectionPrinter->section_name,
+                        'sectionId' => $sectionPrinter->sub_sections_id
+                    ];
+                }),
+            ]
+        ], 201);
+
+    }
+
+    public function updateSectionUserSettings(Request $request)
+    {
+        $request->validate([
+            'allowdSections' => 'nullable|array',
+            'seenSections' => 'nullable|array',
+            'user_id' => 'required'
+        ]);
+
+        $setting = sectionUserSettings::updateOrCreate(['user_id' => $request->user_id],[
+            'allowdSections' => $request->allowdSections,
+            'seenSections' => $request->seenSections,
+
+        ]);
+
+        foreach ($request->sectionPrinters as $printer) {
+            $setting->sectionPrinter()->updateOrCreate(
+                [
+                    'sub_sections_id' => $printer['sub_sections_id'],
+                ],
+                [
+                    'printer_name' => $printer['printer_name'],
+                    'section_name' => $printer['section_name']
+                ]
+            );
+        }
+
+        return response()->json([
+            'message' => 'Section user settings created successfully.',
+            'data' => [
+                'allowdSectionsId' => $setting->allowdSections,
+                'seenSectionsId' => $setting->seenSections,
+                'sectionPrinters' => $setting->sectionPrinter->map(function($sectionPrinter){
+                    return [
+                        'printerName' => $sectionPrinter->printer_name,
+                        'sectionName' => $sectionPrinter->section_name,
+                        'sectionId' => $sectionPrinter->sub_sections_id
+                    ];
+                }),
+            ]
+        ], 201);
+    }
 
     public function invicePrintersUserSettings()
     {
@@ -208,7 +270,7 @@ class systemSettingsController extends Controller
             $invicePrinterSettings = InvicePrinterSettings::where('user_id', $validatedData['user_id'])->first();
         }
 
-  if(!$invicePrinterSettings)
+        if(!$invicePrinterSettings)
         {
 
             $invicePrinterSettings = InvicePrinterSettings::create([

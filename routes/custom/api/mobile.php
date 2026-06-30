@@ -54,8 +54,8 @@ Route::get('products_search', [ProductsController::class, 'products_search']);
 
 Route::get('products/{id}', [ProductsController::class, 'get_product']);
 Route::get('product_info', [ProductsController::class, 'product_info']);
-Route::get('products', [ProductsController::class, 'get_all_products']);
-Route::get('products', [ProductsController::class, 'get_all_products_pagination']);
+
+Route::get('products', [ProductsController::class, 'products']);
 //Route::get('productsWithPagination', [ProductsController::class, 'get_all_products_pagination']);
 
 

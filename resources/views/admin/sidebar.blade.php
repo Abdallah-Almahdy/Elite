@@ -1,4 +1,4 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4" dir="rtl" style="width: 300px;">
+<aside class="main-sidebar sidebar-dark-primary elevation-4" dir="rtl">
     <!-- Brand Logo -->
     <div class="brand-link bg-dark border-bottom border-secondary">
         <div class="brand-text d-flex align-items-center justify-content-center py-3">

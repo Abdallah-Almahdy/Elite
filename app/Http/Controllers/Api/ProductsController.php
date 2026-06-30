@@ -65,7 +65,7 @@ class ProductsController extends Controller
   public function searchByname(Request $request)
 {
     $name = $request->query('name');
-
+    
     $data = Product::with([
             'defaultWarehouse',
             'units',
@@ -204,11 +204,17 @@ class ProductsController extends Controller
 
 
 
-    public function get_all_products_pagination(Request $request)
+    public function products(Request $request)
     {
         $perPage = $request->input('per_page', 10);
 
-        $data = Product::where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
+        $data = Product::with([
+            'defaultWarehouse',
+            'units',
+            'company',
+            'section',
+
+        ])->where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'total_products' => $data->total(),
