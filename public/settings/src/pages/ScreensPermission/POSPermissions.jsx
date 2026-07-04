@@ -4,17 +4,23 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { useInvoiceSettings } from "../../contexts/InvoiceSettingsContext";
 import { useNavigate } from "react-router-dom";
 import notify from "../../hooks/Notification";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendConfigs } from "../../store/reducers/settingSlice";
 import { fetchAdmin } from "../../store/reducers/adminSlice";
 
 export default function POSPermissions() {
   const admin = useSelector((state) => state?.admin?.admin);
+  const permissions = useSelector((state)=> state?.setting?.permissions); 
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { updateScreenSettings } = useInvoiceSettings();
   const {
+    errors,
+    setErrors,
+    isPasswordSent,
+    setIsPasswordSent,
     posShow,
     setPosShow,
     posPriceChangeAuth,
@@ -63,7 +69,7 @@ export default function POSPermissions() {
     },
     {
       label: "حذف المنتجات بكلمة مرور",
-      value: posDeleteProdWithPass,
+      value:  posDeleteProdWithPass,
       setter: setPosDeleteProdWithPass,
     },
     {
@@ -107,7 +113,7 @@ export default function POSPermissions() {
       setter: setPosPriceChange,
     },
     {
-      label: "السماح بتعديل الخصم ",
+      label: "السماح بتعديل الضريبة ",
       value: posChangeTax,
       setter: setPosChangeTax,
     },
@@ -145,6 +151,10 @@ export default function POSPermissions() {
         posChangeTax: posChangeTax,
         posInvoiceCancel: posInvoiceCancel,
         posShiftClose: posShiftClose,
+        errors: {
+          password: errors.password,
+        },
+        isPasswordSent: isPasswordSent,
       };
       updateScreenSettings((prev) => ({
         ...prev,
@@ -168,14 +178,21 @@ export default function POSPermissions() {
     posChangeTax,
     posInvoiceCancel,
     posShiftClose,
+    errors,
   ]);
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async() => {
     const payload = {
       user_id: admin?.id,
       password: posPassword,
     };
-    dispatch(sendConfigs({ invoiceSettings: payload }));
+    try{
+     await dispatch(sendConfigs({ invoiceSettings: payload })).unwrap();
+    notify("تم حفظ الاعدادات بنجاح", "success");
+    }
+    catch(err){
+      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+    }
   };
 
   return (
@@ -210,6 +227,7 @@ export default function POSPermissions() {
             </div>
             {setting.label === "حذف المنتجات بكلمة مرور" &&
               posDeleteProdWithPass === true && (
+<>
                 <div
                   key={settings.length + 1}
                   className="w-full flex items-center gap-y-2 p-3"
@@ -221,48 +239,60 @@ export default function POSPermissions() {
                       id="password"
                       className="border rounded-md sm:w-[90%] px-2 py-1 focus:outline-blue-500  placeholder:text-base"
                       placeholder="يرجى كتابة كلمة السر"
-                      //  required={passwordReq}
+                       required={posDeleteProdWithPass}
                       value={posPassword}
                       onChange={(e) => {
                         const value = e.target.value;
                         setPosPassword(value);
                       }}
-                      // onBlur={(e)=>{
-                      //   const value = e.target.value
+                      onBlur={(e)=>{
+                        const value = e.target.value
 
-                      //   let passwordError = "";
-                      //   // let confirmError = "";
+                        let passwordError = "";
 
-                      //   if(passwordReq && value.length < 8){
-                      //     passwordError = "كلمة السر لا بد أن تكون 8 حروف على الأقل";
-                      //   }
+                        if(posDeleteProdWithPass && value.length < 8){
+                          passwordError = "كلمة السر لا بد أن تكون 8 حروف على الأقل";
+                        }
 
-                      // if(confirmPassword && confirmPassword !== value){
-                      //   confirmError = "كلمة السر غير متطابقة";
-                      // }
-
-                      //   setErrors({
-                      //     password: passwordError,
-                      //     // confirmPassword: confirmError
-                      //   });
-                      // }}
+                        setErrors({
+                          password: passwordError,
+                        });
+                      }}
                     />
-                    {/* {errors.password && (
-  <p className="text-red-500 text-sm font-bold">{errors.password}</p>
-)} */}
+                    
                   </div>
+                  
                   <div className="w-full">
                     <button
                       className="bg-blue-700 hover:bg-blue-600 text-white px-2 py-1.5 rounded-xl font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
                       onClick={() => {
-                        handleSavePassword();
-                        //  notify("تم حفظ الاعدادات بنجاح", "success")
+                        try{
+                          if(errors.password.length === 0){
+                            handleSavePassword();
+                            setIsPasswordSent(true);
+                         setErrors({
+                          password: "",
+                        });
+                          }
+                          else{
+                            notify("حدثت مشكلة أثناء حفظ كلمة السر, برجاء المحاولة مرة أخرى", "error")
+                          }
+                        }
+                        catch{
+                           notify("حدثت مشكلة أثناء حفظ كلمة السر, برجاء المحاولة مرة أخرى", "error")
+                        }
+                        
                       }}
                     >
                       حفظ كلمة السر
                     </button>
                   </div>
+                  
                 </div>
+                {errors.password && (
+  <p className="text-red-500 text-sm font-bold px-3">{errors.password}</p>
+)}
+</>
               )}
           </div>
         ))}

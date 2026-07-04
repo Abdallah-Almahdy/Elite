@@ -3,9 +3,7 @@ import PermissionToggle from "../user/PermissionSettings/PermissionToggle";
 import { HiReceiptTax } from "react-icons/hi";
 import { useSettingsPreference } from "../../../contexts/SettingsPreferenceContext";
 
-export default function TaxSettings() {
-  const { applyTax, setApplyTax, taxValue, setTaxValue, taxType, setTaxType } =
-    useSettingsPreference();
+export default function TaxSettings({ applyTax, setApplyTax, taxValue, setTaxValue, taxType, setTaxType }) {
   const taxTypes = ["%", "ج.م"];
 
   return (

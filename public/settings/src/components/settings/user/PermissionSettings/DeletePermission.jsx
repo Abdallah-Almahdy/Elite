@@ -93,37 +93,6 @@ export default function DeletePermission() {
               </p>
             )}
           </div>
-          {/* <div className='flex items-center gap-x-3'>
-             <input type="password" 
-            name="confirmPassword" 
-            id="confirmPassword" 
-            className='border rounded-md sm:w-[50%] px-2 py-1 focus:outline-blue-500 placeholder:italic placeholder:text-base' 
-            placeholder='يرجى اعادة كتابة كلمة السر'
-            required={passwordReq}
-             value={confirmPassword}
-            onChange={(e)=>{
-  const value = e.target.value;
-  setConfirmPassword(value);
-}}
-onBlur={(e)=>{
-  const value = e.target.value;
-   let confirmError = "";
-
-  if(passwordReq && value !== password){
-    confirmError = "كلمة السر غير متطابقة";
-  }
-
-  setErrors(prev => ({
-    ...prev,
-    confirmPassword: confirmError
-  }));
-}}
-
-            />
-            {errors.confirmPassword && (
-  <p className="text-red-500 text-sm font-bold">{errors.confirmPassword}</p>
-)}
-           </div> */}
         </div>
       )}
       <hr className="w-[95%] mx-auto" />

@@ -4,9 +4,9 @@ import PermissionToggle from "../user/PermissionSettings/PermissionToggle";
 import { MdOutlinePrintDisabled } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function ReportPrinterSettings({ availablePrinters }) {
-  const { reportPrinterName, setReportPrinterName } =
-    usePrinterSettingsPreference();
+export default function ReportPrinterSettings({ availablePrinters, reportPrinterName, setReportPrinterName }) {
+  // const { reportPrinterName, setReportPrinterName } =
+  //   usePrinterSettingsPreference();
 
   return (
     <div className="w-full">

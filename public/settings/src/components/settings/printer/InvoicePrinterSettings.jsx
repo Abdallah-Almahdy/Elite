@@ -1,26 +1,25 @@
 import { BsPrinterFill } from "react-icons/bs";
-import { usePrinterSettingsPreference } from "../../../contexts/PrinterSettingsContext";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function InvoicePrinterSettings({ availablePrinters }) {
-  const {
-    receiptPrinterName,
-    invoicePrinterName,
-    receiptPrintAuth,
-    invoicePrintAuth,
-    receiptModelName,
-    invoiceModelName,
-    receiptNum,
-    invoiceNum,
-    setReceiptPrinterName,
-    setInvoicePrinterName,
-    setReceiptPrintAuth,
-    setInvoicePrintAuth,
-    setReceiptModelName,
-    setInvoiceModelName,
-    setReceiptNum,
-    setInvoiceNum,
-  } = usePrinterSettingsPreference();
+export default function InvoicePrinterSettings({
+  availablePrinters,
+  receiptPrinterName,
+  invoicePrinterName,
+  receiptModelName,
+  invoiceModelName,
+  receiptNum,
+  invoiceNum,
+  setReceiptPrinterName,
+  setInvoicePrinterName,
+  setReceiptPrintAuth,
+  setInvoicePrintAuth,
+  setReceiptModelName,
+  setInvoiceModelName,
+  setReceiptNum,
+  setInvoiceNum,
+  receiptPrintAuth,
+  invoicePrintAuth,
+}) {
   const decrementReceiptNum = (prev) => {
     const max = Math.max(1, --prev);
     setReceiptNum(max);
@@ -43,6 +42,28 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
     const max = Math.max(1, val);
     setInvoiceNum(max);
   };
+  const ModelNames = [
+    {
+      id: 1,
+      name: "نموذج 1",
+    },
+    {
+      id: 2,
+      name: "نموذج 2",
+    },
+    {
+      id: 3,
+      name: "نموذج 3",
+    },
+    {
+      id: 4,
+      name: "نموذج 4",
+    },
+    {
+      id: 5,
+      name: "نموذج 5",
+    },
+  ];
   return (
     <div className="w-full">
       <div className="flex items-center border-b">
@@ -51,38 +72,6 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
           اعدادات طابعة الفاتورة{" "}
         </h1>
       </div>
-      {/* <div className='flex items-center gap-x-10 p-3 text-lg py-5'>
-        <h2>اسم الطابعة :</h2>
-        <div className='w-[50%] relative'>
-            
-
-              <select
-                  className="w-full text-gray-900 px-2.5 py-1.5 text-base border rounded focus:outline-blue-500 appearance-none"
-                  value={barcodePrinterName}
-                  
-                  onChange={(e) => {
-  const value = e.target.value;
-  setBarcodePrinterName(value)
-}}
-
-                >
-                  <option value="" disabled className="bg-white">
-                    اختر اسم الطابعة للباركود 
-                  </option>
-                  {availablePrinters?.map((method) => (
-                    <option key={method} value={method} className="bg-white">
-                      {method}
-                    </option>
-                  ))}
-                </select>
-                  <div className="absolute left-2 top-2">
-                                                  <IoIosArrowDown className="text-xl text-gray-400" />
-                                                </div>
-               {/* {errors.printerName && (
-  <p className="text-red-500 text-sm font-bold">{errors.printerName}</p>
-)} */}
-      {/* </div> */}
-      {/* </div>  */}
       <table className="w-full">
         <thead>
           <tr>
@@ -109,7 +98,7 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
                   />
                   <label
                     htmlFor="inline-checkbox"
-                    className="select-none ms-2 text-base  text-heading"
+                    className="select-none ms-2 text-base text-heading lg:whitespace-nowrap"
                   >
                     طباعة ايصال
                   </label>
@@ -129,9 +118,13 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
                   <option value="" disabled className="bg-white">
                     اختر اسم النموذج
                   </option>
-                  {availablePrinters?.map((method) => (
-                    <option key={method} value={method} className="bg-white">
-                      {method}
+                  {ModelNames?.map((model) => (
+                    <option
+                      key={model?.id}
+                      value={model?.name}
+                      className="bg-white"
+                    >
+                      {model?.name}
                     </option>
                   ))}
                 </select>
@@ -212,7 +205,7 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
                   />
                   <label
                     htmlFor="inline-checkbox"
-                    className="select-none ms-2 text-base  text-heading"
+                    className="select-none ms-2 text-base  text-heading lg:whitespace-nowrap"
                   >
                     طباعة فاتورة
                   </label>
@@ -232,9 +225,13 @@ export default function InvoicePrinterSettings({ availablePrinters }) {
                   <option value="" disabled className="bg-white">
                     اختر اسم النموذج
                   </option>
-                  {availablePrinters?.map((method) => (
-                    <option key={method} value={method} className="bg-white">
-                      {method}
+                  {ModelNames?.map((model) => (
+                    <option
+                      key={model?.id}
+                      value={model?.name}
+                      className="bg-white"
+                    >
+                      {model?.name}
                     </option>
                   ))}
                 </select>

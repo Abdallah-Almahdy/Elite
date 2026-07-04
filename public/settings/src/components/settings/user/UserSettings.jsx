@@ -38,8 +38,8 @@ export default function UserSettings() {
         <div className="relative w-[50%]">
           <input
             type="text"
-            name="printerName"
-            id="printerName"
+            name="userName"
+            id="userName"
             className="border rounded w-full placeholder:italic placeholder:text-base px-1 focus:outline-blue-500 py-1"
             placeholder="يرجى اختيار اسم المستخدم "
             required

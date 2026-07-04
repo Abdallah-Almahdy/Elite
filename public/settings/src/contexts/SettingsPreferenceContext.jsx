@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import useSettingsPreferenceLogic from "../hooks/settings/useSettingsPreferenceLogic";
+
 const SettingsPreferenceContext = createContext(null);
 
 export const SettingsPreferenceProvider = ({ children }) => {
@@ -16,7 +17,7 @@ export const useSettingsPreference = () => {
   const context = useContext(SettingsPreferenceContext);
   if (!context) {
     throw new Error(
-      "useSettingsPreferenceContext must be used inside SettingsPreferenceProvider",
+      "useSettingsPreference must be used inside SettingsPreferenceProvider",
     );
   }
   return context;

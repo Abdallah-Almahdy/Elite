@@ -1,15 +1,22 @@
 import useScreenSettingsPreferenceLogic from "../../hooks/settings/useScreenSettingsPreferenceLogic";
 import PermissionToggle from "../../components/settings/user/PermissionSettings/PermissionToggle";
-import { FaRegCheckCircle } from "react-icons/fa";
+import { FaRegCheckCircle, FaSlidersH } from "react-icons/fa";
 import { useInvoiceSettings } from "../../contexts/InvoiceSettingsContext";
-import { useNavigate } from "react-router-dom";
-import notify from "../../hooks/Notification";
+import { useEffect, useState } from "react";
+import WareHouseNamePermissionsCard from "../../components/ui/common/WareHouseNamePermissionsCard";
 import WarehouseSettings from "../../components/settings/screens/WarehouseSettings";
-import { useEffect } from "react";
+import { useScreensPermissions } from "../../contexts/ScreensPermissionsContext";
 
 export default function WarehousePermissions() {
-  const navigate = useNavigate();
+  const { screenSettings } = useScreensPermissions();
+
+  // Extract state values directly from context to guarantee object reliability
+  const allowedWareHouseName = screenSettings?.allowedWareHouseName || [];
+  const defaultId = allowedWareHouseName[0]?.id || 1;
+
+  const [viewablePermissions, setViewablePermissions] = useState([defaultId]);
   const { updateScreenSettings } = useInvoiceSettings();
+
   const {
     WarehouseName,
     setWarehouseName,
@@ -55,18 +62,15 @@ export default function WarehousePermissions() {
 
     screensSettingSubmit();
   }, [WarehouseName, warehouseShow, warehouseEdit, warehouseDelete]);
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 lg:p-8 flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">
         إعدادات صلاحيات شاشة المخازن
       </h1>
-      <div className="w-[50%] mx-auto mb-7">
-        <WarehouseSettings
-          WarehouseName={WarehouseName}
-          setWarehouseName={setWarehouseName}
-        />
-      </div>
+
       <div className="grid gap-6 w-full lg:w-[70%]">
+        
         {settings.map((setting, idx) => (
           <div
             key={idx}
@@ -84,6 +88,17 @@ export default function WarehousePermissions() {
             />
           </div>
         ))}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                      <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold border-b border-slate-100 pb-3">
+                        <FaSlidersH className="text-blue-600" />
+                        <h2>تخصيص صلاحيات العمليات الداخلية</h2>
+                      </div>
+                      <WareHouseNamePermissionsCard
+                        allowedWareHouseName={allowedWareHouseName}
+                        viewablePermissions={viewablePermissions}
+                        setViewablePermissions={setViewablePermissions}
+                      />
+                    </div>
       </div>
     </div>
   );

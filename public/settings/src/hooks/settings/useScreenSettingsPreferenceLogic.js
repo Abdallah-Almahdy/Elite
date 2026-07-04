@@ -1,185 +1,286 @@
-import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchWarehouseNames } from "../../store/reducers/settingSlice";
 
 export default function useScreenSettingsPreferenceLogic() {
+  const mainWarehouse = useSelector((state) => state?.setting?.mainWarehouse);
+
   const savedScreenSetting = JSON.parse(
     localStorage.getItem("Screens Settings"),
   );
-  const defaultWarehouseName = JSON.parse(
+  const defaultWarehouseSetting = JSON.parse(
     localStorage.getItem("Invoice Settings"),
+  );
+  const newDefaultWarehouseSetting = JSON.parse(
+    localStorage.getItem("Screens Settings"),
   );
 
   const users = useSelector((state) => state.user?.users);
+  const permissions = useSelector((state) => state?.setting?.permissions);
+
+   const wareHouseNames = useSelector((state)=> state?.setting?.warehouseNames);
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    dispatch(fetchWarehouseNames());
+  }, [dispatch])
+
+  const matchedStorageDefault = wareHouseNames.find(
+    (item) => item.name === savedScreenSetting?.WarehouseName,
+  );
+
   const [userName, setUserName] = useState(savedScreenSetting?.userName || "");
+  const [userId, setUserId] = useState(savedScreenSetting?.userId || "");
+  const [defaultWarehouseNameUser, setDefaultWarehouseNameUser] = useState(
+    savedScreenSetting?.WarehouseName ||
+      defaultWarehouseSetting?.defaultWarehouseName ||
+      "",
+  );
+
+  const [defauldWareHouseId, setDefauldWareHouseId] = useState(
+    matchedStorageDefault ? matchedStorageDefault.id : 1,
+  );
+
   const [userNameResult, setUserNameResult] = useState("");
   const [userNameShowResult, setUserNameShowResult] = useState(false);
   const [screenName, setScreenName] = useState("pos_screen");
-  const [posShow, setPosShow] = useState(savedScreenSetting?.posShow || false);
+  const [posShow, setPosShow] = useState(savedScreenSetting?.posShow ?? true);
   const [posPriceChangeAuth, setPosPriceChangeAuth] = useState(
-    savedScreenSetting?.posPriceChangeAuth || false,
+    savedScreenSetting?.posPriceChangeAuth ?? true,
   );
   const [posChangeDiscount, setPosChangeDiscount] = useState(
-    savedScreenSetting?.posChangeDiscount || false,
+    savedScreenSetting?.posChangeDiscount ?? true,
   );
   const [posDeleteProdWithPass, setPosDeleteProdWithPass] = useState(
-    savedScreenSetting?.posDeleteProdWithPass || false,
+    savedScreenSetting?.posDeleteProdWithPass ?? true,
   );
   const [posPassword, setPosPassword] = useState("");
   const [posInvoiceTypeChangeAuth, setPosInvoiceTypeChangeAuth] = useState(
-    savedScreenSetting?.posInvoiceTypeChangeAuth || false,
+    savedScreenSetting?.posInvoiceTypeChangeAuth ?? true,
   );
   const [posPaymentMethodChangeAuth, setPosPaymentMethodChangeAuth] = useState(
-    savedScreenSetting?.posPaymentMethodChangeAuth || false,
+    savedScreenSetting?.posPaymentMethodChangeAuth ?? true,
   );
   const [posSaveNoPrintAuth, setPosSaveNoPrintAuth] = useState(
-    savedScreenSetting?.posSaveNoPrintAuth || false,
+    savedScreenSetting?.posSaveNoPrintAuth ?? true,
   );
   const [posEditDate, setPosEditDate] = useState(
-    savedScreenSetting?.posEditDate || false,
+    savedScreenSetting?.posEditDate ?? true,
   );
   const [posChooseClient, setPosChooseClient] = useState(
-    savedScreenSetting?.posChooseClient || false,
+    savedScreenSetting?.posChooseClient ?? true,
   );
   const [posInvoiceFreeze, setPosInvoiceFreeze] = useState(
-    savedScreenSetting?.posInvoiceFreeze || false,
+    savedScreenSetting?.posInvoiceFreeze ?? true,
   );
   const [posInvoiceCall, setPosInvoiceCall] = useState(
-    savedScreenSetting?.posInvoiceCall || false,
+    savedScreenSetting?.posInvoiceCall ?? true,
   );
   const [posPriceChange, setPosPriceChange] = useState(
-    savedScreenSetting?.posPriceChange || false,
+    savedScreenSetting?.posPriceChange ?? true,
   );
   const [posChangeTax, setPosChangeTax] = useState(
-    savedScreenSetting?.posChangeTax || false,
+    savedScreenSetting?.posChangeTax ?? true,
   );
   const [posInvoiceCancel, setPosInvoiceCancel] = useState(
-    savedScreenSetting?.posInvoiceCancel || false,
+    savedScreenSetting?.posInvoiceCancel ?? true,
   );
   const [posShiftClose, setPosShiftClose] = useState(
-    savedScreenSetting?.posShiftClose || false,
+    savedScreenSetting?.posShiftClose ?? true,
   );
-  const [adShow, setAdShow] = useState(savedScreenSetting?.adShow || false);
+  const [adShow, setAdShow] = useState(savedScreenSetting?.adShow ?? true);
   const [notificationShow, setNotificationShow] = useState(
-    savedScreenSetting?.notificationShow || false,
+    savedScreenSetting?.notificationShow ?? true,
   );
   const [bromocodeShow, setBromocodeShow] = useState(
-    savedScreenSetting?.bromocodeShow || false,
+    savedScreenSetting?.bromocodeShow ?? true,
   );
   const [WarehouseName, setWarehouseName] = useState(
-    defaultWarehouseName?.defaultWarehouseName || "مخزن 1",
+    savedScreenSetting?.WarehouseId ||
+      wareHouseNames?.find((wh)=>wh?.is_default === true)?.name ||
+      defaultWarehouseSetting?.defaultWarehouseName ||
+      "مخزن 1",
   );
   const [warehouseShow, setWarehouseShow] = useState(
-    savedScreenSetting?.warehouseShow || false,
+    savedScreenSetting?.warehouseShow ?? true,
   );
   const [warehouseEdit, setWarehouseEdit] = useState(
-    savedScreenSetting?.warehouseEdit || false,
+    savedScreenSetting?.warehouseEdit ?? true,
   );
   const [warehouseDelete, setWarehouseDelete] = useState(
-    savedScreenSetting?.warehouseDelete || false,
+    savedScreenSetting?.warehouseDelete ?? true,
   );
+
+  const [allowedWareHouseName, setAllowedWareHouseName] = useState(() => {
+  const saved = JSON.parse(localStorage.getItem("Screens Settings"));
+  if (saved && saved.allowedWareHouseName && saved.allowedWareHouseName.length > 0) {
+    return saved.allowedWareHouseName;
+  }
+  const defaultWarehouse = wareHouseNames?.find((wh)=>wh?.is_default === true)
+  return [{ id: defaultWarehouse?.id, name: defaultWarehouse?.name }];
+});
+
   const [createUser, setCreateUser] = useState(
-    savedScreenSetting?.createUser || false,
+    savedScreenSetting?.createUser ?? true,
   );
   const [configUpdate, setConfigUpdate] = useState(
-    savedScreenSetting?.configUpdate || false,
+    savedScreenSetting?.configUpdate ?? true,
   );
   const [productCreate, setProductCreate] = useState(
-    savedScreenSetting?.productCreate || false,
+    savedScreenSetting?.productCreate ?? true,
   );
   const [productEdit, setProductEdit] = useState(
-    savedScreenSetting?.productEdit || false,
+    savedScreenSetting?.productEdit ?? true,
   );
   const [productDelete, setProductDelete] = useState(
-    savedScreenSetting?.productDelete || false,
+    savedScreenSetting?.productDelete ?? true,
   );
   const [productShowSidebar, setProductShowSidebar] = useState(
-    savedScreenSetting?.productShowSidebar || false,
+    savedScreenSetting?.productShowSidebar ?? true,
   );
   const [productShowGeneral, setProductShowGeneral] = useState(
-    savedScreenSetting?.productShowGeneral || false,
+    savedScreenSetting?.productShowGeneral ?? true,
   );
   const [sectionCreate, setSectionCreate] = useState(
-    savedScreenSetting?.sectionCreate || false,
+    savedScreenSetting?.sectionCreate ?? true,
   );
   const [sectionEdit, setSectionEdit] = useState(
-    savedScreenSetting?.sectionEdit || false,
+    savedScreenSetting?.sectionEdit ?? true,
   );
   const [sectionDelete, setSectionDelete] = useState(
-    savedScreenSetting?.sectionDelete || false,
+    savedScreenSetting?.sectionDelete ?? true,
   );
   const [sectionShowSidebar, setSectionShowSidebar] = useState(
-    savedScreenSetting?.sectionShowSidebar || false,
+    savedScreenSetting?.sectionShowSidebar ?? true,
   );
   const [orderShow, setOrderShow] = useState(
-    savedScreenSetting?.orderShow || false,
+    savedScreenSetting?.orderShow ?? true,
   );
   const [orderPrepare, setOrderPrepare] = useState(
-    savedScreenSetting?.orderPrepare || false,
+    savedScreenSetting?.orderPrepare ?? true,
   );
   const [orderCancel, setOrderCancel] = useState(
-    savedScreenSetting?.orderCancel || false,
+    savedScreenSetting?.orderCancel ?? true,
   );
   const [orderShipment, setOrderShipment] = useState(
-    savedScreenSetting?.orderShipment || false,
+    savedScreenSetting?.orderShipment ?? true,
   );
   const [orderFinish, setOrderFinish] = useState(
-    savedScreenSetting?.orderFinish || false,
+    savedScreenSetting?.orderFinish ?? true,
   );
   const [orderShowSidebar, setOrderShowSidebar] = useState(
-    savedScreenSetting?.orderShowSidebar || false,
+    savedScreenSetting?.orderShowSidebar ?? true,
   );
   const [reportShow, setReportShow] = useState(
-    savedScreenSetting?.reportShow || false,
+    savedScreenSetting?.reportShow ?? true,
   );
   const [deliveryShow, setDeliveryShow] = useState(
-    savedScreenSetting?.deliveryShow || false,
+    savedScreenSetting?.deliveryShow ?? true,
   );
   const [deliveryEdit, setDeliveryEdit] = useState(
-    savedScreenSetting?.deliveryEdit || false,
+    savedScreenSetting?.deliveryEdit ?? true,
   );
   const [deliveryDelete, setDeliveryDelete] = useState(
-    savedScreenSetting?.deliveryDelete || false,
+    savedScreenSetting?.deliveryDelete ?? true,
   );
   const [deliveryAddArea, setDeliveryAddArea] = useState(
-    savedScreenSetting?.deliveryAddArea || false,
+    savedScreenSetting?.deliveryAddArea ?? true,
   );
   const [deliveryFreeDelivery, setDeliveryFreeDelivery] = useState(
-    savedScreenSetting?.deliveryFreeDelivery || false,
+    savedScreenSetting?.deliveryFreeDelivery ?? true,
   );
   const [kitchenShow, setKitchenShow] = useState(
-    savedScreenSetting?.kitchenShow || false,
+    savedScreenSetting?.kitchenShow ?? true,
   );
   const [supplierShow, setSupplierShow] = useState(
-    savedScreenSetting?.supplierShow || false,
+    savedScreenSetting?.supplierShow ?? true,
   );
   const [unitShow, setUnitShow] = useState(
-    savedScreenSetting?.unitShow || false,
+    savedScreenSetting?.unitShow ?? true,
   );
   const [customerShow, setCustomerShow] = useState(
-    savedScreenSetting?.customerShow || false,
+    savedScreenSetting?.customerShow ?? true,
   );
   const [customerShowMessages, setCustomerShowMessages] = useState(
-    savedScreenSetting?.customerShowMessages || false,
+    savedScreenSetting?.customerShowMessages ?? true,
   );
   const [statisticsShow, setStatisticsShow] = useState(
-    savedScreenSetting?.statisticsShow || false,
+    savedScreenSetting?.statisticsShow ?? true,
   );
   const [evaluationShow, setEvaluationShow] = useState(
-    savedScreenSetting?.evaluationShow || false,
+    savedScreenSetting?.evaluationShow ?? true,
   );
   const [aboutUsShow, setAboutUsShow] = useState(
-    savedScreenSetting?.aboutUsShow || false,
+    savedScreenSetting?.aboutUsShow ?? true,
+  );
+
+  const [isPasswordSent, setIsPasswordSent] = useState(
+    savedScreenSetting?.isPasswordSent ?? false,
   );
   const [errors, setErrors] = useState({
     userName: "",
     printerName: "",
     password: "",
-    confirmPassword: "",
   });
 
-  {
-    /* Function Returns The Result Of The Search By Name */
-  }
+  const [viewablePermissions, setViewablePermissions] = useState(savedScreenSetting?.viewablePermissions ?? []);
+
+  useEffect(() => {
+    if (newDefaultWarehouseSetting?.WarehouseName) {
+      const selectedWarehouse = wareHouseNames.find(
+        (method) => method.name === newDefaultWarehouseSetting?.WarehouseName,
+      );
+      if (selectedWarehouse) {
+        setDefauldWareHouseId(selectedWarehouse.id);
+      }
+    }
+  }, []);
+
+  const [warehousePermissions, setWarehousePermissions] = useState(
+    savedScreenSetting?.warehousePermissions || [
+      {
+        warehouseId: 3,
+        warehouseName: "مخزن 1",
+        canIn: false,
+        canOut: false,
+        canTransfer: false,
+        canAdjust: false,
+      },
+      {
+        warehouseId: 2,
+        warehouseName: "مخزن 2",
+        canIn: false,
+        canOut: false,
+        canTransfer: false,
+        canAdjust: false,
+      },
+      {
+        warehouseId: 3,
+        warehouseName: "مخزن 3",
+        canIn: false,
+        canOut: false,
+        canTransfer: false,
+        canAdjust: false,
+      },
+      {
+        warehouseId: 4,
+        warehouseName: "مخزن 4",
+        canIn: false,
+        canOut: false,
+        canTransfer: false,
+        canAdjust: false,
+      },
+      {
+        warehouseId: 5,
+        warehouseName: "مخزن 5",
+        canIn: false,
+        canOut: false,
+        canTransfer: false,
+        canAdjust: false,
+      },
+    ],
+  );
+
   const handleSearchUserName = (val) => {
     if (!val) return [];
     let matches = [];
@@ -191,18 +292,16 @@ export default function useScreenSettingsPreferenceLogic() {
     return matches;
   };
 
-  {
-    /* Function When Selecting A Client */
-  }
   const handleSelectUser = (user) => {
-    //   dispatch(setSelectedUser(user));
-    setUserName(user?.name);
-
+    setUserName(user);
     setUserNameResult([]);
   };
 
+  
+
   return {
     userName,
+    userId,
     userNameResult,
     userNameShowResult,
     screenName,
@@ -261,8 +360,15 @@ export default function useScreenSettingsPreferenceLogic() {
     statisticsShow,
     evaluationShow,
     aboutUsShow,
+    isPasswordSent,
+    allowedWareHouseName,
+    defauldWareHouseId,
+    warehousePermissions,
+    defaultWarehouseNameUser,
+    viewablePermissions,
 
     setUserName,
+    setUserId,
     setUserNameResult,
     setUserNameShowResult,
     setScreenName,
@@ -321,6 +427,12 @@ export default function useScreenSettingsPreferenceLogic() {
     setStatisticsShow,
     setEvaluationShow,
     setAboutUsShow,
+    setIsPasswordSent,
+    setAllowedWareHouseName,
+    setDefauldWareHouseId,
+    setWarehousePermissions,
+    setDefaultWarehouseNameUser,
+    setViewablePermissions,
 
     handleSearchUserName,
     handleSelectUser,

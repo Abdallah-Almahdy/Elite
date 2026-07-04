@@ -1,15 +1,16 @@
 import React from "react";
 import { PiInvoiceBold } from "react-icons/pi";
 import { useSettingsPreference } from "../../../contexts/SettingsPreferenceContext";
+import { useSelector } from "react-redux";
 
-export default function InvoiceTypeSettings() {
-  const paymentMethods = ["تيك أواى", "دليفرى", "صالة"];
-  const {
+export default function InvoiceTypeSettings({
     defaultInvoiceType,
     setDefaultInvoiceType,
     allowedInvoiceType,
     setAllowedInvoiceType,
-  } = useSettingsPreference();
+    
+  }) {
+  const paymentMethods = ["تيك أواى", "دليفرى", "صالة"];
 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg">
@@ -24,10 +25,8 @@ export default function InvoiceTypeSettings() {
         <div className="w-[50%]">
           <select
             className="w-full text-gray-900 px-2.5 py-1.5 text-base border rounded focus:outline-blue-500 appearance-none"
-            value={defaultInvoiceType}
-            // onChange={(e) =>
-            //   formik.setFieldValue("paymentMethod", e.target.value)
-            // }
+            value={ defaultInvoiceType}
+            
             onChange={(e) => {
               const value = e.target.value;
               setDefaultInvoiceType(value);

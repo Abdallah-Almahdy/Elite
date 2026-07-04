@@ -3,21 +3,22 @@ import { useSelector, useDispatch } from "react-redux";
 
 export default function usePrinterSettingsPreferenceLogic() {
   const users = useSelector((state) => state.user?.users);
+    const savedData = JSON.parse(
+    localStorage.getItem("Invoice Settings"),
+  ) ?? {};
 
-  const [printerName, setPrinterName] = useState("");
-  const [sectionName, setSectionName] = useState("");
-  const [sectionPrinterName, setSectionPrinterName] = useState("");
-  const [barcodePrinterName, setBarcodePrinterName] = useState("");
-  const [reportPrinterName, setReportPrinterName] = useState("");
-  const [receiptPrinterName, setReceiptPrinterName] = useState("");
-  const [invoicePrinterName, setInvoicePrinterName] = useState("");
-  const [receiptPrintAuth, setReceiptPrintAuth] = useState(false);
-  const [invoicePrintAuth, setInvoicePrintAuth] = useState(false);
-  const [receiptModelName, setReceiptModelName] = useState("");
-  const [invoiceModelName, setInvoiceModelName] = useState("");
-  const [receiptNum, setReceiptNum] = useState(1);
-  const [invoiceNum, setInvoiceNum] = useState(1);
-  const [saveNoPrintAuth, setSaveNoPrintAuth] = useState(false);
+  const [printerName, setPrinterName] = useState(savedData?.printerName ||"");
+  const [barcodePrinterName, setBarcodePrinterName] = useState(savedData?.barcodePrinterName ||"");
+  const [reportPrinterName, setReportPrinterName] = useState(savedData?.reportPrinterName ||"");
+  const [receiptPrinterName, setReceiptPrinterName] = useState(savedData?.receiptPrinterName ||"");
+  const [invoicePrinterName, setInvoicePrinterName] = useState(savedData?.invoicePrinterName ||"");
+  const [receiptPrintAuth, setReceiptPrintAuth] = useState(savedData?.receiptPrintAuth ||false);
+  const [invoicePrintAuth, setInvoicePrintAuth] = useState(savedData?.invoicePrintAuth ||false);
+  const [receiptModelName, setReceiptModelName] = useState(savedData?.receiptModelName ||"");
+  const [invoiceModelName, setInvoiceModelName] = useState(savedData?.invoiceModelName ||"");
+  const [receiptNum, setReceiptNum] = useState(savedData?.receiptNum ||1);
+  const [invoiceNum, setInvoiceNum] = useState(savedData?.invoiceNum ||1);
+  const [saveNoPrintAuth, setSaveNoPrintAuth] = useState(savedData?.saveNoPrintAuth ||false);
   const [userName, setUserName] = useState("");
   const [userNameResult, setUserNameResult] = useState("");
   const [userNameShowResult, setUserNameShowResult] = useState(false);
@@ -33,7 +34,7 @@ export default function usePrinterSettingsPreferenceLogic() {
     if (!val) return [];
     let matches = [];
     users?.forEach((user) => {
-      if (user?.name?.toLowerCase().includes(val.toLowerCase())) {
+      if (user?.name?.toLowerCase().includes(val?.toLowerCase())) {
         matches.push(user);
       }
     });
@@ -52,8 +53,6 @@ export default function usePrinterSettingsPreferenceLogic() {
 
   return {
     printerName,
-    sectionName,
-    sectionPrinterName,
     barcodePrinterName,
     reportPrinterName,
     receiptPrinterName,
@@ -71,8 +70,6 @@ export default function usePrinterSettingsPreferenceLogic() {
     userNameShowResult,
 
     setPrinterName,
-    setSectionName,
-    setSectionPrinterName,
     setBarcodePrinterName,
     setReportPrinterName,
     setReceiptPrinterName,

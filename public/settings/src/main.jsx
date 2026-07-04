@@ -8,13 +8,14 @@ import { SelectedScreensProvider } from "./contexts/SelectedScreensContext.jsx";
 import { ScreensPermissionsProvider } from "./contexts/ScreensPermissionsContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-    <Provider store={store}>
-        <BrowserRouter basename="/dashboard/invoice-settings">
-            <SelectedScreensProvider>
-                <ScreensPermissionsProvider>
-                    <App />
-                </ScreensPermissionsProvider>
-            </SelectedScreensProvider>
-        </BrowserRouter>
-    </Provider>,
+  <Provider store={store}>
+    
+    <BrowserRouter basename="/dashboard/invoice-settings">
+      <SelectedScreensProvider>
+        <ScreensPermissionsProvider>
+          <App />
+        </ScreensPermissionsProvider>
+      </SelectedScreensProvider>
+    </BrowserRouter>
+  </Provider>,
 );

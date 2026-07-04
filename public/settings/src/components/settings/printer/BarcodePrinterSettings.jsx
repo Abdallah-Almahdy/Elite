@@ -4,10 +4,11 @@ import PermissionToggle from "../user/PermissionSettings/PermissionToggle";
 import { MdOutlinePrintDisabled } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function BarcodePrinterSettings({ availablePrinters }) {
-  const { barcodePrinterName, setBarcodePrinterName } =
-    usePrinterSettingsPreference();
-
+export default function BarcodePrinterSettings({
+  availablePrinters,
+  barcodePrinterName,
+  setBarcodePrinterName,
+}) {
   return (
     <div className="w-full">
       <div className="flex items-center border-b">
@@ -39,9 +40,6 @@ export default function BarcodePrinterSettings({ availablePrinters }) {
           <div className="absolute left-2 top-2">
             <IoIosArrowDown className="text-xl text-gray-400" />
           </div>
-          {/* {errors.printerName && (
-  <p className="text-red-500 text-sm font-bold">{errors.printerName}</p>
-)} */}
         </div>
       </div>
 

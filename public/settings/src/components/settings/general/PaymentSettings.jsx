@@ -2,14 +2,13 @@ import React from "react";
 import { BsCreditCardFill } from "react-icons/bs";
 import { useSettingsPreference } from "../../../contexts/SettingsPreferenceContext";
 
-export default function PaymentSettings() {
-  const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"];
-  const {
+export default function PaymentSettings({
     defaultPaymentMethod,
     setDefaultPaymentMethod,
     allowedPaymentMethods,
     setAllowedPaymentMethods,
-  } = useSettingsPreference();
+  }) {
+  const paymentMethods = ["كاش", "بطاقة ائتمان", "انستا باى", "اجل", "محفظة"];
 
   return (
     <div className="w-full bg-white rounded-lg">
@@ -40,7 +39,7 @@ export default function PaymentSettings() {
             ))}
           </select>
         </div>
-        {/* <p className='text-gray-500 text-base italic'>الطريقة الافتراضيه للفواتير الجديدة</p> */}
+        
       </div>
       <hr className="w-[95%]" />
       <div className="flex justify-between items-center p-3 text-lg">

@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PiInvoiceBold } from "react-icons/pi";
 import useSettingsPreferenceLogic from "../../../hooks/settings/useSettingsPreferenceLogic";
 import { useSettingsPreference } from "../../../contexts/SettingsPreferenceContext";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchWarehouseNames } from "../../../store/reducers/settingSlice";
 
 export default function WarehouseSettings() {
-  const warehouseNames = ["مخزن 1", "مخزن 2", "مخزن 3", "مخزن 4", "مخزن 5"];
+  const warehouseNames = useSelector((state) => state?.setting?.warehouseNames);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchWarehouseNames());
+  }, [dispatch]);
+
   const { defaultWarehouseName, setDefaultWarehouseName } =
     useSettingsPreference();
 

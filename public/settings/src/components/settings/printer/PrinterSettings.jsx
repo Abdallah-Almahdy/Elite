@@ -5,15 +5,14 @@ import PermissionToggle from "../user/PermissionSettings/PermissionToggle";
 import { MdOutlinePrintDisabled } from "react-icons/md";
 import { getPrinters } from "../../../services/qzService";
 
-export default function PrinterSettings({ availablePrinters }) {
-  const {
-    printerName,
-    setPrinterName,
-    errors,
-    setErrors,
-    saveNoPrintAuth,
-    setSaveNoPrintAuth,
-  } = usePrinterSettingsPreference();
+export default function PrinterSettings({
+  availablePrinters,
+  printerName,
+  setPrinterName,
+  saveNoPrintAuth,
+  setSaveNoPrintAuth,
+}) {
+  const { errors, setErrors } = usePrinterSettingsPreference();
 
   return (
     <div className="w-full">

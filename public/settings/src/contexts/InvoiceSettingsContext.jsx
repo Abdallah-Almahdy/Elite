@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import { useScreensPermissions } from "./ScreensPermissionsContext";
 
 const InvoiceSettingsContext = createContext();
@@ -14,41 +14,44 @@ export const InvoiceSettingsProvider = ({ children }) => {
   );
 
   const updateInvoiceSettings = (value) => {
-    setInvoiceSetting(value);
-    localStorage.setItem("Invoice Settings", JSON.stringify(value));
+    if (value) {
+      // setInvoiceSetting(value);
+      localStorage.setItem("Invoice Settings", JSON.stringify(value));
+    }
   };
 
   const updateUserSettings = (value) => {
-    setInvoiceSetting(value);
-    localStorage.setItem("User Settings", JSON.stringify(value));
+    if (value) {
+      // setInvoiceSetting(value);
+      localStorage.setItem("User Settings", JSON.stringify(value));
+    }
   };
   const updatePrinterSettings = (value) => {
-    setInvoiceSetting(value);
-    localStorage.setItem("Printer Settings", JSON.stringify(value));
+    if (value) {
+      // setInvoiceSetting(value);
+      localStorage.setItem("Printer Settings", JSON.stringify(value));
+    }
   };
-  // const updateScreenSettings = (value) => {
-  //   setInvoiceSetting(value);
-  //   localStorage.setItem("Screens Settings", JSON.stringify(value));
-  // };
 
-  const updateScreenSettings = (value) => {
-    setScreenSettings((prev) => {
-      const updated =
-        typeof value === "function"
-          ? value(prev)
-          : {
-              ...(prev || {}),
-              ...value,
-            };
+  const updateScreenSettings = useCallback(
+    (value) => {
+      setScreenSettings((prev) => {
+        const updated =
+          typeof value === "function"
+            ? value(prev)
+            : {
+                ...(prev || {}),
+                ...value,
+              };
 
-      localStorage.setItem("Screens Settings", JSON.stringify(updated));
-
-      return updated;
-    });
-  };
+        localStorage.setItem("Screens Settings", JSON.stringify(updated));
+        return updated;
+      });
+    },
+    [setScreenSettings],
+  );
 
   return (
-    // <UIPreferencesContext.Provider value={{ preference, updatePreference }}>
     <InvoiceSettingsContext.Provider
       value={{
         invoiceSetting,

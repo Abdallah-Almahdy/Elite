@@ -1,33 +1,29 @@
 import { FaUser } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useScreenSettingsPreferenceLogic from "../../../hooks/settings/useScreenSettingsPreferenceLogic";
 import { useInvoiceSettings } from "../../../contexts/InvoiceSettingsContext";
 import { IoCloseSharp } from "react-icons/io5";
+import { fetchUserPermissions } from "../../../store/reducers/settingSlice";
+import { resetUserPermissions } from "../../../store/reducers/settingSlice";
+import { useScreensPermissions } from "../../../contexts/ScreensPermissionsContext";
 
-export default function UserSettings() {
-  // const users = useSelector((state)=> state.user?.users);
+export default function UserSettings({
+  userName,
+  userId,
+  setUserName,
+  setUserId,
+  errors,
+  userNameShowResult,
+}) {
+  const dispatch = useDispatch();
   const { updateScreenSettings } = useInvoiceSettings();
   const users = useSelector((state) => state.user?.users);
 
-  const {
-    userName,
-    userNameResult,
-    userNameShowResult,
-    setUserName,
-    errors,
-    handleSelectUser,
-    handleSearchUserName,
-    setUserNameResult,
-    setUserNameShowResult,
-  } = useScreenSettingsPreferenceLogic();
-  // useEffect(() => {
-  //         const results = handleSearchUserName(userName);
-  //         setUserNameResult(results);
-  //         if (results?.length > 0) {
-  //           setUserNameShowResult(true);
-  //         }
-  //       }, [ userName]);
+  const { setScreenSettings } = useScreensPermissions();
+
+  const savedData = JSON.parse(localStorage.getItem("Screens Settings"));
+
   const [highlightIndex, setHighlightIndex] = useState(-1);
   return (
     <div className="w-full bg-white rounded-3xl">
@@ -40,13 +36,29 @@ export default function UserSettings() {
         <div className="relative w-[50%]">
           <select
             className="w-full text-gray-900 px-2.5 py-1.5 text-base border rounded focus:outline-blue-500 appearance-none"
-            value={userName}
-            onChange={(e) => {
+            value={savedData?.userId ?? userId ?? ""}
+            onChange={async (e) => {
               const value = e.target.value;
-              setUserName(value);
+              const selectedUser = users?.find(
+                (user) => user?.id === Number(value),
+              );
+              setUserName(selectedUser?.name ?? "");
+              setUserId(Number(value));
+              await dispatch(
+                fetchUserPermissions({
+                  id: selectedUser.id,
+                  userName: selectedUser?.id,
+                }),
+              );
               updateScreenSettings((prev) => ({
                 ...prev,
-                userName: value,
+                userName: selectedUser?.name,
+                userId: selectedUser?.id,
+              }));
+              setScreenSettings((prev) => ({
+                ...prev,
+                userId: selectedUser?.id,
+                userName: selectedUser?.name,
               }));
             }}
           >
@@ -54,7 +66,7 @@ export default function UserSettings() {
               يرجى اختيار اسم المستخدم
             </option>
             {users?.map((user) => (
-              <option key={user?.id} value={user.name} className="bg-white">
+              <option key={user?.id} value={user.id} className="bg-white">
                 {user.name}
               </option>
             ))}
@@ -72,25 +84,30 @@ export default function UserSettings() {
                       ? "bg-blue-100"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => {
-                    handleSelectUser(user.name);
-                  }}
+                  // onClick={() => {
+                  //   handleSelectUser(user);
+                  //   console.log(user)
+                  // }}
                 >
                   {user.name}
                 </div>
               ))}
             </div>
           )}
-          {errors.userName && (
-            <p className="text-red-500 text-sm font-bold">{errors.userName}</p>
+          {errors?.userName && (
+            <p className="text-red-500 text-sm font-bold">{errors?.userName}</p>
           )}
           <button
             className="absolute left-3 top-1/4"
-            onClick={() => {
+            onClick={async () => {
               setUserName("");
+              setUserId("");
+              dispatch(resetUserPermissions());
+              localStorage.removeItem("Screens Settings");
               updateScreenSettings((prev) => ({
                 ...prev,
                 userName: "",
+                userId: "",
               }));
             }}
           >

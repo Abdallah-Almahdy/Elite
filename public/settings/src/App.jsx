@@ -56,10 +56,6 @@ export default function App() {
                   {/* <Route path="/print-barcode" element={<PrintBarcodePage />} /> */}
                   <Route path="/invoice-settings" element={<SettingsPage />} />
                   <Route path="/user-settings" element={<UserSettingsPage />} />
-                  <Route
-                    path="/printer-settings"
-                    element={<PrinterSettingsPage />}
-                  />
                   <Route path="/pos-permissions" element={<POSPermissions />} />
                   <Route
                     path="/delivery-permissions"
