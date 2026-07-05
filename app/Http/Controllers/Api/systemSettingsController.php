@@ -86,12 +86,11 @@ class systemSettingsController extends Controller
 
         $setting = sectionUserSettings::where('user_id', $request->user_id ?? auth()->user()->id)->first();
 
-        if(!$setting)
-            {
-                return response()->json([
-                    'settings not setting'
-                ]);
-            }
+        if (!$setting) {
+            return response()->json([
+                'settings not setting'
+            ]);
+        }
 
 
         return response()->json([
@@ -108,7 +107,6 @@ class systemSettingsController extends Controller
                 }),
             ]
         ], 201);
-
     }
 
     public function updateSectionUserSettings(Request $request)
@@ -119,7 +117,7 @@ class systemSettingsController extends Controller
             'user_id' => 'required'
         ]);
 
-        $setting = sectionUserSettings::updateOrCreate(['user_id' => $request->user_id],[
+        $setting = sectionUserSettings::updateOrCreate(['user_id' => $request->user_id], [
             'allowdSections' => $request->allowdSections,
             'seenSections' => $request->seenSections,
 
@@ -142,7 +140,7 @@ class systemSettingsController extends Controller
             'data' => [
                 'allowdSectionsId' => $setting->allowdSections,
                 'seenSectionsId' => $setting->seenSections,
-                'sectionPrinters' => $setting->sectionPrinter->map(function($sectionPrinter){
+                'sectionPrinters' => $setting->sectionPrinter->map(function ($sectionPrinter) {
                     return [
                         'printerName' => $sectionPrinter->printer_name,
                         'sectionName' => $sectionPrinter->section_name,
@@ -157,7 +155,11 @@ class systemSettingsController extends Controller
     {
 
 
-        $requestedSettings = InvicePrinterSettings::where('user_id', $request->user_id ? $request->user_id : auth()->user()->id)->where('type', 'user')->get();
+        $userId = $request->user_id ?? auth()->id();
+
+        $requestedSettings = InvicePrinterSettings::where('user_id', $userId)
+            ->where('type', 'user')
+            ->get();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
         }
@@ -189,7 +191,7 @@ class systemSettingsController extends Controller
     public function invicePrintersSystemSettings()
     {
 
-        $requestedSettings = InvicePrinterSettings::where('type','system')->get();
+        $requestedSettings = InvicePrinterSettings::where('type', 'system')->get();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
         }
@@ -247,8 +249,7 @@ class systemSettingsController extends Controller
             $invicePrinterSettings = InvicePrinterSettings::where('user_id', $validatedData['user_id'])->first();
         }
 
-        if(!$invicePrinterSettings)
-        {
+        if (!$invicePrinterSettings) {
 
             $invicePrinterSettings = InvicePrinterSettings::create([
                 'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName ?? null,
@@ -258,8 +259,7 @@ class systemSettingsController extends Controller
                 'type' => $validatedData['type'] ?? $invicePrinterSettings->type,
                 'user_id' => $validatedData['user_id'] ?? $invicePrinterSettings->user_id
             ]);
-        }else
-        {
+        } else {
             $invicePrinterSettings->update([
                 'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName,
                 'allowSaveWithoutPrint' => $validatedData['AllowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
@@ -272,8 +272,7 @@ class systemSettingsController extends Controller
 
 
 
-        if(isset($validatedData['invoicePrinterSettings']))
-        {
+        if (isset($validatedData['invoicePrinterSettings'])) {
             foreach ($validatedData['invoicePrinterSettings'] as $printerSetting) {
                 $invicePrinterSettings->invicePrinters()->updateOrCreate(
                     ['permssionName' => $printerSetting['permssionName']],
