@@ -22,12 +22,12 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 
 
 
-Route::middleware('auth:web', 'web')->group(function () {
+// Route::middleware('auth:web', 'web')->group(function () {
 
 
     Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 
-  
+
     Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
     Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
     Route::get('/invicePrintersUserSettings', [systemSettingsController::class, 'invicePrintersUserSettings']);
@@ -63,7 +63,7 @@ Route::middleware('auth:web', 'web')->group(function () {
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
-});
+// });
 
 
 Route::get('/sections', [ProductsController::class, 'GetAllSections']);

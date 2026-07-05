@@ -18,4 +18,9 @@ class userAddress extends Model
         'is_default',
 
     ];
+
+
+    protected $casts = [
+        'is_default' => 'boolean',
+    ];
 }

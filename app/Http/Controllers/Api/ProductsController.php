@@ -59,7 +59,7 @@ class ProductsController extends Controller
         $data = Product::find($id);
 
 
-        return $this->success($data);
+        return new productsResource($data);
     }
 
   public function searchByname(Request $request)

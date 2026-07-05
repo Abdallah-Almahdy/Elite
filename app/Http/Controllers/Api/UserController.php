@@ -72,7 +72,12 @@ class UserController extends Controller
             'is_default' => 'boolean',
         ]);
 
+
+
         $userAddress = $user->userAddresses()->create($validatedData);
+        if($validatedData['is_default'] ?? false) {
+            $user->userAddresses()->where('id', '!=', $userAddress->id)->update(['is_default' => false]);
+        }
 
         return new UserAddressResource($userAddress);
     }
@@ -92,6 +97,10 @@ class UserController extends Controller
             'is_default' => 'boolean',
         ]);
 
+        if($validatedData['is_default'] ?? false) {
+            $user->userAddresses()->where('id', '!=', $address->id)->update(['is_default' => false]);
+        }
+
         $address->update($validatedData);
 
         return new UserAddressResource($address);
@@ -105,5 +114,28 @@ class UserController extends Controller
         $address->delete();
 
         return response()->json(['message' => 'Address deleted successfully.']);
+    }
+
+
+    public function setDefaultAddress(Request $request, $addressId)
+    {
+        $user = $request->user();
+
+        $address = $user->userAddresses()->find($addressId);
+        if(!$address) {
+            return response()->json(['message' => 'Address not found.'], 404);
+        }
+        if($address->is_default) {
+            return response()->json(['message' => 'This address is already set as default.'], 400);
+        }
+
+        // Set all addresses to not default
+        $user->userAddresses()->update(['is_default' => false]);
+
+        // Set the selected address as default
+        $address->is_default = true;
+        $address->save();
+
+        return response()->json(['message' => 'Default address set successfully.']);
     }
 }

@@ -25,6 +25,7 @@ Route::group(['middleware' => 'auth:sanctum'], function ()
     Route::post('/user/addresses', [UserController::class, 'createUserAddresses']);
     Route::post('/user/addresses/{addressId}', [UserController::class, 'updateUserAddresses']);
     Route::delete('/user/addresses/{addressId}', [UserController::class, 'deleteUserAddresses']);
+    Route::post('/user/addresses/{addressId}/default', [UserController::class, 'setDefaultAddress']);
 });
 
 

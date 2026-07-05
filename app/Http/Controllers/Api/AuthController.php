@@ -31,8 +31,7 @@ class AuthController extends Controller
             'lastName' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'gender' => ['string', 'max:255'],
-            'birthDate' => ['date'],
+
         ]);
 
         try {
@@ -50,8 +49,8 @@ class AuthController extends Controller
                     'first_name' => $validated['firstName'],
                     'last_name' => $validated['lastName'],
                     'phone_number' => $validated['email'] ?? null,
-                    'gender' => $validated['gender'] ?? null,
-                    'age' => Carbon::parse($validated['birthDate'])->age ?? null,
+                 
+
                 ]);
                 return $user;
             });
