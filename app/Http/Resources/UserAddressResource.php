@@ -16,13 +16,13 @@ class UserAddressResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
-            'address_country' => $this->address_country,
-            'address_city' => $this->address_city,
-            'address_street' => $this->address_street,
-            'address_building' => $this->address_building,
-            'address_floor' => $this->address_floor,
-            'address_apartment' => $this->address_apartment,
+            'user_id' => $this->user_id ,
+            'address_country' => $this->address_country ?? null,
+            'address_city' => $this->address_city ?? null,
+            'address_street' => $this->address_street ?? null,
+            'address_building' => $this->address_building ?? null,
+            'address_floor' => $this->address_floor ?? null,
+            'address_apartment' => $this->address_apartment ?? null,
             'is_default' => $this->is_default,
         ];
         return parent::toArray($request);

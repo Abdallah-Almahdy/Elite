@@ -34,13 +34,13 @@ class OrdersService
         ]);
 
         $data['user_id'] = $request->user()->id;
-        $order = $this->makeOrder($data);
+        $order = $this->createOrder($data);
     }
 
 
 
 
-    public function makeOrder($data)
+    public function createOrder($data)
     {
         $user = User::find($data['user_id']);
 
@@ -82,8 +82,10 @@ class OrdersService
             $totalPrice += $orderProduct->totalPrice - ($orderProduct->discount * $orderProduct->totalCount);
 
             // لو عنده إضافات (Addons)
-            if (!empty($product['addson'])) {
-                foreach ($product['addson'] as $addon) {
+            if (!empty($product['addson']))
+            {
+                foreach ($product['addson'] as $addon)
+                {
                     $OrderProductAddsOn = OrderProductAddsOn::create([
                         'order_product_id' => $orderProduct->id,
                         'adds_on_id' => $addon['id'],

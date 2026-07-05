@@ -18,8 +18,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'userProfile' => new UserProfileResource($this->whenLoaded('userProfile')),
-            'userAddresses' => UserAddressResource::collection($this->whenLoaded('userAddresses')),
+            'userProfile' => new UserProfileResource($this->whenLoaded('userProfile')) ?? null,
+            'userAddresses' => UserAddressResource::collection($this->whenLoaded('userAddresses')) ?? null,
         ];
         return parent::toArray($request);
     }

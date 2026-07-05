@@ -49,7 +49,7 @@ class AuthController extends Controller
                     'first_name' => $validated['firstName'],
                     'last_name' => $validated['lastName'],
                     'phone_number' => $validated['email'] ?? null,
-                 
+
 
                 ]);
                 return $user;
@@ -216,23 +216,35 @@ class AuthController extends Controller
 
         return response()->json([
             'users' => $users->map(function ($user) {
+
+                $address1 = $user->userAddresses->first();
+                $address2 = $user->userAddresses->get(1);
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'is_admin' => $user->is_admin,
+
                     'customer_info' => $user->userProfile ? [
                         'phone' => $user->userProfile->phone_number,
                         'phone2' => $user->userProfile->phone_number2,
-                        'address1' => trim($user->userAddresses->first()->addressCountry . ' ' . $user->userAddresses->first()->addresscity . ' ' . $user->userAddresses->first()->addressstreet . ' ' . $user->userAddresses->first()->addressbuildingNumber . ' ' . $user->userAddresses->first()->addressfloorNumber . ' ' . $user->userAddresses->first()->addressApartmentNumber),
-                        'address2' => trim($user->userAddresses->get(1)->addressCountry2 . ' ' . $user->userAddresses->get(1)->addresscity2 . ' ' . $user->userAddresses->get(1)->addressstreet2 . ' ' . $user->userAddresses->get(1)->addressbuildingNumber2 . ' ' . $user->userAddresses->get(1)->addressfloorNumber2 . ' ' . $user->userAddresses->get(1)->addressApartmentNumber2),
+
+                        'address1' => $address1
+                            ? trim(
+                                "{$address1->addressCountry} {$address1->addresscity} {$address1->addressstreet} {$address1->addressbuildingNumber} {$address1->addressfloorNumber} {$address1->addressApartmentNumber}"
+                            )
+                            : null,
+
+                        'address2' => $address2
+                            ? trim(
+                                "{$address2->addressCountry2} {$address2->addresscity2} {$address2->addressstreet2} {$address2->addressbuildingNumber2} {$address2->addressfloorNumber2} {$address2->addressApartmentNumber2}"
+                            )
+                            : null,
                     ] : null,
                 ];
             }),
-
-            'message' => 'Users fetched successfully',
-            'status' => 'success',
-        ], 200);
+        ]);
     }
 
 
