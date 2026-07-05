@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserAddressResource;
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserResource;
+use App\Models\Delivery;
 use App\Models\userProfile;
 use Illuminate\Http\Request;
 
@@ -63,8 +64,8 @@ class UserController extends Controller
         $user = $request->user();
 
         $validatedData = $request->validate([
-            'address_country' => 'string|max:255',
-            'address_city' => 'string|max:255',
+            'delivery_place_id' => 'required|exists:delivery,id',
+
             'address_street' => 'string|max:255',
             'address_building' => 'string|max:255|nullable',
             'address_floor' => 'string|max:255|nullable',
@@ -72,7 +73,7 @@ class UserController extends Controller
             'is_default' => 'boolean',
         ]);
 
-
+        $validatedData['address_city'] = Delivery::find($validatedData['delivery_place_id'])->name;
 
         $userAddress = $user->userAddresses()->create($validatedData);
         if($validatedData['is_default'] ?? false) {
@@ -88,14 +89,15 @@ class UserController extends Controller
         $address = $user->userAddresses()->findOrFail($addressId);
 
         $validatedData = $request->validate([
-            'address_country' => 'string|max:255',
-            'address_city' => 'string|max:255',
+            'delivery_place_id' => 'required|exists:delivery,id',
             'address_street' => 'string|max:255',
             'address_building' => 'string|max:255|nullable',
             'address_floor' => 'string|max:255|nullable',
             'address_apartment' => 'string|max:255|nullable',
             'is_default' => 'boolean',
         ]);
+
+        $validatedData['address_city'] = Delivery::find($validatedData['delivery_place_id'])->name;
 
         if($validatedData['is_default'] ?? false) {
             $user->userAddresses()->where('id', '!=', $address->id)->update(['is_default' => false]);

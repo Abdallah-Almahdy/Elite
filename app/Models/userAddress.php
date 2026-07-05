@@ -9,7 +9,7 @@ class userAddress extends Model
     protected $table = 'user_addresses';
     protected $fillable = [
         'user_id',
-        'address_country',
+        'delivery_place_id',
         'address_city',
         'address_street',
         'address_building',

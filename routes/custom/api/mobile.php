@@ -66,7 +66,6 @@ Route::get('get_sub_of_cat', [SectionsController::class, 'get_sub_of_cat']);
 Route::get('category_products', [SectionsController::class, 'get_all_category_products']);
 
 
-Route::post('testPhoto', [SectionsController::class, 'testPhoto']);
 
 // contact_us
 
@@ -114,6 +113,8 @@ Route::get('about' , [AboutUsController::class, 'index']);
 
 // Assigning middleware to group of routes
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/orders', [OrdersController::class, 'orders']);
     // Add your protected API routes here
     // For example:
     Route::get('/user', function (Request $request) {

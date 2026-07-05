@@ -45,6 +45,7 @@ class InvoiceController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
 
         ]);
+        
 
          return $this->invoiceService->create($data);
 

@@ -17,14 +17,15 @@ class Order extends Model
         'totalPrice',
         'address',
         'phoneNumber',
-        
         'payment_method',
         'promo_code_id',
         'order_type',
         'temp_address',
         "payment_status",
         "special_order_notes",
-        "discount"
+        "discount",
+        'status'
+
     ];
 
     public function user()

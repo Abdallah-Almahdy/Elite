@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Orders;
 
-use App\Models\CustomerInfo;
 use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\Product;
@@ -12,159 +11,131 @@ use Livewire\Attributes\Layout;
 
 class OrderDetails extends Component
 {
-
     public $id;
-
 
     #[Layout('admin.livewireLayout')]
     public function render()
     {
-        $orderData = Order::with([
-            'orderProducts.product',                         // المنتج نفسه
-            'orderProducts.options.option',                  // تفاصيل الـ option
+        // Load order with all necessary relations
+        $order = Order::with([
+            'user.userProfile',
+            'user.userAddresses',
+            'orderProducts.product.section',
+            'orderProducts.options.option',
             'orderProducts.options.values.value',
-            'orderProducts.addsOns.addsOn',          // قيمة الـ option
-        ])->find($this->id);
+            'orderProducts.addsOns.addsOn',
+            'orderTracking'
+        ])->findOrFail($this->id);
 
+        $user = $order->user;
+        $profile = $user?->userProfile;
+        $addresses = $user?->userAddresses ?? collect();
 
+        // Get the default address or the first one
+        $defaultAddress = $addresses->where('is_default', true)->first() ?? $addresses->first();
 
+        // Handle temporary address from order (if any)
+        $tempAddress = $order->temp_address ? json_decode($order->temp_address, true) : null;
 
-        $orderData['promo_name'] = PromoCode::find($orderData['promo_code_id'])['code'] ?? null;
-        $userInfo = CustomerInfo::where('user_id', $orderData->user_id)->get();
-
-
-
-        // Handle address country names
-        $addressCountry1Id = $userInfo[0]->addressCountry ? (int) $userInfo[0]->addressCountry : null;
-        $addressCountry2Id = $userInfo[0]->addressCountry2 ? (int) $userInfo[0]->addressCountry2 : null;
-
-        $addressCountryName = $addressCountry1Id
-            ? Delivery::where('id', $addressCountry1Id)->value('name')
-            : null;
-
-        $addressCountry2Name = $addressCountry2Id
-            ? Delivery::where('id', $addressCountry2Id)->value('name')
-            : null;
-
-
-        // Attach the country names to the user info object
-        $userInfo[0]->addressCountryName = $addressCountryName;
-        $userInfo[0]->addressCountry2Name = $addressCountry2Name;
-
-        foreach ($orderData->orderProducts as $product) {
-            $orderProdutcs[] = [
-                'porductData' => Product::find($product->product_id),
-                'porductCount' =>  $product->totalCount,
-                'porductTotalPrice' =>  $product->totalPrice
+        // Build final address array
+        if ($tempAddress) {
+            // Use temp address if available (it already contains country, city, etc.)
+            $finalAddress = $tempAddress;
+        } else {
+            // Build from default address and user profile fields
+            $finalAddress = [
+                'country' => $this->getCountryName($defaultAddress?->delivery_place_id),
+                'city' => $defaultAddress?->address_city,
+                'street' => $defaultAddress?->address_street,
+                'building_number' => $defaultAddress?->address_building,
+                'floor_number' => $defaultAddress?->address_floor,
+                'apartment_number' => $defaultAddress?->address_apartment,
             ];
-            // $orderProdutcs[] = Product::find($product->product_id);
-            // $orderProdutcs[]->productCount = $product->totalCount;
         }
 
-        $printData = [
-            'orderData' => $orderData,
-            'userInfo' => $userInfo[0],
-            'orderProdutcs' => $orderProdutcs
-        ];
-        $tempAddress = $orderData->temp_address ? json_decode($orderData->temp_address, true) : null;
+        // Get promo code name
+        $promoName = $order->promo_code_id ? PromoCode::find($order->promo_code_id)?->code : null;
 
-        // Determine the active address
-        $finalAddress = $tempAddress ?? [
-            'country' => $userInfo[0]->addressCountryName,
-            'city' => $userInfo[0]->addresscity ?? null,
-            'street' => $userInfo[0]->addressstreet ?? null,
-            'building_number' => $userInfo[0]->addressbuildingNumber ?? null,
-            'floor_number' => $userInfo[0]->addressfloorNumber ?? null,
-            'apartment_number' => $userInfo[0]->addressApartmentNumber ?? null,
-        ];
-
+        // Build order array for the view
         $orderArray = [
-            'id' => $orderData->id,
-            'address' => $orderData->temp_address ?? null,
-            'phone' => $orderData->phoneNumber,
-            'status' => $orderData->status,
-            'tracking_status' => $orderData->orderTracking[0]->status ?? 0,
-            'notes' => $orderData->special_order_notes,
-            'payment_method' => $orderData->payment_method,
-            'order_type' => $orderData->order_type,
-            'discount' => $orderData->discount,
-            'total' => $orderData->totalPrice ?? 0,
-            'promo_name' => $orderData->promo_name ?? null,
-            'created_at' => $orderData->created_at,
-
-            // بيانات العميل
+            'id' => $order->id,
+            'status' => $order->status,
+            'tracking_status' => $order->orderTracking->first()?->status ?? 0,
+            'notes' => $order->special_order_notes,
+            'payment_method' => $order->payment_method,
+            'discount' => $order->discount ?? 0,
+            'total' => $order->totalPrice ?? 0,
+            'promo_name' => $promoName,
+            'created_at' => $order->created_at,
             'customer' => [
-                'name' => $userInfo[0]->firstName . ' ' . $userInfo[0]->lastName,
-                'phone' => $userInfo[0]->phonenum,
+                'name' => ($profile?->first_name ?? '') . ' ' . ($profile?->last_name ?? ''),
+                'phone' => $profile?->phone_number ?? $order->phoneNumber ?? '',
                 'finalAddress' => $finalAddress,
             ],
+            'products' => $order->orderProducts->map(function ($orderProduct) {
 
-            // المنتجات
-            'products' => $orderData->orderProducts->map(function ($orderProduct) {
                 $product = $orderProduct->product;
-                $basePrice = $product->price ?? 0;
+                $basePrice = $orderProduct->totalPrice /  $orderProduct->totalCount  ?? 0;
                 $count = $orderProduct->totalCount ?? 1;
 
-                // 🔹 حساب سعر الـ options
+                // Calculate options total
                 $optionsTotal = $orderProduct->options->flatMap(function ($opt) {
                     return $opt->values->map(function ($val) {
                         return $val->value->price ?? 0;
                     });
                 })->sum();
 
-                // 🔹 حساب سعر الـ adds_on
+                // Calculate adds-on total
                 $addsOnTotal = $orderProduct->addsOns->sum(function ($add) {
-                    return $add->addsOn->price * $add->quantity ?? 0;
+                    return ($add->addsOn->price ?? 0) * ($add->quantity ?? 0);
                 });
 
-
-                // 🔹 حساب إجمالي المنتج الكامل (سعر المنتج + الخيارات + الإضافات) × الكمية
-                $totalrow = ($basePrice + $optionsTotal ) * $count + $addsOnTotal;
+                // Total per row: (base + options) * count + adds-on
+                $totalRow = ($basePrice + $optionsTotal) * $count + $addsOnTotal;
 
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'photo' => $product->photo,
-                    'section' => $product->section->name ?? 'غير محدد',
+                    'section' => $product->section?->name ?? 'غير محدد',
                     'price' => $basePrice,
                     'count' => $count,
-                    'total' => $totalrow,
-                    'discount' => $orderProduct->discount,
-
-                    // الخيارات
+                    'total' => $totalRow,
+                    'discount' => $orderProduct->discount ?? 0,
                     'options' => $orderProduct->options->flatMap(function ($opt) {
                         return $opt->values->map(function ($val) use ($opt) {
                             return [
-                                'option_name' => $opt->option->name ?? null,
-                                'value_name' => $val->value->name ?? null,
-                                'price' => $val->value->price ?? 0,
+                                'option_name' => $opt->option?->name,
+                                'value_name' => $val->value?->name,
+                                'price' => $val->value?->price ?? 0,
                             ];
                         });
                     }),
-
-                    // الإضافات
                     'adds_on' => $orderProduct->addsOns->map(function ($add) {
                         return [
-                            'id' => $add->addsOn->id ?? null,
-                            'name' => $add->addsOn->name ?? null,
-                            'price' => $add->addsOn->price ?? 0,
-                            'active' => $add->addsOn->active ?? 0,
-                            "quantity"=> $add->quantity
+                            'id' => $add->addsOn?->id,
+                            'name' => $add->addsOn?->name,
+                            'price' => $add->addsOn?->price ?? 0,
+                            'quantity' => $add->quantity,
                         ];
                     }),
                 ];
             }),
         ];
 
-
-
-        // dd($orderData->orderTracking[0]->status);
         return view('livewire.orders.order-details', [
-            'orderData' => $orderData,
-            'userInfo' => $userInfo[0],
-            'orderProdutcs' => $orderProdutcs,
-            'printData' =>  $printData,
-            'orderArray' => $orderArray
+            'orderArray' => $orderArray,
         ]);
+    }
+
+    /**
+     * Helper to get country name from delivery_place_id
+     */
+    private function getCountryName($deliveryPlaceId)
+    {
+        if (!$deliveryPlaceId) {
+            return null;
+        }
+        return Delivery::where('id', $deliveryPlaceId)->value('name');
     }
 }

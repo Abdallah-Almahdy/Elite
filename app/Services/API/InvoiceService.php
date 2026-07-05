@@ -24,7 +24,7 @@ class InvoiceService
             $shift = app(ShiftService::class)->openShift(1);
 
             $warehouse = Warehouse::where('is_default', true)->firstOrFail();
-
+            
             $invoice = $this->createInvoice($data, $shift);
 
             $this->createPayments($invoice, $data['payment_methods']);

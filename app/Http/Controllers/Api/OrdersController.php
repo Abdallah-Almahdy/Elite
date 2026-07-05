@@ -36,7 +36,20 @@ class OrdersController extends Controller
     | Main methods
     |--------------------------------------------------------------------------
     */
+    public function orders(Request $request)
+    {
+        try{
+            DB::beginTransaction();
+            $order = $this->ordersService->create($request);
 
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+        DB::commit();
+        return response()->json(['message' => $order], 201);
+
+    }
     public function createOrder(Request $request)
     {
 

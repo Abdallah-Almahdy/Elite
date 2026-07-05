@@ -126,6 +126,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('AdminLTE-3-RTL/dist/js/adminlte.min.js') }}"></script>
     <!-- Select2 -->
     <script src="{{ asset('AdminLTE-3-RTL/plugins/select2/js/select2.full.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
     @yield('scripts')
