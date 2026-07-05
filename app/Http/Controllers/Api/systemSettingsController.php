@@ -15,36 +15,7 @@ class systemSettingsController extends Controller
 {
 
 
-    public function userPrinterSettings()
-    {
-        $userConfig = User::find(1)->userConfig;
 
-        if (!$userConfig) {
-            return response()->json(['message' => 'User configuration not found.'], 404);
-        }
-
-        return response()->json($userConfig);
-    }
-
-    public function updateUserPrinterSettings(Request $request)
-    {
-        $user = User::find(1);
-
-        $validatedData = $request->validate([
-            'CashierPrinterName' => 'nullable|string|max:255',
-            'AllowSaveWithoutPrint' => 'nullable|boolean',
-            'barcodePrinterName' => 'nullable|string|max:255',
-            'reportPrinterName' => 'nullable|string|max:255',
-        ]);
-
-        $user->userConfig()->updateOrCreate(
-            ['user_id' => $user->id],
-            $validatedData
-        );
-
-
-        return response()->json(['message' => 'User printer settings updated successfully.', 'data' => $user->userConfig]);
-    }
 
     public function sectionsPrinterSettings()
     {
@@ -110,10 +81,10 @@ class systemSettingsController extends Controller
         ]);
     }
 
-    public function sectionUserSettings()
+    public function sectionUserSettings(Request $request)
     {
 
-        $setting = sectionUserSettings::where('user_id', 1)->first();
+        $setting = sectionUserSettings::where('user_id', $request->user_id ?? auth()->user()->id)->first();
 
         if(!$setting)
             {
@@ -182,9 +153,11 @@ class systemSettingsController extends Controller
         ], 201);
     }
 
-    public function invicePrintersUserSettings()
+    public function invicePrintersUserSettings(Request $request)
     {
-        $requestedSettings = InvicePrinterSettings::where('user_id',1)->where('type','user')->get();
+
+
+        $requestedSettings = InvicePrinterSettings::where('user_id', $request->user_id ? $request->user_id : auth()->user()->id)->where('type', 'user')->get();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
         }
@@ -194,7 +167,7 @@ class systemSettingsController extends Controller
                 return [
                     'id' => $setting->id,
                     'cashierPrinterName' => $setting->cashierPrinterName,
-                    'allowSaveWithoutPrint' => $setting->allowSaveWithoutPrint,
+                    'ًAllowSaveWithoutPrint' => $setting->allowSaveWithoutPrint,
                     'barcodePrinterName' => $setting->barcodePrinterName,
                     'reportPrinterName' => $setting->reportPrinterName,
                     'type' => $setting->type,
@@ -215,6 +188,7 @@ class systemSettingsController extends Controller
     }
     public function invicePrintersSystemSettings()
     {
+
         $requestedSettings = InvicePrinterSettings::where('type','system')->get();
         if ($requestedSettings->isEmpty()) {
             return response()->json(['message' => 'No printer settings found.'], 404);
@@ -247,25 +221,28 @@ class systemSettingsController extends Controller
 
     public function updateInvicePrintersSettings(Request $request)
     {
+
+
         $validatedData = $request->validate([
-            'invoicePrinterSettings' => 'required|array',
+            'invoicePrinterSettings' => 'sometimes|array',
             'invoicePrinterSettings.*.formName' => 'required|string|max:255',
             'invoicePrinterSettings.*.printerName' => 'required|string|max:255',
             'invoicePrinterSettings.*.permssionName' => 'required|string|max:255',
             'invoicePrinterSettings.*.numOfCopies' => 'nullable|integer|min:1',
             'invoicePrinterSettings.*.isActive' => 'required|boolean',
+
             'cashierPrinterName' => 'nullable|string|max:255',
-            'allowSaveWithoutPrint' => 'nullable|boolean',
+            'AllowSaveWithoutPrint' => 'nullable|boolean',
             'barcodePrinterName' => 'nullable|string|max:255',
             'reportPrinterName' => 'nullable|string|max:255',
-            'type' => 'string|in:user,system|required',
+            'type' => 'required|string|in:user,system',
             'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
 
         if ($validatedData['type'] == "system") {
             $invicePrinterSettings = InvicePrinterSettings::where('type', 'system')->first();
-            $validatedData['user_id'] = 1;
+            $validatedData['user_id'] = auth()->user()->id;
         } else {
             $invicePrinterSettings = InvicePrinterSettings::where('user_id', $validatedData['user_id'])->first();
         }
@@ -274,10 +251,10 @@ class systemSettingsController extends Controller
         {
 
             $invicePrinterSettings = InvicePrinterSettings::create([
-                'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName,
-                'allowSaveWithoutPrint' => $validatedData['allowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
-                'barcodePrinterName' => $validatedData['barcodePrinterName'] ?? $invicePrinterSettings->barcodePrinterName,
-                'reportPrinterName' => $validatedData['reportPrinterName'] ?? $invicePrinterSettings->reportPrinterName,
+                'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName ?? null,
+                'allowSaveWithoutPrint' => $validatedData['allowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint ?? 0,
+                'barcodePrinterName' => $validatedData['barcodePrinterName'] ?? $invicePrinterSettings->barcodePrinterName ?? null,
+                'reportPrinterName' => $validatedData['reportPrinterName'] ?? $invicePrinterSettings->reportPrinterName ?? null,
                 'type' => $validatedData['type'] ?? $invicePrinterSettings->type,
                 'user_id' => $validatedData['user_id'] ?? $invicePrinterSettings->user_id
             ]);
@@ -285,7 +262,7 @@ class systemSettingsController extends Controller
         {
             $invicePrinterSettings->update([
                 'cashierPrinterName' => $validatedData['cashierPrinterName'] ?? $invicePrinterSettings->cashierPrinterName,
-                'allowSaveWithoutPrint' => $validatedData['allowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
+                'allowSaveWithoutPrint' => $validatedData['AllowSaveWithoutPrint'] ?? $invicePrinterSettings->allowSaveWithoutPrint,
                 'barcodePrinterName' => $validatedData['barcodePrinterName'] ?? $invicePrinterSettings->barcodePrinterName,
                 'reportPrinterName' => $validatedData['reportPrinterName'] ?? $invicePrinterSettings->reportPrinterName,
                 'type' => $validatedData['type'] ?? $invicePrinterSettings->type,
@@ -295,17 +272,19 @@ class systemSettingsController extends Controller
 
 
 
-
-        foreach ($validatedData['invoicePrinterSettings'] as $printerSetting) {
-            $invicePrinterSettings->invicePrinters()->updateOrCreate(
-                ['permssionName' => $printerSetting['permssionName']],
-                [
-                    'formName' => $printerSetting['formName'],
-                    'printerName' => $printerSetting['printerName'],
-                    'numOfCopies' => $printerSetting['numOfCopies'] ?? null,
-                    'isActive' => $printerSetting['isActive'],
-                ]
-            );
+        if(isset($validatedData['invoicePrinterSettings']))
+        {
+            foreach ($validatedData['invoicePrinterSettings'] as $printerSetting) {
+                $invicePrinterSettings->invicePrinters()->updateOrCreate(
+                    ['permssionName' => $printerSetting['permssionName']],
+                    [
+                        'formName' => $printerSetting['formName'],
+                        'printerName' => $printerSetting['printerName'],
+                        'numOfCopies' => $printerSetting['numOfCopies'] ?? null,
+                        'isActive' => $printerSetting['isActive'],
+                    ]
+                );
+            }
         }
 
 
@@ -319,9 +298,9 @@ class systemSettingsController extends Controller
         return response()->json($warehouses);
     }
 
-    public function userWarehouseSettings()
+    public function userWarehouseSettings(Request $request)
     {
-        $user = User::find(1); // Replace with the actual user ID or use auth()->user() if you have authentication set up
+        $user = User::find($request->user_id ?? auth()->user()->id);
         $warehouses = $user->warehouses()->get(['warehouses.id', 'warehouses.name', 'warehouse_permissions.is_default', 'warehouse_permissions.warehouse_name']);
         return response()->json($warehouses);
     }

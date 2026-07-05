@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import notify from "../../../hooks/Notification";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserPrintersConfig } from "../../../store/reducers/settingSlice";
 
 export default function Actions({
   handleSubmitWithPrinting,
   handleSubmitWithoutPrinting,
 }) {
   // const {saveNoPrintAuth} = useUserSettingsPreference();
-  const userSettings = JSON.parse(localStorage.getItem("User Settings"));
+  // const userSettings = JSON.parse(localStorage.getItem("User Settings"));
+  const permissions = useSelector((state)=> state?.setting?.permissions)
   const loading = useSelector((state) => state.order.loading);
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    dispatch(fetchUserPrintersConfig());
+  }, [dispatch])
+  
   return (
     <div className="w-[90%] mx-auto flex justify-between items-center gap-x-3">
       <button
@@ -20,11 +28,11 @@ export default function Actions({
         {loading ? <span className="loader"></span> : ` حفظ وطباعة`}
       </button>
 
-      {userSettings?.saveNoPrintAuth && (
+      {permissions["pos.saveNoPrintAuth"] && (
         <button
           disabled={loading}
           onClick={() => {
-            if (!userSettings?.saveNoPrintAuth) {
+            if (!permissions["pos.saveNoPrintAuth"]) {
               notify("لا توجد صلاحيات لهذا الاجراء", "warn");
             } else {
               handleSubmitWithoutPrinting();

@@ -29,7 +29,7 @@ import SearchByPhone from "../components/ui/SearchByPhone";
 import { useSelector, useDispatch } from "react-redux";
 import { useProducts } from "../contexts/ProductsContext";
 import { useSelectedProducts } from "../contexts/SelectedProductsContext";
-import { fetchConfigs } from "../store/reducers/settingSlice";
+import { fetchConfigs, fetchUserWarehouseNames } from "../store/reducers/settingSlice";
 
 const UserForm = forwardRef((props, ref) => {
   const users = useSelector((state) => state?.user?.user);
@@ -72,14 +72,22 @@ const UserForm = forwardRef((props, ref) => {
       return fallback;
     }
   }
-  const warehouseNames = ["مخزن 1", "مخزن 2", "مخزن 3", "مخزن 4", "مخزن 5"];
-  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  const userWarehouseNames = useSelector((state)=> state?.setting?.userWarehouseNames);
+  let invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  // localStorage.setItem(
+  //     "Invoice Serial",
+  //     JSON.stringify(++invSerial || 1),
+  //   );
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
   );
-  const warehouseName = useSelector((state) => state?.setting?.warehouseName);
+  // const warehouseName = useSelector((state) => state?.setting?.warehouseName);
+  const defaulredWarehouse = userWarehouseNames?.find((w)=> w?.is_default === true);
+  const warehouseName = defaulredWarehouse?.name;
+  const permissions = useSelector((state)=> state?.setting?.permissions);
   useEffect(() => {
     dispatch(fetchConfigs());
+    dispatch(fetchUserWarehouseNames());
   }, [dispatch]);
   const paymentMapping = {
     cash: "كاش",
@@ -191,11 +199,17 @@ const UserForm = forwardRef((props, ref) => {
     isValid: formik.isValid,
   }));
   React.useEffect(() => {
+     const updatedDraft = {
+    ...draftFormData,
+        id: formik.values.serialInput,
+    ...formik.values,
+  };
     setFormData((prev) => ({
       ...prev,
       ...formik.values,
     }));
-  }, [formik.values, setFormData]);
+    sessionStorage.setItem("draftFormData", JSON.stringify(updatedDraft))
+  }, [formik.values, setFormData, draftFormData]);
 
   const paymentMethodOptions = [
     { id: 1, code: "cash", label: "كاش" },
@@ -304,7 +318,8 @@ const UserForm = forwardRef((props, ref) => {
                     id="dateInput"
                     type="date"
                     name="dateInput"
-                    className="text-gray-900 placeholder-gray-600 placeholder:text-gray-600 text-right placeholder:text-right text-xs block w-full px-2.5 py-1.5 focus:outline-blue-500 rounded "
+                    disabled={!permissions["pos.editDate"]}
+                    className={`text-gray-900 placeholder-gray-600 placeholder:text-gray-600 text-right placeholder:text-right text-xs block w-full px-2.5 py-1.5 focus:outline-blue-500 rounded ${!permissions["pos.editDate"] ? `cursor-not-allowed` : `cursor-pointer`} `}
                     value={formik.values.dateInput}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -353,9 +368,9 @@ const UserForm = forwardRef((props, ref) => {
                     <option value="" disabled className="bg-white">
                       اختر اسم المخزن
                     </option>
-                    {warehouseNames.map((method) => (
-                      <option key={method} value={method} className="bg-white">
-                        {method}
+                    {userWarehouseNames?.map((method) => (
+                      <option key={method?.id} value={method?.name} className="bg-white">
+                        {method?.name}
                       </option>
                     ))}
                   </select>
@@ -379,7 +394,7 @@ const UserForm = forwardRef((props, ref) => {
                       type="button"
                       className={`px-3 py-1 text-xs font-bold rounded-lg border ${formik.values.invoiceType === type ? "bg-blue-600 text-white" : `bg-white text-gray-900 ${!userSettings?.invoiceTypeChangeAuth ? `` : `hover:bg-blue-400 hover:text-white`}`}`}
                       onClick={() => formik.setFieldValue("invoiceType", type)}
-                      disabled={!userSettings?.invoiceTypeChangeAuth}
+                      disabled={!permissions["pos.InvoiceTypeChangeAuth"]}
                     >
                       {type}
                     </button>
@@ -396,7 +411,7 @@ const UserForm = forwardRef((props, ref) => {
                 <select
                   className="w-full text-gray-900 px-2.5 py-1.5 text-sm border rounded focus:outline-blue-500 bg-blue-100 bg-opacity-50 appearance-none"
                   value={formik.values.paymentMethod}
-                  disabled={!userSettings?.methodChangeAuth}
+                  disabled={!permissions["pos.paymentMethodChangeAuth"]}
                   // onChange={(e) =>
                   //   formik.setFieldValue("paymentMethod", e.target.value)
                   // }
@@ -529,7 +544,7 @@ const UserForm = forwardRef((props, ref) => {
                     />
                   </button>
                 </div>
-                {showClientsResults &&
+                {permissions["pos.chooseClient"] && showClientsResults &&
                   selectedUser?.name !== formik.values.clientName && (
                     <div
                       ref={clientResultRef}

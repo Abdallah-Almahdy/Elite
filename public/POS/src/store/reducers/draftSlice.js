@@ -18,7 +18,10 @@ const draftSlice = createSlice({
       state.offlineDrafts = action.payload;
     },
     setCurrentDraft: (state, action) => {
-      state.currentDraft = action.payload;
+      // state.currentDraft = state.offlineDrafts.filter((d)=> d.id === action.payload?.id)
+      
+        state.currentDraft = action?.payload;
+      
     },
     removeDraftFromState: (state, action) => {
       state.offlineDrafts = state.offlineDrafts.filter(
@@ -41,7 +44,7 @@ export const saveDraft = (draft) => async (dispatch) => {
   await saveDraftOffline(draft);
   const drafts = await getOfflineDrafts();
   dispatch(setOfflineDrafts(drafts));
-  dispatch(setCurrentDraft(draft));
+  await dispatch(setCurrentDraft(draft));
 };
 
 export const deleteDraft = (draftId) => async (dispatch) => {

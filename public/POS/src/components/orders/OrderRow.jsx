@@ -5,6 +5,10 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { useProducts } from "../../contexts/ProductsContext";
 import { useEffect, useState } from "react";
+import notify from "../../hooks/Notification";
+import { useDispatch, useSelector } from "react-redux";
+import DeleteWithPasswordModal from "../confirm/DeleteWithPasswordModal";
+import { checkPassword } from "../../store/reducers/settingSlice";
 
 export default function OrderRow({ quantityRefs }) {
   const {
@@ -15,17 +19,24 @@ export default function OrderRow({ quantityRefs }) {
     ChangeQuantity,
     handleChangeUnit,
     ChangePrice,
+    inputNameRef
   } = useProducts();
 
   const [activeRow, setActiveRowLocal] = useState(
     selectedProducts[selectedProducts.length - 1]?.rowKey,
   );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [objectID, setObjectID] = useState("");
   const [currentIndex, setCurrentIndexLocal] = useState(0);
+  const permissions = useSelector((state)=> state?. setting?.permissions)
+  const passwordMessage = useSelector((state)=> state?.setting?.passwordMessage);
+  const dispatch = useDispatch();
   useEffect(() => {
     const handleKey = (e) => {
+      if(inputNameRef !== document.activeElement){
+        
       const activeElement = document.activeElement;
       const isInputFocused = activeElement.tagName === "INPUT";
-
       if (e.key === "ArrowDown") {
         e.preventDefault();
         const nextIndex = Math.min(
@@ -55,10 +66,11 @@ export default function OrderRow({ quantityRefs }) {
         }
       }
     };
+      }
 
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [currentIndex, selectedProducts, quantityRefs]);
+  }, [currentIndex, selectedProducts, quantityRefs, inputNameRef]);
 
   // useEffect(() => {
   //   const handleKey = (e) => {
@@ -101,9 +113,33 @@ export default function OrderRow({ quantityRefs }) {
     ChangeQuantity(rowKey, val);
   };
 
+ const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleConfirmDeleteModal = async (password) => {
+    try {
+      const payload = {
+        password: password
+      }
+      await dispatch(checkPassword({ password: payload })).unwrap();
+      handleCloseDeleteModal();
+      notify("تم التأكد من كلمة السر بنجاح", "success");
+      handleDelete(objectID)
+    } catch (err) {
+      notify("كلمة سر غير صحيحة!", "error");
+    }
+  };
+
   // Function To Go to Delete a Product
   const deleteProduct = (objID) => {
-    handleDelete(objID);
+    // handleDelete(objID);
+    if(!permissions["pos.deleteProdWithPass"]){
+      handleDelete(objID);
+    }else{
+      setIsDeleteModalOpen(true)
+      setObjectID(objID);
+    }
   };
 
   useEffect(() => {
@@ -122,6 +158,15 @@ export default function OrderRow({ quantityRefs }) {
   }, [activeRow]);
   return (
     <>
+     <tr>
+      <td>
+        <DeleteWithPasswordModal
+      isOpen={isDeleteModalOpen}
+      onClose={handleCloseDeleteModal}
+      onConfirm={handleConfirmDeleteModal}
+      />
+      </td>
+     </tr>
       {selectedProducts?.length > 0 ? (
         selectedProducts?.map((product, index) => {
           const usedByOtherUnits = selectedProducts
@@ -187,6 +232,13 @@ export default function OrderRow({ quantityRefs }) {
                     onChange={(e) => {
                       chngQuantity(product?.rowKey, e?.target?.value);
                     }}
+                    onBlur={(e)=>{
+                      const value = e.target.value;
+                      if(value == 0){
+                        deleteProduct(product?.rowKey);
+                        notify("يجب ادخال قيمة اكبر من 0", "error")
+                      }
+                    }}
                     className={`w-[70px] px-1 border border-gray-300 rounded text-center text-sm appearance-none`}
                   />
 
@@ -236,7 +288,7 @@ export default function OrderRow({ quantityRefs }) {
                 <input
                   type="number"
                   step="0.01"
-                  className="w-[100px] rounded text-center appearance-none text-base"
+                  className={`w-[100px] rounded text-center appearance-none text-base ${!permissions["pos.priceChangeAuth"] ? `cursor-not-allowed` : `cursor-pointer`}`}
                   value={product?.price ?? ""}
                   onChange={(e) => {
                     ChangePrice(product?.rowKey, e.target.value);
@@ -251,14 +303,21 @@ export default function OrderRow({ quantityRefs }) {
                       );
                     }
                   }}
+                  disabled={!permissions["pos.priceChangeAuth"]}
                 />
               </td>
               <td className="px-1 border border-gray-300">
-                {product?.total?.toFixed(2)}
+                {Number(product?.total).toFixed(2)}
               </td>
               <td className=" border border-gray-300">
                 <button
-                  onClick={() => deleteProduct(product.rowKey)}
+                  onClick={() => {
+                    if(permissions["pos.deleteProdWithPass"])
+                    {
+                      setIsDeleteModalOpen(true)
+                    }
+                    deleteProduct(product.rowKey)
+                  }}
                   className="border border-red-600 border-opacity-80 p-1 rounded hover:bg-red-100 hover:transition-transform hover:scale-110 hover:duration-300"
                 >
                   <ImBin className="text-red-600  text-opacity-80 text-xl" />

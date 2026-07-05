@@ -6,9 +6,11 @@ import { FiRepeat } from "react-icons/fi";
 import { FaStop } from "react-icons/fa";
 import { PiCashRegister } from "react-icons/pi";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function Actions({ setIsShiftModalOpen }) {
   const { handleFreeze, handleNew } = useProducts();
+  const permissions = useSelector((state)=> state?.setting?.permissions);
   const nav = useNavigate();
   const handleNav = () => {
     nav("/draft");
@@ -34,15 +36,17 @@ export default function Actions({ setIsShiftModalOpen }) {
         {/* Lower Buttons */}
         <div className="w-full flex justify-between">
           <button
+          disabled={!permissions["pos.InviceFreeze"]}
             onClick={handleFreeze}
-            className="w-[48%] border border-red-600 text-red-600 hover:bg-red-100 py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden"
+            className={`w-[48%] border border-red-600 text-red-600 hover:bg-red-100 py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden ${!permissions["pos.InviceFreeze"] ? `cursor-not-allowed` : `cursor-pointer`}`}
           >
             <span>تجميد</span>
             <FaStop className="inline text-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-10 group-hover:translate-x-0" />
           </button>
           <button
+          disabled={!permissions["pos.InviceCall"]}
             onClick={handleNav}
-            className="w-[48%] border border-blue-600 text-blue-600 hover:bg-blue-100 py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden"
+            className={`w-[48%] border border-blue-600 text-blue-600 hover:bg-blue-100 py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden ${!permissions["pos.InviceCall"] ? `cursor-not-allowed` : `cursor-pointer`}`}
           >
             <span>استدعاء</span>
             <FiRepeat className="inline opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-10 group-hover:translate-x-0" />
@@ -51,8 +55,9 @@ export default function Actions({ setIsShiftModalOpen }) {
       </div>
       <div className="w-full px-5">
         <button
+        disabled={!permissions["pos.shiiftClose"]}
           onClick={() => setIsShiftModalOpen(true)}
-          className="w-full bg-red-600 text-white py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden"
+          className={`w-full bg-red-600 text-white py-3 rounded flex justify-center items-center gap-2 relative group overflow-hidden ${!permissions["pos.shiiftClose"] ? `cursor-not-allowed` : `cursor-pointer`}`}
         >
           <span>اغلاق وردية</span>
           <PiCashRegister className="inline text-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-10 group-hover:translate-x-0" />

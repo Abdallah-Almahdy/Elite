@@ -67,11 +67,11 @@ class InvoiceController extends Controller
             'mainWarehouse' => Warehouse::where('is_default', true)->first()->name
         ]);
     }
-    
+
     public function userInvioceConfig(Request $request)
     {
 
-        $config = User::find(1)->inviceConfig;
+        $config = User::findOrFail($request->get('user_id') ?? auth()->user()->id)->inviceConfig;
 
         if (!$config) {
             return response()->json([
@@ -103,7 +103,9 @@ class InvoiceController extends Controller
             'allowedInvoiceTypes.*' => 'string|in:take_away,hall,delvery',
         ]);
 
-        $user = User::findOrFail(1);
+        $user = User::findOrFail($request->user_id );
+
+
 
         $allowedPaymentMethods = collect($request->allowedPaymentMethods ?? []);
 
@@ -154,10 +156,9 @@ class InvoiceController extends Controller
             $config = $user->inviceConfig()->create($data);
         } else {
             $config->update(
-                collect($data)
-                    ->filter(fn($value) => $value !== null)
-                    ->toArray()
+            $data
             );
+
 
             $config->save();
         }

@@ -65,7 +65,7 @@ class ProductsController extends Controller
   public function searchByname(Request $request)
 {
     $name = $request->query('name');
-    
+
     $data = Product::with([
             'defaultWarehouse',
             'units',
@@ -88,7 +88,7 @@ class ProductsController extends Controller
     {
         $searchbarcode = $request->query('barcode');
 
-         $barcode = Barcode::where('code', 'LIKE', "%{$searchbarcode}%")->first();
+         $barcode = Barcode::where('code', '=', $searchbarcode)->first();
         if (!$barcode) {
             return response()->json([
                 'message' => 'بحث عن المنتج بالباركود لم يُعثر على نتائج.'

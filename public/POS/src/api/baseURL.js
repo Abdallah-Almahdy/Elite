@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://sicilia-test.srv599157.hstgr.cloud/api",
+    baseURL: "http://127.0.0.1:8001/api",
 });
 
 export const sendOrderToBackend = async (order) => {
@@ -27,7 +27,7 @@ export const sendUserToBackend = async (user) => {
   try {
     const formDataObject = Object.fromEntries(user.entries());
     const response = await api.post("/specialRegister", user);
-    
+
     const returnedUser =  response.data;
     const newUser = {
       id: returnedUser?.user?.id,
@@ -37,7 +37,7 @@ export const sendUserToBackend = async (user) => {
         address1: `${formDataObject?.Country} ${formDataObject?.city} ${formDataObject.street} ${formDataObject?.building} ${formDataObject?.floor} ${formDataObject?.apartment}`,
         phone: formDataObject?.phonenum
       },
-      
+
     };
     sessionStorage.setItem('selectedUser', JSON.stringify(newUser));
   }

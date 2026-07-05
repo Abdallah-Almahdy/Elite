@@ -13,6 +13,7 @@ import Select from "react-select";
 import notify from "../../../hooks/Notification";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchConfigs } from "../../../store/reducers/settingSlice";
+import { useProducts } from "../../../contexts/ProductsContext";
 
 const UserForm = forwardRef((props, ref) => {
   const dispatch = useDispatch();
@@ -23,6 +24,7 @@ const UserForm = forwardRef((props, ref) => {
   const [showNewPhone, setShowNewPhone] = useState(false);
   const [showOptionalAddress, setShowOptionalAddress] = useState(false);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const {setDraftFormData} = useProducts()
   const date = new Date();
   function safeJSONParse(value, fallback = null) {
     try {
@@ -36,7 +38,8 @@ const UserForm = forwardRef((props, ref) => {
   useEffect(() => {
     dispatch(fetchConfigs());
   }, [dispatch]);
-  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  let invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
   );
@@ -142,10 +145,20 @@ const UserForm = forwardRef((props, ref) => {
     isValid: formik.isValid,
   }));
   React.useEffect(() => {
+     const updatedDraft = {
+    ...draftFormData,
+    id: formik.values.serialInput,
+    ...formik.values,
+  };
     setFormData((prev) => ({
       ...prev,
       ...formik.values,
     }));
+    setDraftFormData((prev)=>({
+      ...prev,
+      ...formik.values,
+    }))
+    sessionStorage.setItem("draftFormData", JSON.stringify(updatedDraft))
   }, [formik.values]);
   useEffect(() => {
     sessionStorage.setItem("Order Summary Form", JSON.stringify(formik.values));

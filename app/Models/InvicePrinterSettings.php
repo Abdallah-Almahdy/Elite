@@ -22,4 +22,5 @@ class InvicePrinterSettings extends Model
         return $this->hasMany(invicePrinter::class, 'invoice_printer_setting_id');
     }
 
+
 }

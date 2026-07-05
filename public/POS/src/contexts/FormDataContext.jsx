@@ -13,6 +13,7 @@ export const FormDataProvider = ({ children }) => {
   const [draftFormData, setDraftFormData] = useState(
     JSON.parse(sessionStorage.getItem("draftFormData")),
   );
+  
   // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   useEffect(() => {
     dispatch(fetchConfigs());
@@ -46,7 +47,14 @@ export const FormDataProvider = ({ children }) => {
       return fallback;
     }
   }
-  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+      let invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), 1);
+
+  useEffect(()=>{
+  localStorage.setItem(
+      "Invoice Serial",
+      JSON.stringify(++invSerial || 1),
+    );
+  }, [])
   useEffect(() => {
     const storedUser = sessionStorage.getItem("selectedUser");
     if (storedUser) {
@@ -88,7 +96,7 @@ export const FormDataProvider = ({ children }) => {
     setFormData((prev) => {
       const updated = {
         ...prev,
-        serialInput: draftFormData.serialInput ?? prev.serialInput,
+        serialInput: draftFormData.id ?? prev.serialInput,
         dateInput: draftFormData.dateInput ?? prev.dateInput,
         clientName: draftFormData.clientName ?? prev.clientName,
         notes: draftFormData.notes ?? prev.notes,

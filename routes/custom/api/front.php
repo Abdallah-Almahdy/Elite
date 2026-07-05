@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\permissionsController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductsController;
-use App\Http\Controllers\Api\ShiftController ;
+use App\Http\Controllers\Api\ShiftController;
 use App\Http\Controllers\Api\systemSettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front\react\pos\IndexPosController;
@@ -17,41 +17,35 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 
 // pos screen
 // scan barcode
-Route::get('/get-product-by-barcode/{barcode}', [PosController::class, 'getProductByBarcode']);
-Route::get('/get-products-by-name/{name}', [PosController::class, 'getProductsByName']);
 
 
 
 
 
-
-Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
-
-// userSettings
-Route::get('/userPrinterSettings', [systemSettingsController::class, 'userPrinterSettings']);
-Route::post('/updateUserPrinterSettings', [systemSettingsController::class, 'updateUserPrinterSettings']);
-
-Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
-Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
-Route::get('/invicePrintersUserSettings', [systemSettingsController::class, 'invicePrintersUserSettings']);
-Route::get('/sectionUserSettings', [systemSettingsController::class, 'sectionUserSettings']);
-Route::post('/updateSectionUserSettings', [systemSettingsController::class, 'updateSectionUserSettings']);
+Route::middleware('auth:web', 'web')->group(function () {
 
 
-// systemSettings
-Route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectionsPrinterSettings']);
-Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
+    Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 
-Route::get('/invicePrintersSystemSettings', [systemSettingsController::class, 'invicePrintersSystemSettings']);
-Route::post('/updateInvicePrintersSettings', [systemSettingsController::class, 'updateInvicePrintersSettings']);
-Route::get('/inviceConfigSystemSettings', [InvoiceController::class, 'invoiceConfig']);
+  
+    Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
+    Route::post('/updateUserWarehouseSettings', [systemSettingsController::class, 'updateUserWarehouseSettings']);
+    Route::get('/invicePrintersUserSettings', [systemSettingsController::class, 'invicePrintersUserSettings']);
+    Route::get('/sectionUserSettings', [systemSettingsController::class, 'sectionUserSettings']);
+    Route::post('/updateSectionUserSettings', [systemSettingsController::class, 'updateSectionUserSettings']);
 
 
-Route::get('/getWarehouses', [systemSettingsController::class, 'getWarehouses']);
-Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDefaultWarehouse']);
+    // systemSettings
+    Route::get('/sectionsPrinterSettings', [systemSettingsController::class, 'sectionsPrinterSettings']);
+    Route::post('/updateSectionPrinterSettings', [systemSettingsController::class, 'updateSectionPrinterSettings']);
 
-// شاشه الكاشير
-// Route::middleware('auth:web', 'web')->group(function (){
+    Route::get('/invicePrintersSystemSettings', [systemSettingsController::class, 'invicePrintersSystemSettings']);
+    Route::post('/updateInvicePrintersSettings', [systemSettingsController::class, 'updateInvicePrintersSettings']);
+    Route::get('/inviceConfigSystemSettings', [InvoiceController::class, 'invoiceConfig']);
+
+
+    Route::get('/getWarehouses', [systemSettingsController::class, 'getWarehouses']);
+    Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDefaultWarehouse']);
 
 
 
@@ -69,11 +63,10 @@ Route::post('/updateDefaultWarehouse', [systemSettingsController::class, 'setDef
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
-
-// });
+});
 
 
 Route::get('/sections', [ProductsController::class, 'GetAllSections']);
 Route::get('sections/{id}/products', [ProductsController::class, 'get_products']);
-Route::get('/product/searchByname',[ProductsController::class, 'searchByname']);
-Route::get('/product/searchByBarcode',[ProductsController::class, 'searchByBarcode']);
+Route::get('/product/searchByname', [ProductsController::class, 'searchByname']);
+Route::get('/product/searchByBarcode', [ProductsController::class, 'searchByBarcode']);

@@ -15,16 +15,19 @@ import { setSelectedUser } from "../../store/reducers/userSlice";
 import notify from "../Notification";
 import { number } from "yup";
 import { useUIPreferences } from "../../contexts/UIPreferencesContext";
-import { fetchConfigs } from "../../store/reducers/settingSlice";
+import { fetchConfigs, fetchUserSectionsConfig } from "../../store/reducers/settingSlice";
 export default function useProductsLogic() {
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
   );
+    const AllowedSectionsPOS = useSelector((state) => state?.setting?.userSectionsConfig?.seenSectionsId); // All Products Fetched From the Backend
+
   const warehouseName = useSelector((state) => state?.setting?.warehouseName);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchConfigs());
+    dispatch(fetchUserSectionsConfig());
   }, [dispatch]);
   const paymentMapping = {
     cash: "كاش",
@@ -138,6 +141,7 @@ export default function useProductsLogic() {
 
               const availableStock = product.stock - usedByOtherUnits;
               if (idx !== existsIndex) return product;
+              const totalWeight = product?.weight + newObj?.weight;
 
               if (newObj.weight <= availableStock) {
                 return {
@@ -146,7 +150,7 @@ export default function useProductsLogic() {
                   weight: product.weight + newObj.weight,
                   quantity: availableStock - newObj.weight,
                   total: (product.weight + newObj.weight) * product.price,
-                  canDecrement: product.number > 1,
+                  canDecrement: totalWeight > 1,
                   price: Number(product.price).toFixed(2),
                 };
               } else {
@@ -256,12 +260,19 @@ export default function useProductsLogic() {
 
         let value = newVal;
         if (isNaN(value) || value <= 0) {
-          value = 1;
+          value = 0;
         }
 
         const usedByOtherUnits = prevProducts
           .filter((p) => p.id === product.id && p.rowKey !== rowKey)
-          .reduce((sum, p) => sum + (p.number || 0), 0);
+          // .reduce((sum, p) => sum + (p.number || 0), 0);
+          .reduce(
+                  (sum, p) =>
+                    product?.is_weight
+                      ? sum + (p.weight || 0)
+                      : sum + (p.number || 0),
+                  0,
+                );
 
         const availableStock = product.stock - usedByOtherUnits;
 
@@ -340,7 +351,14 @@ export default function useProductsLogic() {
       const newCode = option?.unitData?.barcodes[0]?.code || "";
       const totalUsedForProduct = prevProducts
         .filter((p) => p.id === productId)
-        .reduce((sum, p) => sum + (p.number || 0), 0);
+        // .reduce((sum, p) => sum + (p.number || 0), 0);
+        .reduce(
+                  (sum, p) =>
+                    p?.is_weight
+                      ? sum + (p.weight || 0)
+                      : sum + (p.number || 0),
+                  0,
+                );
 
       const currentIndex = prevProducts.findIndex((p) => p.rowKey === rowKey);
 
@@ -364,10 +382,11 @@ export default function useProductsLogic() {
                 return {
                   ...existingProduct,
                   number: totalNumber,
-                  weight: existingProduct.is_weight
-                    ? totalNumber
-                    : existingProduct.weight,
-                  total: newPrice * totalNumber,
+                  // weight: existingProduct.is_weight
+                  //   ? totalNumber
+                  //   : existingProduct.weight,
+                  weight: totalNumber,
+                  total: existingProduct?.price * totalNumber,
                   quantity: existingProduct.stock - totalUsedForProduct,
                 };
               }
@@ -382,7 +401,7 @@ export default function useProductsLogic() {
         return {
           ...product,
           number: currentProduct.number,
-          weight: product.is_weight ? currentProduct.number : product.weight,
+          weight: product.is_weight ? currentProduct.weight : product.number,
           price: Number(newPrice).toFixed(2),
           total: newPrice * currentProduct.number,
           code: newCode,
@@ -434,7 +453,7 @@ export default function useProductsLogic() {
               (availableStock < product.weight + 1 &&
                 product?.weight + 1 > product?.stock) ||
               (availableStock < product.number + 1 &&
-                product?.weight + 1 > product?.stock)
+                product?.number + 1 > product?.stock)
             ) {
               newQuantity = product?.is_weight
                 ? product?.weight + availableStock
@@ -495,8 +514,8 @@ export default function useProductsLogic() {
       prevProducts.map((product) => {
         if (product?.rowKey === rowKey) {
           const newQuantity = product.is_stock
-            ? Math.max(0, product?.weight - 1)
-            : Math.max(0, product?.number - 1);
+            ? Math.max(0, product?.number - 1)
+            : Math.max(0, product?.weight - 1);
           if (product.is_weight) {
             return {
               ...product,
@@ -523,7 +542,7 @@ export default function useProductsLogic() {
               number: newQuantity,
               canDecrement: newQuantity > 1,
               total: product.price * newQuantity,
-              quantity: product.quantity - 1,
+              quantity: product.quantity + 1,
             };
           }
         }
@@ -581,6 +600,7 @@ export default function useProductsLogic() {
       warehouseName: warehouseName || "",
     });
     setDraftFormData({
+      id:  backendSerial || "",
       serialInput: backendSerial || "",
       dateInput: date || "",
       clientName: "",
@@ -596,6 +616,23 @@ export default function useProductsLogic() {
       optionalAddress: "",
       warehouseName: warehouseName || "",
     });
+    sessionStorage.setItem("draftFormData", JSON.stringify({
+      id: backendSerial || "",
+      serialInput: backendSerial || "",
+      dateInput: date || "",
+      clientName: "",
+      notes: "",
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
+      paymentMethods: {},
+      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      phone1: "",
+      newPhone: "",
+      optionalPhone: "",
+      address1: "",
+      newAddress: "",
+      optionalAddress: "",
+      warehouseName: warehouseName || "",
+    }))
     setSearchClientName("");
     setSearchClientNamesResult([]);
     navigate("/", { replace: true });
@@ -711,7 +748,7 @@ export default function useProductsLogic() {
       invoiceType: invoiceType,
       paymentMethod: paymentMethod,
       paymentMethods: paymentMethods,
-      items: selectedProducts,
+      items: selectedProducts ? [...selectedProducts] : [],
       address1: address1,
       newAddress: newAddress,
       optionalAddress: optionalAddress,
@@ -727,7 +764,7 @@ export default function useProductsLogic() {
       totals: { total },
     };
 
-    dispatch(saveDraft(draft));
+    await dispatch(saveDraft(draft));
   };
 
   {
@@ -855,8 +892,9 @@ export default function useProductsLogic() {
     const newObj = {
       ...product,
       number: 1,
+      weight: 1,
       price: Number(unit.sallprice).toFixed(2),
-      total: Number(unit.sallprice),
+      total: Number(unit.sallprice).toFixed(2),
       stock: product?.quantity,
       quantity: product?.quantity || 0,
       code: unit?.barcodes[0]?.code || "",
@@ -880,6 +918,14 @@ export default function useProductsLogic() {
     /* Function When Selecting A Client */
   }
   const handleSelectClient = (user) => {
+     const updatedDraft = {
+    ...draftFormData,
+    clientName: user?.name || "",
+      phone1: user?.customer_info?.phone || "",
+      optionalPhone: user?.customer_info?.phone2 || "",
+      address1: user?.customer_info?.address1 || "",
+      optionalAddress: user?.customer_info?.address2 || "",
+  };
     setFormData((prev) => ({
       ...prev,
       clientName: user?.name || "",
@@ -888,6 +934,16 @@ export default function useProductsLogic() {
       address1: user?.customer_info?.address1 || "",
       optionalAddress: user?.customer_info?.address2 || "",
     }));
+    // setDraftFormData((prev) => ({
+    //   ...prev,
+    //   clientName: user?.name || "",
+    //   phone1: user?.customer_info?.phone || "",
+    //   optionalPhone: user?.customer_info?.phone2 || "",
+    //   address1: user?.customer_info?.address1 || "",
+    //   optionalAddress: user?.customer_info?.address2 || "",
+    // }));
+        sessionStorage.setItem("draftFormData", JSON.stringify(updatedDraft))
+
     dispatch(setSelectedUser(user));
     sessionStorage.setItem("selectedUser", JSON.stringify(user));
     setSearchClientName(user?.name);
@@ -922,6 +978,7 @@ export default function useProductsLogic() {
 
   return {
     data,
+    AllowedSectionsPOS,
     inputRef,
     searchNameValueInGrid,
     selectedProducts,

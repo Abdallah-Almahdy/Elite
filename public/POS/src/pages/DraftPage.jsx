@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import DraftCard from "../components/common/DraftCard";
 import Pagination from "../components/common/Pagination";
 import { useSelector, useDispatch } from "react-redux";
+import { getOfflineDrafts } from "../services/indexedDB";
 
 export default function DraftPage({ handleReturn }) {
   const [date, setDate] = useState(null);
@@ -14,7 +15,17 @@ export default function DraftPage({ handleReturn }) {
   const [draftsPerPage, setDraftsPerPage] = useState(9);
   const [searchByClientName, setSearchByClientName] = useState("");
   const [searchByOrder, setSearchByOrder] = useState("newest");
-  const drafts = useSelector((state) => state.draft.offlineDrafts);
+  const [drafts, setDrafts] = useState([])
+  useEffect(() => {
+      const loadDraft = async () => {
+  
+        const drafts = await getOfflineDrafts();
+  setDrafts(drafts)
+       
+      };
+  
+      loadDraft();
+    }, []);
   useEffect(() => {
     const calculateCardsPerPage = () => {
       const screenHeight = window.innerHeight;
@@ -35,10 +46,8 @@ export default function DraftPage({ handleReturn }) {
   const parseDraftDate = (datePart, timePart) => {
   return new Date(`${datePart} ${timePart}`);
 };
-const filteredDrafts = drafts
-  .filter((draft) =>
-    draft.clientName
-      ?.toLowerCase()
+const filteredDrafts = drafts?.filter((draft) =>
+    draft.clientName?.toLowerCase()
       .includes(searchByClientName.toLowerCase())
   )
 
@@ -59,10 +68,10 @@ const filteredDrafts = drafts
       ? dateA - dateB
       : dateB - dateA;
   });
-   const totalPages = Math.ceil(filteredDrafts.length / draftsPerPage);
+   const totalPages = Math.ceil(filteredDrafts?.length / draftsPerPage);
 const startIndex = (currentPage - 1) * draftsPerPage;
 
-const visibleDraft = filteredDrafts.slice(
+const visibleDraft = filteredDrafts?.slice(
   startIndex,
   startIndex + draftsPerPage
 );

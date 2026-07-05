@@ -50,7 +50,7 @@ export default function ProductsSearch() {
   useEffect(() => {
     if (isBarcodeInputFocused === true) {
       const handleKeyEnter = (e) => {
-        if (e.key === "F9") {
+        if (e.key === "F1") {
           inputNameRef?.current?.focus();
         }
       };
@@ -107,7 +107,8 @@ export default function ProductsSearch() {
             }
             if (e.key === "Enter") {
               if (highlightIndex >= 0 && searchResults[highlightIndex]) {
-                handleSelectProduct(searchResults[highlightIndex]);
+handleSelectProduct(searchResults[highlightIndex], searchResults[highlightIndex].Units[0])
+
               }
             }
           }}
@@ -127,7 +128,7 @@ export default function ProductsSearch() {
                   }`}
                   onClick={() => handleSelectProduct(product, unit)}
                 >
-                  {product.name} - {unit.name} - {unit.sallprice}
+                  {product?.name} - {unit?.name} - {unit?.sallprice}
                 </div>
               )),
             )}

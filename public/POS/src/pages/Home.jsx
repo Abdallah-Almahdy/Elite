@@ -22,6 +22,9 @@ import { getOfflineDrafts } from "../services/indexedDB";
 import { useProducts } from "../contexts/ProductsContext";
 import notify from "../hooks/Notification";
 import ShiftModal from "../components/confirm/ShiftModal";
+import { fetchPermissions } from "../store/reducers/settingSlice";
+import { MdErrorOutline } from "react-icons/md";
+
 export default function Home() {
   const {
     selectedProducts,
@@ -36,9 +39,12 @@ export default function Home() {
   } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [draftID, setDraftID] = useState(1)
 
   const { preference, updatePreference } = useUIPreferences();
   const loading = useSelector((state) => state.product.loading);
+  const permissions = useSelector((state)=> state?.setting?.permissions);
+  const currentDraft = useSelector((state)=> state.draft?.currentDraft)
   const isFirstRun = useRef(true);
   const dispatch = useDispatch();
 
@@ -46,6 +52,11 @@ export default function Home() {
   const backSpace = useRef(null);
 
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    dispatch(fetchPermissions());
+  }, [])
+
   useEffect(() => {
     const loadDraft = async () => {
       const draftId = draftFormData?.id;
@@ -56,6 +67,7 @@ export default function Home() {
 
       if (draft) {
         setDraftFormData(draft);
+        
         setSelectedProducts(draft.items);
         sessionStorage.setItem("draftFormData", JSON.stringify(draft));
         sessionStorage.setItem(
@@ -69,14 +81,19 @@ export default function Home() {
   }, [draftFormData?.id]);
 
   useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
+    // if (isFirstRun.current) {
+    //   isFirstRun.current = false;
+    //   return;
+    // }
+    setDraftID(JSON.parse(sessionStorage.getItem("draftFormData"))?.id)
 
-    handleFreeze();
-  }, [selectedProducts, formData, total]);
+     if(JSON.parse(sessionStorage.getItem("draftFormData"))?.id === formData?.serialInput){
+      handleFreeze();
+     }
+       
+  }, [selectedProducts, formData, total, handleFreeze, draftID] );
 
+  
   useEffect(() => {
     let products =
       JSON.parse(sessionStorage.getItem("Selected Products")) || null;
@@ -143,9 +160,9 @@ export default function Home() {
     setIsShiftModalOpen(false);
   };
 
-  const handleConfirmCloseShift = (amount) => {
+  const handleConfirmCloseShift = async (amount) => {
     try {
-      dispatch(closeShift({ amount }));
+      await dispatch(closeShift({ amount })).unwrap();
       handleShiftModalClose();
       notify("تم إغلاق الوردية بنجاح", "success");
     } catch (err) {
@@ -168,7 +185,9 @@ export default function Home() {
   }
 
   return (
-    <>
+   <>
+   {permissions["pos.show"] ? (
+     <>
       <Modal isOpen={isModalOpen} onConfirm={handleModalConfirm} />
       <ShiftModal
         isOpen={isShiftModalOpen}
@@ -213,5 +232,17 @@ export default function Home() {
         </div>
       </div>
     </>
+   )
+  : (
+    <div className="w-full h-screen flex flex-col justify-center items-center gap-y-2">
+      <MdErrorOutline className="text-7xl"/>
+
+      <h1 className="font-bold text-3xl mb-3">ليس لديك صلاحية الوصول إلى هذه الصفحة
+</h1>
+<h2 className="font-semibold text-lg">نأسف، ليس لديك إذن بالوصول إلى هذه الصفحة</h2>
+    </div>
+  )
+  }
+   </>
   );
 }

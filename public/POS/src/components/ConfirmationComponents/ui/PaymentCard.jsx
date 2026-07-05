@@ -13,6 +13,7 @@ export default function PaymentCard({
   setRemainingValue,
 }) {
   const { total } = useSelectedProducts();
+  const permissions = useSelector((state)=>state?.setting?.permissions);
   // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const dispatch = useDispatch();
   const invoiceSettings = useSelector(
@@ -164,7 +165,7 @@ export default function PaymentCard({
               checked={!!selectedMethods[m.name]}
               onChange={() => handleToggle(m.name)}
               className="w-4 h-4 accent-blue-600"
-              disabled={!userSettings?.methodChangeAuth}
+              disabled={!permissions["pos.paymentMethodChangeAuth"]}
             />
             <span
               className="text-blue-600 opacity-80 cursor-pointer"

@@ -1,11 +1,14 @@
 // Receipt80mm.jsx
 import React, { forwardRef, useRef, useImperativeHandle } from "react";
 import { printHTML, connectQZ, getPrinters } from "../../services/qzService";
+import { useSelector } from "react-redux";
 // import { useUserSettingsPreference } from "../../contexts/UserSettingsPreferenceContext";
 
 const Receipt80mm = forwardRef(({ invoice, payload }, ref) => {
-  const printerSettings = JSON.parse(localStorage.getItem("Printer Settings"))
-  const printerName = printerSettings?.printerName;
+  //const printerSettings = JSON.parse(localStorage.getItem("Printer Settings"))
+  const userPrintersConfig = useSelector((state)=> state?.setting?.userPrintersConfig);
+  const selectedConf = userPrintersConfig?.invicePrinters?.find((conf)=> conf?.permssionName === "Receipt Printing");
+  const printerName = selectedConf?.printerName;
   const domRef = useRef();
 
   // Expose the print function to parent

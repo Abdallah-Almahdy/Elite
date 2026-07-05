@@ -62,14 +62,12 @@ export default function ProductGrid({ userPreference }) {
   let visibleProducts;
 
   if (searchNameValueInGrid.trim() !== "") {
-    // مفيش بحث، اعمل pagination عادي
     const startIndex = (currentPage - 1) * productsPerPage;
     visibleProducts = filteredProducts.slice(
       startIndex,
       startIndex + productsPerPage,
     );
   } else {
-    // في بحث، عرض كل المنتجات اللي رجعت من السيرش بدون slice
     visibleProducts = filteredProducts;
   }
 

@@ -22,7 +22,7 @@ import { fetchCategory } from "./store/reducers/productSlice.js";
 import { fetchClientsNames } from "./store/reducers/userSlice.js";
 
 export default function App() {
-  const { setSelectedProducts } = useSelectedProducts();
+  const { selectedProducts, setSelectedProducts } = useSelectedProducts();
   const { setDraftFormData, draftFormData } = useProducts();
   const { setFormData } = useContext(FormDataContext);
   // const {setDraftFormData} = useProducts()
@@ -49,6 +49,14 @@ export default function App() {
     };
 
     setDraftData(clonedDraft);
+    let items = selectedProducts?.filter((p) =>
+  clonedDraft.items.some((item) => item.id === p.id)
+);
+        let test = items.filter((item, index)=>{
+return item.quantity < item.number || item.quantity < item.weight
+        })
+        
+        sessionStorage.setItem("test", JSON.stringify(test));
     setSelectedProducts(clonedDraft.items);
 
     setDraftFormData(clonedDraft);
@@ -68,7 +76,7 @@ export default function App() {
 
     setFormData((prev) => ({
       ...prev,
-      serialInput: draftFormData?.serialInput ?? prev.serialInput,
+      serialInput: draftFormData?.id ?? prev.serialInput,
       dateInput: draftFormData?.dateInput ?? prev.dateInput,
       clientName: draftFormData?.clientName ?? prev.clientName,
       notes: draftFormData?.notes ?? prev.notes,
@@ -83,7 +91,27 @@ export default function App() {
       optionalAddress: draftFormData?.optionalAddress ?? prev.optionalAddress,
       warehouseName: draftFormData?.warehouseName ?? prev.warehouseName,
     }));
-  }, [draftFormData]);
+    setDraftFormData((prev) => ({
+      ...prev,
+      id: draftFormData?.id ?? prev.serialInput,
+      serialInput: draftFormData?.id ?? prev.serialInput,
+      dateInput: draftFormData?.dateInput ?? prev.dateInput,
+      clientName: draftFormData?.clientName ?? prev.clientName,
+      notes: draftFormData?.notes ?? prev.notes,
+      paymentMethod: draftFormData?.paymentMethod ?? prev.paymentMethod,
+      paymentMethos: draftFormData?.paymentMethod ?? prev.paymentMethods,
+      invoiceType: draftFormData?.invoiceType ?? prev.invoiceType,
+      phone1: draftFormData?.phone1 ?? prev.phone1,
+      newPhone: draftFormData?.newPhone ?? prev.newPhone,
+      optionalPhone: draftFormData?.optionalPhone ?? prev.optionalPhone,
+      address1: draftFormData?.address1 ?? prev.address1,
+      newAddress: draftFormData?.newAddress ?? prev.newAddress,
+      optionalAddress: draftFormData?.optionalAddress ?? prev.optionalAddress,
+      warehouseName: draftFormData?.warehouseName ?? prev.warehouseName,
+    }));
+    
+
+  }, [draftFormData, setFormData]);
 
   return (
     <>

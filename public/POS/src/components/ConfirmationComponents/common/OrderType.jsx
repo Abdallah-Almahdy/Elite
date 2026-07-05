@@ -6,6 +6,7 @@ import { fetchConfigs } from "../../../store/reducers/settingSlice";
 export default function OrderType({ selectedOrder, setSelectedOrder }) {
   const dispatch = useDispatch();
   const { formData, setFormData } = useContext(FormDataContext);
+  const permissions = useSelector((state)=>state?.setting?.permissions);
   // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
@@ -69,7 +70,7 @@ export default function OrderType({ selectedOrder, setSelectedOrder }) {
           {types?.map((type, index) => (
             <li key={index} className="flex-1">
               <button
-                disabled={!userSettings?.invoiceTypeChangeAuth}
+                disabled={!permissions["pos.InvoiceTypeChangeAuth"]}
                 onClick={() => handleInvoiceChange(type)}
                 className={`
                   w-full py-1.5 transition-all duration-150 

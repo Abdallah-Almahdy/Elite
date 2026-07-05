@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Auth\Events\Registered;
 use App\Http\Resources\userDataResource;
+use App\Models\userProfile;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -44,16 +45,14 @@ class AuthController extends Controller
                     'password' => Hash::make($validated['password']),
                 ]);
 
-                CustomerInfo::create([
-                    'user_id'   => $user->id,
-                    'firstName' => $validated['firstName'],
-                    'lastName'  => $validated['lastName'],
-                    'email'     => $validated['email'],
-                    'age' => isset($validated['birthDate'])
-                        ? Carbon::parse($validated['birthDate'])->age
-                        : null,
+                userProfile::create([
+                    'user_id' => $user->id,
+                    'first_name' => $validated['firstName'],
+                    'last_name' => $validated['lastName'],
+                    'phone_number' => $validated['email'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'age' => Carbon::parse($validated['birthDate'])->age ?? null,
                 ]);
-
                 return $user;
             });
 
@@ -142,50 +141,6 @@ class AuthController extends Controller
     }
 
 
-
-    public function update_user_data(Request $request)
-    {
-
-        $user = $request->user();
-
-        $user_info = CustomerInfo::where("user_id",  $user->id)->first();
-
-        $user_info->update($request->except('profileImage'));
-
-        if ($request->hasFile('profileImage'))
-        {
-            if (!empty($user_info->profileImage))
-            {
-                $oldPath = public_path('uploads/profile_photo/' . $user_info->profileImage);
-                if (File::exists($oldPath)) {
-                    File::delete($oldPath);
-                }
-            }
-
-            $newFileName = 'user_' . $user->id . '.' . $request->profileImage->getClientOriginalExtension();
-            $request->profileImage->move(public_path('uploads/profile_photo'), $newFileName);
-
-            $user_info->profileImage = $newFileName;
-        }
-        $user_info->save();
-
-        return new userDataResource($user_info);
-    }
-
-
-
-
-    public function get_user_data(Request $request)
-    {
-
-        $user = $request->user();
-
-        $user_info = CustomerInfo::where("user_id",  $user->id)->first();
-
-        return new userDataResource($user_info);
-    }
-
-
     public function CompanyData(Request $request)
     {
 
@@ -207,33 +162,6 @@ class AuthController extends Controller
 
 
 
-
-    public function getUsersInfo(Request $request)
-    {
-        $users = User::with('customerInfo')->get();
-
-        return response()->json([
-            'users' => $users->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'is_admin' => $user->is_admin,
-                    'customer_info' => $user->customerInfo ? [
-                            'phone' => $user->customerInfo->phonenum,
-                            'phone2' => $user->customerInfo->phonenum2,
-                            'address1' => trim($user->customerInfo->addressCountry . ' ' . $user->customerInfo->addresscity . ' ' . $user->customerInfo->addressstreet . ' ' . $user->customerInfo->addressbuildingNumber . ' ' . $user->customerInfo->addressfloorNumber . ' ' . $user->customerInfo->addressApartmentNumber),
-                            'address2' => trim($user->customerInfo->addressCountry2 . ' ' . $user->customerInfo->addresscity2 . ' ' . $user->customerInfo->addressstreet2 . ' ' . $user->customerInfo->addressbuildingNumber2 . ' ' . $user->customerInfo->addressfloorNumber2 . ' ' . $user->customerInfo->addressApartmentNumber2),
-
-                    ] : null,
-                ];
-            }),
-
-            'message' => 'Users fetched successfully',
-            'status' => 'success',
-        ], 200);
-    }
-
     public function speacialRegister(Request $request)
     {
 
@@ -246,24 +174,21 @@ class AuthController extends Controller
             "street" => "required|string|max:255",
         ]);
 
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->phonenum,
             'password' => Hash::make($request->phonenum),
         ]);
 
-        CustomerInfo::create([
-            'user_id'   => $user->id,
-            'firstName' => $request->name,
-            'lastName'  => '',
-            'phonenum'  => $request->phonenum,
-            'email'    => $request->phonenum,
-            'addressCountry' => $request->Country,
-            'addresscity' => $request->city,
-            'addressstreet' => $request->street,
-        ]);
 
+
+
+        $userProfile = userProfile::create([
+            'user_id' => $user->id,
+            'first_name' => $request->name,
+            'last_name' => "",
+            'phone_number' => $request->phonenum,
+        ]);
 
         return response()->json([
             'user' => $user,
@@ -284,7 +209,34 @@ class AuthController extends Controller
         ], 200);
     }
 
-  
+
+
+    public function getUsersInfo(Request $request)
+    {
+        $users = User::with(['userProfile', 'userAddresses'])->get();
+
+        return response()->json([
+            'users' => $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'is_admin' => $user->is_admin,
+                    'customer_info' => $user->userProfile ? [
+                        'phone' => $user->userProfile->phone_number,
+                        'phone2' => $user->userProfile->phone_number2,
+                        'address1' => trim($user->userAddresses->first()->addressCountry . ' ' . $user->userAddresses->first()->addresscity . ' ' . $user->userAddresses->first()->addressstreet . ' ' . $user->userAddresses->first()->addressbuildingNumber . ' ' . $user->userAddresses->first()->addressfloorNumber . ' ' . $user->userAddresses->first()->addressApartmentNumber),
+                        'address2' => trim($user->userAddresses->get(1)->addressCountry2 . ' ' . $user->userAddresses->get(1)->addresscity2 . ' ' . $user->userAddresses->get(1)->addressstreet2 . ' ' . $user->userAddresses->get(1)->addressbuildingNumber2 . ' ' . $user->userAddresses->get(1)->addressfloorNumber2 . ' ' . $user->userAddresses->get(1)->addressApartmentNumber2),
+                    ] : null,
+                ];
+            }),
+
+            'message' => 'Users fetched successfully',
+            'status' => 'success',
+        ], 200);
+    }
+
+
 }
 
 

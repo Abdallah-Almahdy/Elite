@@ -17,7 +17,7 @@ class Order extends Model
         'totalPrice',
         'address',
         'phoneNumber',
-        'status',
+        
         'payment_method',
         'promo_code_id',
         'order_type',

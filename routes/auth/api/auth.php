@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-
+use App\Http\Controllers\Api\UserController;
 
 // auth
 // Registration route
@@ -19,13 +19,15 @@ Route::group(['middleware' => 'auth:sanctum'], function ()
     Route::get('get_user_data', [AuthController::class, 'get_user_data']);
     Route::post('update_user_data', [AuthController::class, 'update_user_data']);
     Route::post('send_user_photo', [AuthController::class, 'send_user_photo']);
-
+    Route::get('/user', [UserController::class, 'user']);
+    Route::post('/user/profile', [UserController::class, 'updateUserProfile']);
+    Route::get('/user/addresses', [UserController::class, 'getUserAddresses']);
+    Route::post('/user/addresses', [UserController::class, 'createUserAddresses']);
+    Route::post('/user/addresses/{addressId}', [UserController::class, 'updateUserAddresses']);
+    Route::delete('/user/addresses/{addressId}', [UserController::class, 'deleteUserAddresses']);
 });
 
 
 // end auth
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');

@@ -82,7 +82,7 @@ class InvoiceService
             }
 
             $price = $unit->pivot->sallprice;
-        
+
 
             if ($product->is_stock) {
 
@@ -155,6 +155,7 @@ class InvoiceService
         foreach ($warehouseUpdates as $productId => $qty) {
 
             $warehouseProduct = $products[$productId];
+            // عايز نشوف البشمهندس عايز يعمل اي في الحته دي
 
             if ($warehouseProduct->quantity < $qty) {
                 throw new Exception("Insufficient stock");
@@ -167,7 +168,7 @@ class InvoiceService
     {
 
         return Invoice::create([
-            'address'    => $data['address'],
+            'address'    => $data['address'] ?? null,
             'cashier_id' => 1,
             'shift_id'   => $shift->id,
             'safe_id'    => $shift->safe_id,

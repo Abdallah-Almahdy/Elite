@@ -93,6 +93,15 @@ class User extends Authenticatable
         return $this->HasMany(Order::class);
     }
 
+    public function userProfile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class, 'user_id');
+    }
+    public function userAddresses(): HasMany
+    {
+        return $this->hasMany(userAddress::class, 'user_id');
+    }
+
     public function customerInfo(): HasOne
     {
         return $this->hasOne(CustomerInfo::class, 'user_id');

@@ -35,15 +35,7 @@
 
                     </li>
                 @endcan
-                @can('config.update')
-                    <li class="nav-item mb-1">
-                        <a href="{{ route('pos.printer-settings') }}"
-                            class="nav-link {{ Request::is('dashboard/invoice-settings/printer-settings*') ? 'bg-success' : '' }}">
-                            <i class="nav-icon fas fa-cog ml-2"></i>
-                            <p>اعدادات المستخدم</p>
-                        </a>
-                    </li>
-                @endcan
+
 
                 <li class="nav-item has-treeview">
 
@@ -73,7 +65,7 @@
                                         <a href="{{ route('pos.invoice-settings-general') }}"
                                             class="nav-link {{ Request::is('dashboard/invoice-settings/invoice-settings*') ? 'bg-success' : '' }}">
                                             <i class="nav-icon fas fa-cog ml-2"></i>
-                                            <p>اعدادات الفاتورة العامة</p>
+                                            <p>اعدادات العامة</p>
                                         </a>
                                     </li>
                                 @endcan
