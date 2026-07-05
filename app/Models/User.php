@@ -95,7 +95,7 @@ class User extends Authenticatable
 
     public function userProfile(): HasOne
     {
-        return $this->hasOne(UserProfile::class, 'user_id');
+        return $this->hasOne(userProfile::class, 'user_id');
     }
     public function userAddresses(): HasMany
     {
