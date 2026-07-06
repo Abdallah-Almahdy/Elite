@@ -19,13 +19,13 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 // scan barcode
 
 
-
+Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
+Route::get('/permissions', [permissionsController::class, 'userPermissions']);
 
 
 Route::middleware('auth:web', 'web')->group(function () {
 
 
-    Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 
 
     Route::get('/userWarehouseSettings', [systemSettingsController::class, 'userWarehouseSettings']);
@@ -55,7 +55,7 @@ Route::middleware('auth:web', 'web')->group(function () {
     Route::get('/invoices', [InvoiceController::class, 'index']);
     Route::post('/shifts/close', [ShiftController::class, 'close']);
 
-    Route::get('/permissions', [permissionsController::class, 'userPermissions']);
+
     Route::post('/permissions', [permissionsController::class, 'edit']);
 
     Route::get('/invice-config', [InvoiceController::class, 'userInvioceConfig']);
