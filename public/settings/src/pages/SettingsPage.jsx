@@ -9,14 +9,12 @@ import notify from "../hooks/Notification";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchConfigs,
-  fetchInvoicePrintersConfig,
   fetchSectionsPrintersConfig,
   fetchWarehouseNames,
   sendConfigs,
   sendInvoicePrintersConfig,
   sendInvoiceWarehouseName,
   sendSectionsPrintersConfig,
-  sendUserWarehouseConfig,
 } from "../store/reducers/settingSlice";
 import { fetchAdmin } from "../store/reducers/adminSlice";
 import SectionsPrinterSettings from "../components/settings/printer/SectionsPrinterSettings";
@@ -33,6 +31,8 @@ import { useScreensPermissions } from "../contexts/ScreensPermissionsContext";
 import InvoiceTypeSettings from "../components/settings/general/InvoiceTypeSettings";
 import { useScreenSettingsPreference } from "../contexts/ScreenSettingsPreferenceContext";
 import useScreenSettingsPreferenceLogic from "../hooks/settings/useScreenSettingsPreferenceLogic";
+import { fetchCategories } from "../store/reducers/productsSlice";
+import LoadingSpinner from "../components/ui/common/LoadingSpinner";
 
 export default function SettingsPage() {
   const dispatch = useDispatch();
@@ -46,9 +46,14 @@ export default function SettingsPage() {
   const sectionsPrintersConfig = useSelector(
     (state) => state?.setting?.sectionsPrintersConfig,
   );
+  const loading = useSelector((state)=> state?.setting?.loading)
+
+    const categories = useSelector((state) => state?.product?.categories || []);
+  
 
   const [availablePrinters, setAvailablePrinters] = useState([]);
   const [viewSectionsComponent, setViewSectionsComponent] = useState(true);
+  const [isUserMode, setIsUserMode] = useState(false);
   const [activeTab, setActiveTab] = useState("invoice");
 
   const {
@@ -208,7 +213,7 @@ export default function SettingsPage() {
     const payload = {
       type: "system",
       defaultInvoiceType: invoiceMapping[defaultInvoiceType],
-      allowedInvoiceType: mappedAllowedInvoiceType,
+      allowedInvoiceTypes: mappedAllowedInvoiceType,
       defaultPaymentMethod: paymentMapping[defaultPaymentMethod],
       allowedPaymentMethods: mappedAllowedPaymentMethods,
       defaultWarehouseName: defaultWarehouseName,
@@ -223,7 +228,7 @@ export default function SettingsPage() {
       updateInvoiceSettings(payload);
       notify("تم حفظ الاعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
   const handleInvoiceCancel = () => {
@@ -264,7 +269,7 @@ export default function SettingsPage() {
       // updateInvoiceSettings(payload);
       notify("تم حفظ الاعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
 
@@ -289,7 +294,7 @@ export default function SettingsPage() {
       updateInvoiceSettings(payload);
       notify("تم حفظ الاعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
   const handleInvoiceWarehouseCancel = () => {
@@ -301,6 +306,7 @@ export default function SettingsPage() {
   const handleInvoicePrintersSubmit = async () => {
     const payload = {
       type: "system",
+      //user_id: screenSettings?.userId,
       cashierPrinterName: printerName,
       allowSaveWithoutPrint: saveNoPrintAuth === true ? 1 : 0,
       barcodePrinterName: barcodePrinterName,
@@ -320,16 +326,20 @@ export default function SettingsPage() {
           numOfCopies: invoiceNum,
           isActive: invoicePrintAuth === true ? 1 : 0,
         },
-      ],
+      ].filter((item)=> item?.isActive === 1),
     };
     try {
+      if((receiptPrintAuth && (receiptModelName.length === 0 || receiptPrinterName.length === 0)) || (invoicePrintAuth && (invoiceModelName.length === 0 || invoicePrinterName.length === 0))){
+        notify("اعدادات طابعة الفاتورة اجبارية", "error");
+        return;
+      }
       await dispatch(
         sendInvoicePrintersConfig({ invoicePrintersConfig: payload }),
       ).unwrap();
       // updateInvoiceSettings(payload);
       notify("تم حفظ الاعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+     notify(err.message, "error");
     }
   };
   const handleInvoicePrintersCancel = () => {
@@ -363,12 +373,14 @@ export default function SettingsPage() {
     setInvoicePrintAuth(visibleReceipt?.isActive === 1 ? true : false);
   };
 
-  useEffect(() => {
-    dispatch(fetchInvoicePrintersConfig());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   //dispatch(fetchInvoicePrintersConfig());
+  // }, [dispatch]);
 
   useEffect(() => {
     const payload = {
+      userId: screenSettings?.userId,
+      userName: screenSettings?.userName,
       defaultInvoiceType: invoiceMapping[defaultInvoiceType],
       allowedInvoiceType: mappedAllowedInvoiceType,
       defaultPaymentMethod: paymentMapping[defaultPaymentMethod],
@@ -423,6 +435,91 @@ export default function SettingsPage() {
     sectionRows,
     defaultWarehouseName,
   ]);
+      const currentActiveSection =
+    isUserMode && screenSettings ? screenSettings?.sectionName : sectionName;
+
+      const currentViewableSectionsPermissions =
+    screenSettings?.viewableSectionsPermissions || [];
+
+  const allowedSectionsNames =
+    isUserMode && screenSettings?.allowedSectionsNames?.length > 0
+      ? screenSettings.allowedSectionsNames
+      : currentViewableSectionsPermissions && currentViewableSectionsPermissions.length > 0
+        ? categories.filter((c) => currentViewableSectionsPermissions.includes(c.id))
+        : currentActiveSection
+          ? categories.filter((c) => c.name === currentActiveSection)
+          : [];
+  const allowedSectionsNamesPOS =
+    isUserMode && screenSettings?.allowedSectionsNamesPOS?.length > 0
+      ? screenSettings.allowedSectionsNamesPOS
+      : allowedSectionsNames && allowedSectionsNames.length > 0
+        ? categories.filter((c) => allowedSectionsNames.includes(c.id))
+        : currentActiveSection
+          ? categories.filter((c) => c.name === currentActiveSection)
+          : [];
+
+      useEffect(() => {
+    dispatch(fetchCategories());
+      dispatch(fetchSectionsPrintersConfig());    
+  }, [dispatch, screenSettings?.userId]);
+    useEffect(() => {
+    // if (hasLocalChanges) {
+    //   setSectionRows(saved.sectionRows);
+    //   return;
+    // }
+  
+    const filteredSections = !isUserMode
+      ? sectionsPrintersConfig   : 
+      sectionsPrintersConfig.filter((item) =>
+          allowedSectionsNames.some((allowed) => allowed.id === item.id)
+        )
+  
+    setSectionRows(
+      filteredSections.map((item) => ({
+        section_id: item.id,
+        printer_name: item.printerSettings?.[0]?.printerName || "",
+      }))
+    );
+  }, [sectionsPrintersConfig]);
+  
+   useEffect(() => {
+
+      if (!sectionsPrintersConfig?.length) return;
+  
+      setSectionRows(
+        sectionsPrintersConfig.map((item) => ({
+          section_id: item.id,
+          printer_name: item.printerSettings?.[0]?.printerName || "",
+        }))
+      );
+    
+  }, [
+    isUserMode,
+    sectionsPrintersConfig,
+    categories,
+  ]);
+  
+    useEffect(() => {
+      if (
+        categories &&
+        categories.length > 0 &&
+        currentViewableSectionsPermissions.length === 0
+      ) {
+        const allCategoryIds = categories.map((cat) => cat.id);
+  
+        setScreenSettings((prev) => ({
+          ...prev,
+          viewableSectionsPermissions: allCategoryIds,
+          allowedSectionsNamesPOS: categories.filter((cat) =>
+            allCategoryIds.includes(cat?.id),
+          ),
+        }));
+      }
+    }, [
+      categories,
+      currentViewableSectionsPermissions.length,
+      setScreenSettings,
+    ]);
 
   useEffect(() => {
     if (
@@ -460,7 +557,16 @@ export default function SettingsPage() {
     <div className="inset-0 z-50 bg-slate-50 w-full min-h-screen flex flex-col mx-auto lg:flex-row p-2 gap-x-10 pt-7">
       {/* Right Section (General Settings) */}
       <div className="w-full md:w-[90%] lg:w-[60%] mx-auto  flex flex-col gap-y-3">
-        <h1 className="text-center font-bold text-2xl pb-3">
+        
+        
+
+        {loading ? (
+          <div className="w-full h-[90vh] flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <>
+          <h1 className="text-center font-bold text-2xl pb-3">
           الاعدادات العامة
         </h1>
         <div className="w-full mx-auto mb-6 bg-slate-200/60 p-1 rounded-xl flex gap-1 border border-slate-200">
@@ -510,9 +616,9 @@ export default function SettingsPage() {
             <span>اعدادات طابعات الفاتورة</span>
           </button>
         </div>
-
-        {activeTab === "invoice" && (
+          {activeTab === "invoice" && (
           <>
+          
             <InvoiceTypeSettings
               defaultInvoiceType={defaultInvoiceType}
               setDefaultInvoiceType={setDefaultInvoiceType}
@@ -566,6 +672,8 @@ export default function SettingsPage() {
               setSectionId={setSectionId}
               sectionRows={sectionRows}
               setSectionRows={setSectionRows}
+              allowedSectionsNames={allowedSectionsNames}
+              allowedSectionsNamesPOS={allowedSectionsNamesPOS}
             />
             <div className="w-full flex justify-between mt-10 md:mt-5 lg:mt-4 px-5">
               <button
@@ -673,6 +781,8 @@ export default function SettingsPage() {
                 حفظ الاعدادات
               </button>
             </div>
+          </>
+        )}
           </>
         )}
       </div>

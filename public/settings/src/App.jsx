@@ -38,9 +38,9 @@ export default function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    dispatch(fetchClientsNames());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchClientsNames());
+  // }, [dispatch]);
 
   return (
     <>

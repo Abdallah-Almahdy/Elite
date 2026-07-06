@@ -10,6 +10,7 @@ import { saveUser } from "../store/reducers/userSlice";
 import { useDispatch } from "react-redux";
 import Select from "react-select";
 import notify from "../hooks/Notification";
+import { useProducts } from "../contexts/ProductsContext";
 //  import { fetchClientsNames } from "../store/reducers/userSlice";
 const govOptions = [
   { value: "القاهرة", label: "القاهرة" },
@@ -41,6 +42,8 @@ const govOptions = [
 
 export default function NewClientForm({ setIsPopupOpen }) {
   const { formData, setFormData } = useContext(FormDataContext);
+    const { setDraftFormData } = useProducts();
+  
   const dispatch = useDispatch();
   const clientNameInputRef = useRef(null);
   const phoneInputRef = useRef(null);
@@ -120,6 +123,15 @@ export default function NewClientForm({ setIsPopupOpen }) {
         formData.append("apartment", values.apartment);
         dispatch(saveUser(formData));
         setFormData((prev) => ({
+          ...prev,
+          clientName: formik.values.clientName,
+          phone1: formik.values.phone1,
+          optionalPhone: formik.values.optionalPhone,
+          // address1: formik.values.address1,
+          address1: formatAddress(),
+          optionalAddress: formik.values.optionalAddress,
+        }));
+        setDraftFormData((prev) => ({
           ...prev,
           clientName: formik.values.clientName,
           phone1: formik.values.phone1,

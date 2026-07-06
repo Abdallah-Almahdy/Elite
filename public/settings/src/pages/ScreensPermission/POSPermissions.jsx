@@ -11,7 +11,7 @@ import { fetchAdmin } from "../../store/reducers/adminSlice";
 
 export default function POSPermissions() {
   const admin = useSelector((state) => state?.admin?.admin);
-  const permissions = useSelector((state)=> state?.setting?.permissions); 
+  //const permissions = useSelector((state)=> state?.setting?.permissions); 
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -129,9 +129,9 @@ export default function POSPermissions() {
     },
   ];
 
-  useEffect(() => {
-      dispatch(fetchAdmin());
-    }, [dispatch]);
+  // useEffect(() => {
+  //     dispatch(fetchAdmin());
+  //   }, [dispatch]);
 
   useEffect(() => {
     const screensSettingSubmit = () => {

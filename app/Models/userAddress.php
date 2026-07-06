@@ -9,6 +9,7 @@ class userAddress extends Model
     protected $table = 'user_addresses';
     protected $fillable = [
         'user_id',
+        'address_governorate',
         'delivery_place_id',
         'address_city',
         'address_street',
@@ -22,5 +23,6 @@ class userAddress extends Model
 
     protected $casts = [
         'is_default' => 'boolean',
+        'delivery_place_id' => 'int'
     ];
 }

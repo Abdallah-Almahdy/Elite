@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { BsPrinterFill } from "react-icons/bs";
 import { IoIosArrowDown } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories } from "../../../store/reducers/productsSlice";
-import { fetchSectionsPrintersConfig, fetchUserSectionsConfig } from "../../../store/reducers/settingSlice";
 import { useScreensPermissions } from "../../../contexts/ScreensPermissionsContext";
 import { FaMinusCircle } from "react-icons/fa";
 import { useInvoiceSettings } from "../../../contexts/InvoiceSettingsContext";
@@ -21,6 +19,8 @@ export default function SectionsPrinterSettings({
   sectionRows,
   setSectionRows,
   isUserMode,
+  allowedSectionsNames,
+  allowedSectionsNamesPOS,
 }) {
   const categories = useSelector((state) => state?.product?.categories || []);
   const sectionsPrintersConfig = useSelector(
@@ -37,35 +37,10 @@ export default function SectionsPrinterSettings({
   // const hasLocalChanges =
   // saved?.sectionRows && saved.sectionRows.length > 0;
 
-  useEffect(() => {
-  dispatch(fetchCategories());
-    dispatch(fetchSectionsPrintersConfig());
 
-  if (isUserMode) {
-    dispatch(fetchUserSectionsConfig());
-  }
-  
-}, [dispatch, isUserMode]);
 
-  const currentActiveSection =
-    isUserMode && screenSettings ? screenSettings?.sectionName : sectionName;
 
-  const allowedSectionsNames =
-    isUserMode && screenSettings?.allowedSectionsNames?.length > 0
-      ? screenSettings.allowedSectionsNames
-      : viewableSectionsPermissions && viewableSectionsPermissions.length > 0
-        ? categories.filter((c) => viewableSectionsPermissions.includes(c.id))
-        : currentActiveSection
-          ? categories.filter((c) => c.name === currentActiveSection)
-          : [];
-  const allowedSectionsNamesPOS =
-    isUserMode && screenSettings?.allowedSectionsNamesPOS?.length > 0
-      ? screenSettings.allowedSectionsNamesPOS
-      : allowedSectionsNames && allowedSectionsNames.length > 0
-        ? categories.filter((c) => allowedSectionsNames.includes(c.id))
-        : currentActiveSection
-          ? categories.filter((c) => c.name === currentActiveSection)
-          : [];
+
 
   // useEffect(() => {
   //   const storeSectionsPrintersConfig = async () => {
@@ -94,73 +69,7 @@ export default function SectionsPrinterSettings({
   //   storeSectionsPrintersConfig();
   // }, [sectionId]);
 
-  useEffect(() => {
-  // if (hasLocalChanges) {
-  //   setSectionRows(saved.sectionRows);
-  //   return;
-  // }
 
-  const filteredSections = !isUserMode || userSectionsConfig.length === 0
-    ? sectionsPrintersConfig   : 
-    sectionsPrintersConfig.filter((item) =>
-        allowedSectionsNames.some((allowed) => allowed.id === item.id)
-      )
-
-  setSectionRows(
-    filteredSections.map((item) => ({
-      section_id: item.id,
-      printer_name: item.printerSettings?.[0]?.printerName || "",
-    }))
-  );
-}, [sectionsPrintersConfig]);
-
- useEffect(() => {
-  if (isUserMode) {
-    if (categories.length === 0) return;
-    if(userSectionsConfig?.length === 0){
-      if (!sectionsPrintersConfig?.length) return;
-
-    setSectionRows(
-      sectionsPrintersConfig.map((item) => ({
-        section_id: item.id,
-        printer_name: item.printerSettings?.[0]?.printerName || "",
-      }))
-    );
-    }else{
-      setScreenSettings((prev) => ({
-      ...prev,
-      allowedSectionsNames: categories.filter((cat) =>
-        userSectionsConfig.allowdSectionsId?.includes(cat.id)
-      ),
-      allowedSectionsNamesPOS: categories.filter((cat) =>
-        userSectionsConfig.seenSectionsId?.includes(cat.id)
-      ),
-    }));
-
-    setSectionRows(
-      userSectionsConfig.sectionPrinters?.map((item) => ({
-        section_id: item.sectionId,
-        printer_name: item.printerName,
-      })) ?? []
-    );
-    }
-    
-  } else {
-    if (!sectionsPrintersConfig?.length) return;
-
-    setSectionRows(
-      sectionsPrintersConfig.map((item) => ({
-        section_id: item.id,
-        printer_name: item.printerSettings?.[0]?.printerName || "",
-      }))
-    );
-  }
-}, [
-  isUserMode,
-  userSectionsConfig,
-  sectionsPrintersConfig,
-  categories,
-]);
 
   // useEffect(() => {
   //   const filteredSections = isUserMode
@@ -213,9 +122,6 @@ export default function SectionsPrinterSettings({
     );
   };
 
-  useEffect(()=>{
-console.log(userSectionsConfig)
-  }, [userSectionsConfig])
 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg" dir="rtl">

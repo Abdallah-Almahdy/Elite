@@ -19,7 +19,7 @@ import { deleteDraft } from "../store/reducers/draftSlice";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../contexts/ProductsContext";
 import notify from "../hooks/Notification";
-import { fetchConfigs } from "../store/reducers/settingSlice";
+import { fetchConfigs, fetchPermissions } from "../store/reducers/settingSlice";
 
 export default function OrderDetailsPage() {
   const dispatch = useDispatch();
@@ -27,9 +27,9 @@ export default function OrderDetailsPage() {
     (state) => state?.setting?.invoiceSettings,
   );
   const warehouseName = useSelector((state) => state?.setting?.warehouseName);
-  useEffect(() => {
-    dispatch(fetchConfigs());
-  }, [dispatch]);
+   useEffect(()=>{
+     dispatch(fetchPermissions());
+   }, [])
   const paymentMapping = {
     cash: "كاش",
     credit_card: "بطاقة ائتمان",
@@ -63,12 +63,24 @@ export default function OrderDetailsPage() {
   const { selectedProducts, total, setSelectedProducts } =
     useSelectedProducts();
   const { formData, setFormData } = useContext(FormDataContext);
-  const { setDraftFormData, setInvSerial } = useProducts();
+  const { setDraftFormData, setInvSerial, handleFreeze } = useProducts();
   const { handleNew } = useProducts();
 
   const { subtotal } = useCalculateTotals(selectedProducts);
+    const [draftID, setDraftID] = useState(1)
+
 
   useNetworkStatus();
+
+   useEffect(() => {
+    
+    setDraftID(JSON.parse(sessionStorage.getItem("draftFormData"))?.id)
+
+     if(JSON.parse(sessionStorage.getItem("draftFormData"))?.id === formData?.serialInput){
+      handleFreeze();
+     }
+       
+  }, [selectedProducts, formData, total, handleFreeze, draftID] );
 
   useEffect(() => {
     const handleOnline = () => dispatch(syncOfflineOrders());
@@ -187,10 +199,9 @@ export default function OrderDetailsPage() {
             dateInput: date || "",
             clientName: "",
             notes: "",
-            paymentMethod:
-              paymentMapping[invoiceSettings?.defaultPaymentMethod],
-            paymentMethods: {},
-            invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+              paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
             phone1: "",
             newPhone: "",
             optionalPhone: "",
@@ -204,10 +215,9 @@ export default function OrderDetailsPage() {
             dateInput: date || "",
             clientName: "",
             notes: "",
-            paymentMethod:
-              paymentMapping[invoiceSettings?.defaultPaymentMethod],
-            paymentMethods: {},
-            invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+            paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
             phone1: "",
             newPhone: "",
             optionalPhone: "",
@@ -303,9 +313,9 @@ export default function OrderDetailsPage() {
           dateInput: date || "",
           clientName: "",
           notes: "",
-          paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-          paymentMethods: {},
-          invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+          paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
           phone1: "",
           newPhone: "",
           optionalPhone: "",
@@ -319,9 +329,9 @@ export default function OrderDetailsPage() {
           dateInput: date || "",
           clientName: "",
           notes: "",
-          paymentMethod: "كاش",
-          paymentMethods: {},
-          invoiceType: "تيك أواى",
+          paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
           phone1: "",
           newPhone: "",
           optionalPhone: "",

@@ -9,9 +9,9 @@ export default function WarehouseSettings() {
   const warehouseNames = useSelector((state) => state?.setting?.warehouseNames);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchWarehouseNames());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchWarehouseNames());
+  // }, [dispatch]);
 
   const { defaultWarehouseName, setDefaultWarehouseName } =
     useSettingsPreference();

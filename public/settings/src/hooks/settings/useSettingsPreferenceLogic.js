@@ -27,11 +27,11 @@ export default function useSettingsPreferenceLogic() {
   const mainWarehouse = useSelector((state) => state?.setting?.mainWarehouse);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchConfigs());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchConfigs());
+  // }, [dispatch]);
 
-  const savedData = JSON.parse(localStorage.getItem("Invoice Settings"));
+  const savedData = JSON.parse(sessionStorage.getItem("Invoice Settings"));
 
   const [defaultInvoiceType, setDefaultInvoiceType] = useState(
     invoiceMappingReversed[savedData?.defaultInvoiceType] || "تيك أواى",
@@ -140,7 +140,7 @@ export default function useSettingsPreferenceLogic() {
       sectionPrinterName,
       // allowedWareHouseName,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(statePayload));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(statePayload));
   }, [
     defaultInvoiceType,
     allowedInvoiceType,

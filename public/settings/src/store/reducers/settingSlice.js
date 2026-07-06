@@ -26,7 +26,7 @@ export const fetchPermissions = createAsyncThunk(
   "settings/fetchPermissions",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/permissions");
+      const response = await api.get(`/permissions`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -73,7 +73,7 @@ export const fetchConfigs = createAsyncThunk(
   "settings/fetchConfigs",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/inviceConfigSystemSettings");
+      const response = await api.get(`/inviceConfigSystemSettings`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -83,9 +83,9 @@ export const fetchConfigs = createAsyncThunk(
 
 export const fetchUserConfigs = createAsyncThunk(
   "settings/fetchUserConfigs",
-  async (_, { rejectWithValue }) => {
+  async ({id}, { rejectWithValue }) => {
     try {
-      const response = await api.get("/invice-config");
+      const response = await api.get(`/invice-config?user_id=${id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -112,7 +112,7 @@ export const fetchSectionsPrintersConfig = createAsyncThunk(
   "settings/fetchSectionsPrintersConfig",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/sectionsPrinterSettings");
+      const response = await api.get(`/sectionsPrinterSettings`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -137,9 +137,9 @@ export const sendUserSectionsConfig = createAsyncThunk(
 
 export const fetchUserSectionsConfig = createAsyncThunk(
   "settings/fetchUserSectionsConfig",
-  async (_, { rejectWithValue }) => {
+  async ({id}, { rejectWithValue }) => {
     try {
-      const response = await api.get("/sectionUserSettings");
+      const response = await api.get(`/sectionUserSettings?user_id=${id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -166,7 +166,7 @@ export const fetchInvoicePrintersConfig = createAsyncThunk(
   "settings/fetchInvoicePrintersConfig",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/invicePrintersSystemSettings");
+      const response = await api.get(`/invicePrintersSystemSettings`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -176,9 +176,9 @@ export const fetchInvoicePrintersConfig = createAsyncThunk(
 
 export const fetchUserPrintersConfig = createAsyncThunk(
   "settings/fetchUserPrintersConfig",
-  async (_, { rejectWithValue }) => {
+  async ({id}, { rejectWithValue }) => {
     try {
-      const response = await api.get("/invicePrintersUserSettings");
+      const response = await api.get(`/invicePrintersUserSettings?user_id=${id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -205,7 +205,7 @@ export const fetchWarehouseNames = createAsyncThunk(
   "settings/fetchWarehouseNames",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/getWarehouses");
+      const response = await api.get(`/getWarehouses`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -230,9 +230,9 @@ export const sendUserWarehouseConfig = createAsyncThunk(
 
 export const fetchUserWarehouseConfig = createAsyncThunk(
   "settings/fetchUserWarehouseConfig",
-  async (_, { rejectWithValue }) => {
+  async ({id}, { rejectWithValue }) => {
     try {
-      const response = await api.get("/userWarehouseSettings");
+      const response = await api.get(`/userWarehouseSettings?user_id=${id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -246,6 +246,10 @@ const settingSlice = createSlice({
   reducers: {
     resetUserPermissions: (state) => {
       state.userPermissions = [];
+      state.userConfigs = [];
+      state.userSectionsConfig = [];
+      state.userWarehouseConfig = [];
+      state.userPrintersConfig = [];
     },
   },
   extraReducers: (builder) => {
@@ -269,7 +273,7 @@ const settingSlice = createSlice({
       .addCase(fetchUserPermissions.fulfilled, (state, action) => {
         state.loading = false;
         state.userPermissions = action?.payload?.permissions;
-        state.selectedUser = action?.meta?.arg;
+        //state.selectedUser = action?.meta?.arg;
       })
       .addCase(fetchUserPermissions.rejected, (state, action) => {
         state.loading = false;

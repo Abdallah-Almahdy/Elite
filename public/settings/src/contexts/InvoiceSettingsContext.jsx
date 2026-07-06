@@ -10,26 +10,26 @@ export const InvoiceSettingsProvider = ({ children }) => {
   // });
   const { screenSettings, setScreenSettings } = useScreensPermissions();
   const [invoiceSetting, setInvoiceSetting] = useState(
-    localStorage.getItem("Invoice Settings") || {},
+    sessionStorage.getItem("Invoice Settings") || {},
   );
 
   const updateInvoiceSettings = (value) => {
     if (value) {
       // setInvoiceSetting(value);
-      localStorage.setItem("Invoice Settings", JSON.stringify(value));
+      sessionStorage.setItem("Invoice Settings", JSON.stringify(value));
     }
   };
 
   const updateUserSettings = (value) => {
     if (value) {
       // setInvoiceSetting(value);
-      localStorage.setItem("User Settings", JSON.stringify(value));
+      sessionStorage.setItem("User Settings", JSON.stringify(value));
     }
   };
   const updatePrinterSettings = (value) => {
     if (value) {
       // setInvoiceSetting(value);
-      localStorage.setItem("Printer Settings", JSON.stringify(value));
+      sessionStorage.setItem("Printer Settings", JSON.stringify(value));
     }
   };
 
@@ -44,7 +44,7 @@ export const InvoiceSettingsProvider = ({ children }) => {
                 ...value,
               };
 
-        localStorage.setItem("Screens Settings", JSON.stringify(updated));
+        sessionStorage.setItem("Screens Settings", JSON.stringify(updated));
         return updated;
       });
     },

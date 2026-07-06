@@ -19,7 +19,7 @@ export const fetchClientsNames = createAsyncThunk(
   "users/fetchClientsNames",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/users");
+      const response = await api.get(`/users`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

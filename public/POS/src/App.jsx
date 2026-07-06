@@ -16,7 +16,7 @@ import {
 import { ProductsProvider, useProducts } from "./contexts/ProductsContext.jsx";
 import PrintBarcodePage from "./pages/PrintBarcodePage.jsx";
 import { ToastContainer } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import { fetchProducts } from "./store/reducers/productSlice.js";
 import { fetchCategory } from "./store/reducers/productSlice.js";
 import { fetchClientsNames } from "./store/reducers/userSlice.js";
@@ -29,6 +29,24 @@ export default function App() {
   const [draftData, setDraftData] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+
+  const paymentMapping = {
+    cash: "كاش",
+    credit_card: "بطاقة ائتمان",
+    instapay: "انستا باى",
+    wallet: "محفظة",
+    remaining: "اجل",
+  };
+
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
+
   useEffect(() => {
     dispatch(fetchCategory());
   }, [dispatch]);
@@ -71,6 +89,7 @@ return item.quantity < item.number || item.quantity < item.weight
     window.location.reload();
   };
 
+
   useEffect(() => {
     if (!draftFormData) return;
 
@@ -80,9 +99,9 @@ return item.quantity < item.number || item.quantity < item.weight
       dateInput: draftFormData?.dateInput ?? prev.dateInput,
       clientName: draftFormData?.clientName ?? prev.clientName,
       notes: draftFormData?.notes ?? prev.notes,
-      paymentMethod: draftFormData?.paymentMethod ?? prev.paymentMethod,
-      paymentMethos: draftFormData?.paymentMethod ?? prev.paymentMethods,
-      invoiceType: draftFormData?.invoiceType ?? prev.invoiceType,
+      paymentMethod:  draftFormData.paymentMethod ?? prev.paymentMethod,
+      paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
+        invoiceType:  draftFormData.invoiceType ?? prev.invoiceType,
       phone1: draftFormData?.phone1 ?? prev.phone1,
       newPhone: draftFormData?.newPhone ?? prev.newPhone,
       optionalPhone: draftFormData?.optionalPhone ?? prev.optionalPhone,
@@ -98,9 +117,9 @@ return item.quantity < item.number || item.quantity < item.weight
       dateInput: draftFormData?.dateInput ?? prev.dateInput,
       clientName: draftFormData?.clientName ?? prev.clientName,
       notes: draftFormData?.notes ?? prev.notes,
-      paymentMethod: draftFormData?.paymentMethod ?? prev.paymentMethod,
-      paymentMethos: draftFormData?.paymentMethod ?? prev.paymentMethods,
-      invoiceType: draftFormData?.invoiceType ?? prev.invoiceType,
+     paymentMethod:  draftFormData.paymentMethod ?? prev.paymentMethod,
+      paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
+        invoiceType:  draftFormData.invoiceType ?? prev.invoiceType,
       phone1: draftFormData?.phone1 ?? prev.phone1,
       newPhone: draftFormData?.newPhone ?? prev.newPhone,
       optionalPhone: draftFormData?.optionalPhone ?? prev.optionalPhone,
@@ -111,7 +130,7 @@ return item.quantity < item.number || item.quantity < item.weight
     }));
     
 
-  }, [draftFormData, setFormData]);
+  }, [draftFormData, setFormData, invoiceSettings]);
 
   return (
     <>

@@ -100,9 +100,9 @@ export const FormDataProvider = ({ children }) => {
         dateInput: draftFormData.dateInput ?? prev.dateInput,
         clientName: draftFormData.clientName ?? prev.clientName,
         notes: draftFormData.notes ?? prev.notes,
-        paymentMethod: draftFormData.paymentMethod ?? prev.paymentMethod,
+        paymentMethod:  paymentMapping[invoiceSettings?.defaultPaymentMethod] ??draftFormData.paymentMethod ?? prev.paymentMethod,
         paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
-        invoiceType: draftFormData.invoiceType ?? prev.invoiceType,
+        invoiceType:  invoiceMapping[invoiceSettings?.defaultInvoiceType ] ?? draftFormData.invoiceType ?? prev.invoiceType,
         phone1: draftFormData.phone1 ?? prev.phone1,
         newPhone: draftFormData.newPhone ?? prev.newPhone,
         optionalPhone: draftFormData.optionalPhone ?? prev.optionalPhone,
@@ -111,6 +111,23 @@ export const FormDataProvider = ({ children }) => {
         optionalAddress: draftFormData.optionalAddress ?? prev.optionalAddress,
         warehouseName: draftFormData.warehouseName ?? prev.warehouseName,
       };
+      // const updated = {
+      //   ...prev,
+      //   serialInput: savedData?.serialInput ??draftFormData.id ?? prev.serialInput,
+      //   dateInput: savedData?.dateInput ??draftFormData.dateInput ?? prev.dateInput,
+      //   clientName: savedData?.clientName ??draftFormData.clientName ?? prev.clientName,
+      //   notes: savedData?.notes ??draftFormData.notes ?? prev.notes,
+      //   paymentMethod:  savedData?.paymentMethod ??draftFormData.paymentMethod ?? prev.paymentMethod,
+      //   paymentMethods: savedData?.paymentMethods ??draftFormData.paymentMethods ?? prev.paymentMethods,
+      //   invoiceType:  savedData?.invoiceType ?? draftFormData.invoiceType ?? prev.invoiceType,
+      //   phone1: savedData?.invoiceType ??draftFormData.phone1 ?? prev.phone1,
+      //   newPhone: savedData?.phone1 ??draftFormData.newPhone ?? prev.newPhone,
+      //   optionalPhone: savedData?.optionalPhone ??draftFormData.optionalPhone ?? prev.optionalPhone,
+      //   address1: savedData?.address1 ??draftFormData.address1 ?? prev.address1,
+      //   newAddress: savedData?.newAddress ??draftFormData.newAddress ?? prev.newAddress,
+      //   optionalAddress: savedData?.optionalAddress ??draftFormData.optionalAddress ?? prev.optionalAddress,
+      //   warehouseName: savedData?.warehouseName ??draftFormData.warehouseName ?? prev.warehouseName,
+      // };
 
       // prevent state update if nothing changed
       const isSame = Object.keys(updated).every(
@@ -119,12 +136,40 @@ export const FormDataProvider = ({ children }) => {
 
       return isSame ? prev : updated;
     });
-  }, [draftFormData]);
+    // setDraftFormData((prev) => {
+    //   const updated = {
+    //     ...prev,
+    //     serialInput: draftFormData.id ?? prev.serialInput,
+    //     dateInput: draftFormData.dateInput ?? prev.dateInput,
+    //     clientName: draftFormData.clientName ?? prev.clientName,
+    //     notes: draftFormData.notes ?? prev.notes,
+    //     paymentMethod:  draftFormData.paymentMethod ?? prev.paymentMethod,
+    //     paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
+    //     invoiceType: draftFormData.invoiceType ?? prev.invoiceType,
+    //     phone1: draftFormData.phone1 ?? prev.phone1,
+    //     newPhone: draftFormData.newPhone ?? prev.newPhone,
+    //     optionalPhone: draftFormData.optionalPhone ?? prev.optionalPhone,
+    //     address1: draftFormData.address1 ?? prev.address1,
+    //     newAddress: draftFormData.newAddress ?? prev.newAddress,
+    //     optionalAddress: draftFormData.optionalAddress ?? prev.optionalAddress,
+    //     warehouseName: draftFormData.warehouseName ?? prev.warehouseName,
+    //   };
+
+    //   // prevent state update if nothing changed
+    //   const isSame = Object.keys(updated).every(
+    //     (key) => updated[key] === prev[key],
+    //   );
+
+    //   return isSame ? prev : updated;
+    // });
+  }, [draftFormData, invoiceSettings]);
 
   // Persist to session storage whenever formData changes
   React.useEffect(() => {
     sessionStorage.setItem("FormData", JSON.stringify(formData));
+
   }, [formData]);
+
 
   return (
     <FormDataContext.Provider value={{ formData, setFormData }}>

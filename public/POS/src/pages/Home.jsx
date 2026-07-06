@@ -45,6 +45,8 @@ export default function Home() {
   const loading = useSelector((state) => state.product.loading);
   const permissions = useSelector((state)=> state?.setting?.permissions);
   const currentDraft = useSelector((state)=> state.draft?.currentDraft)
+    const invoiceSettings = useSelector((state) => state.setting.invoiceSettings);
+
   const isFirstRun = useRef(true);
   const dispatch = useDispatch();
 
@@ -91,7 +93,7 @@ export default function Home() {
       handleFreeze();
      }
        
-  }, [selectedProducts, formData, total, handleFreeze, draftID] );
+  }, [selectedProducts, formData, total, handleFreeze, draftID, invoiceSettings] );
 
   
   useEffect(() => {
@@ -108,7 +110,6 @@ export default function Home() {
     );
     sessionStorage.setItem("Total", JSON.stringify(total));
   }, [selectedProducts, total]);
-  const invoiceSettings = useSelector((state) => state.setting.invoiceSettings);
   const invoiceMapping = {
     take_away: "تيك أواى",
     delvery: "دليفرى",

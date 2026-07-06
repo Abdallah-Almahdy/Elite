@@ -65,7 +65,7 @@ class UserController extends Controller
 
         $validatedData = $request->validate([
             'delivery_place_id' => 'required|exists:delivery,id',
-
+            "address_governorate" => 'required|max:255',
             'address_street' => 'string|max:255',
             'address_building' => 'string|max:255|nullable',
             'address_floor' => 'string|max:255|nullable',
@@ -90,6 +90,7 @@ class UserController extends Controller
 
         $validatedData = $request->validate([
             'delivery_place_id' => 'required|exists:delivery,id',
+            "address_governorate" => 'required',
             'address_street' => 'string|max:255',
             'address_building' => 'string|max:255|nullable',
             'address_floor' => 'string|max:255|nullable',

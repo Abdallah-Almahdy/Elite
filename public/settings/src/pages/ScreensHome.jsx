@@ -16,15 +16,18 @@ import { fetchAdmin } from "../store/reducers/adminSlice";
 import { useInvoiceSettings } from "../contexts/InvoiceSettingsContext";
 import { FaUserCog } from "react-icons/fa";
 import useSettingsPreferenceLogic from "../hooks/settings/useSettingsPreferenceLogic";
+import LoadingSpinner from "../components/ui/common/LoadingSpinner";
 
 export default function ScreensHome() {
   const [loading, setLoading] = useState(false);
   const admin = useSelector((state) => state?.admin?.admin);
-  const permissions = useSelector((state) => state?.setting?.permissions);
+  //const permissions = useSelector((state) => state?.setting?.permissions);
   const userPermissions = useSelector(
     (state) => state?.setting?.userPermissions,
   );
-  const { updateScreenSettings } = useInvoiceSettings();
+  const loadingPage = useSelector(
+    (state) => state?.user?.loading,
+  );
   const {
     userName,
     errors,
@@ -32,6 +35,7 @@ export default function ScreensHome() {
     userId,
     setUserId,
     userNameShowResult,
+    setPosShow,
   } = useScreenSettingsPreferenceLogic();
   const screens = [
     { id: 1, name: "شاشة البيع" },
@@ -61,98 +65,50 @@ export default function ScreensHome() {
   const { selectedScreens, setSelectedScreens } = useSelectedScreens();
   const { screenSettings, setScreenSettings } = useScreensPermissions();
 
-  useEffect(() => {
-    if (userName) {
-      dispatch(fetchUserPermissions({ id: userId }));
-    }
-  }, [userId]);
+  // useEffect(() => {
+  //   if (userName) {
+  //     dispatch(fetchUserPermissions({ id: screenSettings?.userId }));
+  //   }
+  // }, [dispatch, screenSettings?.userId, userName]);
 
   useEffect(() => {
     dispatch(fetchAdmin());
-  }, [dispatch]);
-  useEffect(() => {
-    const loadPermissions = async () => {
-      await dispatch(fetchPermissions());
-    };
+  }, [dispatch, screenSettings?.userId]);
+  // useEffect(() => {
+  //   const loadPermissions = async () => {
+  //     //await dispatch(fetchUserPermissions({id: screenSettings?.userId}));
+  //   };
 
-    loadPermissions();
-  }, [dispatch]);
+  //   loadPermissions();
+  // }, [dispatch, screenSettings?.userId]);
 
-  useEffect(() => {
-    if (!userPermissions) return;
+  // useEffect(() => {
+  //   if (!userPermissions) return;
 
-    setScreenSettings((prev) => {
-      if (prev !== null) return prev;
-      return {
-        userId: userName || "",
-        posShow: userPermissions?.["pos.show"] ?? true,
-        posPriceChangeAuth: userPermissions?.["pos.priceChangeAuth"] ?? true,
-        posChangeDiscount: userPermissions?.["pos.changeDiscount"] ?? true,
-        posDeleteProdWithPass:
-          userPermissions?.["pos.deleteProdWithPass"] ?? true,
-        posInvoiceTypeChangeAuth:
-          userPermissions?.["pos.InvoiceTypeChangeAuth"] ?? true,
-        posPaymentMethodChangeAuth:
-          userPermissions?.["pos.paymentMethodChangeAuth"] ?? true,
-        posSaveNoPrintAuth: userPermissions?.["pos.saveNoPrintAuth"] ?? true,
-        posEditDate: userPermissions?.["pos.editDate"] ?? true,
-        posChooseClient: userPermissions?.["pos.chooseClient"] ?? true,
-        posInvoiceFreeze: userPermissions?.["pos.InviceFreeze"] ?? true,
-        posInvoiceCall: userPermissions?.["pos.InviceCall"] ?? true,
-        posPriceChange: userPermissions?.["pos.priceChange"] ?? true,
-        posChangeTax: userPermissions?.["pos.changeTax"] ?? true,
-        posInvoiceCancel: userPermissions?.["pos.InviceCancel"] ?? true,
-        posShiftClose: userPermissions?.["pos.shiiftClose"] ?? true,
-        adShow: userPermissions?.["showAds"] ?? true,
-        notificationShow: userPermissions?.["showNotifications"] ?? true,
-        bromocodeShow: userPermissions?.["showPromoCodes"] ?? true,
-        warehouseShow: userPermissions?.["warehouse.show"] ?? true,
-        warehouseEdit: userPermissions?.["warehouse.edit"] ?? true,
-        warehouseDelete: userPermissions?.["warehouse.delete"] ?? true,
-        createUser: userPermissions?.["user.create"] ?? true,
-        configUpdate: userPermissions?.["config.update"] ?? true,
-        productCreate: userPermissions?.["product.create"] ?? true,
-        productEdit: userPermissions?.["product.edit"] ?? true,
-        productDelete: userPermissions?.["product.delete"] ?? true,
-        productShowSidebar: userPermissions?.["showProductsSidebar"] ?? true,
-        productShowGeneral: userPermissions?.["showGenralProducts"] ?? true,
-        sectionCreate: userPermissions?.["section.create"] ?? true,
-        sectionEdit: userPermissions?.["section.edit"] ?? true,
-        sectionDelete: userPermissions?.["section.delete"] ?? true,
-        sectionShowSidebar: userPermissions?.["showSectionsSidebar"] ?? true,
-        orderShow: userPermissions?.["order.show"] ?? true,
-        orderPrepare: userPermissions?.["order.prepare"] ?? true,
-        orderCancel: userPermissions?.["order.cancel"] ?? true,
-        orderFinish: userPermissions?.["order.finish"] ?? true,
-        orderShipment: userPermissions?.["order.shipment"] ?? true,
-        orderShowSidebar: userPermissions?.["showOrdersSidebar"] ?? true,
-        reportShow: userPermissions?.["reports.show"] ?? true,
-        deliveryShow: userPermissions?.["showDelevary"] ?? true,
-        deliveryEdit: userPermissions?.["delivery.edit"] ?? true,
-        deliveryDelete: userPermissions?.["delivery.delete"] ?? true,
-        deliveryAddArea: userPermissions?.["delevary.addArea"] ?? true,
-        deliveryFreeDelivery:
-          userPermissions?.["delevary.freeDelevary"] ?? true,
-
-        aboutUsShow: userPermissions?.["showAboutUs"] ?? true,
-        evaluationShow: userPermissions?.["showClientsVote"] ?? true,
-        customerShow: userPermissions?.["showCustomers"] ?? true,
-        customerShowMessages:
-          userPermissions?.["showCustomersMessages"] ?? true,
-        kitchenShow: userPermissions?.["showKitchen"] ?? true,
-        statisticsShow: userPermissions?.["showStatistics"] ?? true,
-        supplierShow: userPermissions?.["showSuppliers"] ?? true,
-        unitShow: userPermissions?.["showUnits"] ?? true,
-      };
-    });
-  }, [userPermissions, setScreenSettings, screenSettings]);
+  //   setPosShow(userPermissions["pos.show"])
+  //   // setPosPriceChangeAuth,
+  //   // setPosChangeDiscount,
+  //   // setPosDeleteProdWithPass,
+  //   // setPosPassword,
+  //   // setPosInvoiceTypeChangeAuth,
+  //   // setPosPaymentMethodChangeAuth,
+  //   // setPosSaveNoPrintAuth,
+  //   // setPosEditDate,
+  //   // setPosChooseClient,
+  //   // setPosInvoiceFreeze,
+  //   // setPosInvoiceCall,
+  //   // setPosPriceChange,
+  //   // setPosChangeTax,
+  //   // setPosInvoiceCancel,
+  //   // setPosShiftClose,
+  // }, [userPermissions, setPosShow]);
 
   useEffect(() => {
     sessionStorage.setItem("Selected Screens", JSON.stringify(selectedScreens));
   }, [selectedScreens]);
-  useEffect(() => {
-    localStorage.setItem("Screens Settings", JSON.stringify(screenSettings));
-  }, [screenSettings, userPermissions]);
+  // useEffect(() => {
+  //   localStorage.setItem("Screens Settings", JSON.stringify(screenSettings));
+  // }, [screenSettings]);
   const handleSavePermissions = async () => {
     try {
       if (
@@ -236,7 +192,13 @@ export default function ScreensHome() {
   return (
     <div className="w-full min-h-screen bg-gray-100 pt-12 flex flex-col gap-y-5">
       {/* Cashier Name */}
-      <div className="w-[55%] mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fadeIn mb-5">
+      {loadingPage ? (
+        <div className="w-full h-[90vh] flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <>
+        <div className="w-[55%] mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fadeIn mb-5">
         <div className="flex items-center gap-2 mb-5 text-slate-800 font-bold border-b border-slate-100 pb-3">
           <FaUserCog className="text-blue-600" />
           <h2>بيانات المستخدم الأساسية</h2>
@@ -267,6 +229,8 @@ export default function ScreensHome() {
           {loading ? <span className="loader"></span> : "حفظ الإعدادات"}
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 }

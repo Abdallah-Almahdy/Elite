@@ -6,24 +6,22 @@ export default function useScreenSettingsPreferenceLogic() {
   const mainWarehouse = useSelector((state) => state?.setting?.mainWarehouse);
 
   const savedScreenSetting = JSON.parse(
-    localStorage.getItem("Screens Settings"),
+    sessionStorage.getItem("Screens Settings"),
   );
   const defaultWarehouseSetting = JSON.parse(
-    localStorage.getItem("Invoice Settings"),
+    sessionStorage.getItem("Invoice Settings"),
   );
   const newDefaultWarehouseSetting = JSON.parse(
-    localStorage.getItem("Screens Settings"),
+    sessionStorage.getItem("Screens Settings"),
   );
 
   const users = useSelector((state) => state.user?.users);
-  const permissions = useSelector((state) => state?.setting?.permissions);
+  //const permissions = useSelector((state) => state?.setting?.permissions);
 
    const wareHouseNames = useSelector((state)=> state?.setting?.warehouseNames);
   const dispatch = useDispatch()
 
-  useEffect(()=>{
-    dispatch(fetchWarehouseNames());
-  }, [dispatch])
+
 
   const matchedStorageDefault = wareHouseNames.find(
     (item) => item.name === savedScreenSetting?.WarehouseName,
@@ -112,7 +110,7 @@ export default function useScreenSettingsPreferenceLogic() {
   );
 
   const [allowedWareHouseName, setAllowedWareHouseName] = useState(() => {
-  const saved = JSON.parse(localStorage.getItem("Screens Settings"));
+  const saved = JSON.parse(sessionStorage.getItem("Screens Settings"));
   if (saved && saved.allowedWareHouseName && saved.allowedWareHouseName.length > 0) {
     return saved.allowedWareHouseName;
   }
@@ -235,6 +233,10 @@ export default function useScreenSettingsPreferenceLogic() {
       }
     }
   }, []);
+
+    useEffect(()=>{
+    dispatch(fetchWarehouseNames());
+  }, [dispatch])
 
   const [warehousePermissions, setWarehousePermissions] = useState(
     savedScreenSetting?.warehousePermissions || [

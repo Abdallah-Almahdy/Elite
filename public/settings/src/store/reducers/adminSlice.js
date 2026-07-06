@@ -11,7 +11,7 @@ export const fetchAdmin = createAsyncThunk(
   "admins/fetchAdmin",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/admins");
+      const response = await api.get(`/admins`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

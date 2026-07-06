@@ -2,15 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import qz from "qz-tray";
 import { useInvoiceSettings } from "../contexts/InvoiceSettingsContext";
-import { usePrinterSettingsPreference } from "../contexts/PrinterSettingsContext";
 import { getPrinters } from "../services/qzService";
-import {
-  fetchUserPrintersConfig,
-  sendConfigs,
-} from "../store/reducers/settingSlice";
-import { fetchAdmin } from "../store/reducers/adminSlice";
-import notify from "../hooks/Notification";
-
 import UserSettings from "../components/settings/user/UserSettings";
 import PrinterSettings from "../components/settings/printer/PrinterSettings";
 import SectionsPrinterSettings from "../components/settings/printer/SectionsPrinterSettings";
@@ -19,7 +11,6 @@ import ReportPrinterSettings from "../components/settings/printer/ReportPrinterS
 import InvoicePrinterSettings from "../components/settings/printer/InvoicePrinterSettings";
 
 import { FaSave, FaTools, FaPrint } from "react-icons/fa";
-import { fetchClientsNames } from "../store/reducers/userSlice";
 
 export default function PrinterSettingsPage({
   printerName,
@@ -60,9 +51,9 @@ export default function PrinterSettingsPage({
   const dispatch = useDispatch();
   const { updatePrinterSettings } = useInvoiceSettings();
 
-  useEffect(() => {
-    dispatch(fetchAdmin());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchAdmin());
+  // }, [dispatch]);
 
   useEffect(() => {
     const fetchPrinters = async () => {

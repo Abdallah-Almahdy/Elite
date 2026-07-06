@@ -5,7 +5,6 @@ import {
   fetchInvoicePrintersConfig,
   fetchUserConfigs,
   fetchUserPrintersConfig,
-  fetchUserWarehouseConfig,
 } from "../../store/reducers/settingSlice";
 
 export default function useUserSettingsPreferenceLogic() {
@@ -21,7 +20,7 @@ export default function useUserSettingsPreferenceLogic() {
   const dispatch = useDispatch();
   const isInitialMount = useRef(true);
 
-  const savedData = JSON.parse(localStorage.getItem("User Settings"));
+  const savedData = JSON.parse(sessionStorage.getItem("User Settings"));
   const invoiceMappingReversed = {
     take_away: "تيك أواى",
     delvery: "دليفرى",
@@ -124,19 +123,22 @@ export default function useUserSettingsPreferenceLogic() {
   };
 
   useEffect(() => {
+    if(userId){
+    dispatch(fetchUserConfigs({id: userId}));
+    dispatch(fetchUserPrintersConfig({id: userId}));
+    }
     dispatch(fetchInvoicePrintersConfig());
-    dispatch(fetchUserPrintersConfig());
     dispatch(fetchConfigs());
-    dispatch(fetchUserConfigs());
-  }, [dispatch]);
+  }, [dispatch, userId]);
 
   useEffect(() => {
-    if (!configs || Object.keys(configs).length === 0) return;
+    // if (!configs || Object.keys(configs).length === 0) return;
+    if (!configs) return;
     const appliedConfig =
       userConfigs && Object.keys(userConfigs).length > 0
         ? userConfigs
         : configs;
-
+        
     setDefaultInvoiceType(
       invoiceMappingReversed[appliedConfig?.defaultInvoiceType] || "تيك أواى",
     );
@@ -163,9 +165,13 @@ export default function useUserSettingsPreferenceLogic() {
   }, [configs, userConfigs]);
 
   useEffect(() => {
+    // if (
+    //   !invoicePrintersConfig ||
+    //   Object.keys(invoicePrintersConfig).length === 0
+    // )
     if (
-      !invoicePrintersConfig ||
-      Object.keys(invoicePrintersConfig).length === 0
+      !invoicePrintersConfig 
+      
     )
       return;
     const config =

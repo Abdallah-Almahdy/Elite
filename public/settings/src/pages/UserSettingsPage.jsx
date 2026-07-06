@@ -17,6 +17,7 @@ import qz from "qz-tray";
 
 import {
   fetchInvoicePrintersConfig,
+  fetchSectionsPrintersConfig,
   fetchUserPrintersConfig,
   fetchUserSectionsConfig,
   fetchUserWarehouseConfig,
@@ -39,6 +40,8 @@ import { FaFileInvoice } from "react-icons/fa";
 import { BiSolidCategory } from "react-icons/bi";
 import { getPrinters } from "../services/qzService";
 import InvoiceTypeSettings from "../components/settings/general/InvoiceTypeSettings";
+import LoadingSpinner from "../components/ui/common/LoadingSpinner";
+import { fetchCategories } from "../store/reducers/productsSlice";
 
 export default function UserSettingsPage() {
   const mainWarehouse = useSelector((state) => state?.setting?.mainWarehouse);
@@ -56,10 +59,14 @@ export default function UserSettingsPage() {
   const userSectionsConfig = useSelector(
     (state) => state?.setting?.userSectionsConfig,
   );
+  const sectionsPrintersConfig = useSelector(
+    (state) => state?.setting?.sectionsPrintersConfig,
+  );
 
   const categories = useSelector((state) => state?.product?.categories || []);
 
   const [availablePrinters, setAvailablePrinters] = useState([]);
+  const [isUserMode, setIsUserMode] = useState(true);
 
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("invoice");
@@ -69,8 +76,10 @@ export default function UserSettingsPage() {
 
   const { defaultWarehouseName, setDefaultWarehouseName } =
     useSettingsPreference();
+      const wareHouseNames = useSelector((state) => state?.setting?.warehouseNames);
 
-  const currentViewablePermissions = screenSettings?.viewablePermissions || [];
+
+  const currentViewablePermissions = screenSettings?.viewablePermissions || [wareHouseNames?.find((wh)=> wh?.is_default === true)?.id];
   const currentViewableSectionsPermissions =
     screenSettings?.viewableSectionsPermissions || [];
 
@@ -153,7 +162,28 @@ export default function UserSettingsPage() {
     handleInvoiceUserCancel,
   } = useUserSettingsPreference();
 
-  const wareHouseNames = useSelector((state) => state?.setting?.warehouseNames);
+    const currentActiveSection =
+    isUserMode && screenSettings ? screenSettings?.sectionName : sectionName;
+
+  const allowedSectionsNames =
+    isUserMode && screenSettings?.allowedSectionsNames?.length > 0
+      ? screenSettings.allowedSectionsNames
+      : currentViewableSectionsPermissions && currentViewableSectionsPermissions.length > 0
+        ? categories.filter((c) => currentViewableSectionsPermissions.includes(c.id))
+        : currentActiveSection
+          ? categories.filter((c) => c.name === currentActiveSection)
+          : [];
+  const allowedSectionsNamesPOS =
+    isUserMode && screenSettings?.allowedSectionsNamesPOS?.length > 0
+      ? screenSettings.allowedSectionsNamesPOS
+      : allowedSectionsNames && allowedSectionsNames.length > 0
+        ? categories.filter((c) => allowedSectionsNames.includes(c.id))
+        : currentActiveSection
+          ? categories.filter((c) => c.name === currentActiveSection)
+          : [];
+
+  const loading = useSelector((state) => state?.setting?.loading);
+  const loadingPage = useSelector((state) => state?.user?.loading);
 
   const mappedAllowedInvoiceType = allowedInvoiceType.map((type) => {
     return invoiceMapping[type];
@@ -166,6 +196,83 @@ export default function UserSettingsPage() {
     id: w?.id,
     name: w?.name,
   }));
+
+    useEffect(() => {
+  dispatch(fetchCategories());
+    dispatch(fetchSectionsPrintersConfig());
+
+  if (isUserMode && screenSettings?.userId) {
+    dispatch(fetchUserSectionsConfig({id: screenSettings?.userId}));
+  }
+  
+}, [dispatch, isUserMode, screenSettings?.userId]);
+  useEffect(() => {
+  // if (hasLocalChanges) {
+  //   setSectionRows(saved.sectionRows);
+  //   return;
+  // }
+
+  const filteredSections = !isUserMode || userSectionsConfig?.length === 0
+    ? sectionsPrintersConfig   : 
+    sectionsPrintersConfig.filter((item) =>
+        allowedSectionsNames.some((allowed) => allowed.id === item.id)
+      )
+
+  setSectionRows(
+    filteredSections.map((item) => ({
+      section_id: item.id,
+      printer_name: item.printerSettings?.[0]?.printerName || "",
+    }))
+  );
+}, [sectionsPrintersConfig, userSectionsConfig]);
+
+ useEffect(() => {
+  if (isUserMode) {
+    if (categories.length === 0) return;
+    if(userSectionsConfig?.length === 0){
+      if (!sectionsPrintersConfig?.length) return;
+
+    setSectionRows(
+      sectionsPrintersConfig.map((item) => ({
+        section_id: item.id,
+        printer_name: item.printerSettings?.[0]?.printerName || "",
+      }))
+    );
+    }else{
+      setScreenSettings((prev) => ({
+      ...prev,
+      allowedSectionsNames: categories.filter((cat) =>
+        userSectionsConfig?.allowdSectionsId?.includes(cat.id) ?? []
+      ),
+      allowedSectionsNamesPOS: categories.filter((cat) =>
+        userSectionsConfig?.seenSectionsId?.includes(cat.id) ?? []
+      ),
+    }));
+
+    setSectionRows(
+      userSectionsConfig?.sectionPrinters?.map((item) => ({
+        section_id: item.sectionId,
+        printer_name: item.printerName,
+      })) ?? []
+    );
+    }
+    
+  } else {
+    if (!sectionsPrintersConfig?.length) return;
+
+    setSectionRows(
+      sectionsPrintersConfig.map((item) => ({
+        section_id: item.id,
+        printer_name: item.printerSettings?.[0]?.printerName || "",
+      }))
+    );
+  }
+}, [
+  isUserMode,
+  userSectionsConfig,
+  sectionsPrintersConfig,
+  categories,
+]);
 
   useEffect(() => {
     if (
@@ -207,22 +314,37 @@ export default function UserSettingsPage() {
     fetchPrinters();
   }, []);
 
+
+
   useEffect(() => {
-    if (!userWarehouseConfig || userWarehouseConfig.length === 0) return;
+    if (!wareHouseNames) return ; 
+
+     const appliedConfig =
+      userWarehouseConfig && Object.keys(userWarehouseConfig).length > 0
+        ? userWarehouseConfig
+        : wareHouseNames;
     // const saved = JSON.parse(localStorage.getItem("Screens Settings"))
-    const selectedWarehouse = userWarehouseConfig?.find(
+    const selectedWarehouse = appliedConfig?.find(
       (w) => w?.is_default === true,
     );
     setWarehouseName(selectedWarehouse?.id);
-    setScreenSettings((prev) => ({
+    if(userWarehouseConfig && Object.keys(userWarehouseConfig).length > 0){
+setScreenSettings((prev) => ({
       ...prev,
       allowedWareHouseName: userWarehouseConfig,
     }));
-  }, [userWarehouseConfig]);
+    }else{
+      setScreenSettings((prev) => ({
+      ...prev,
+      allowedWareHouseName: [{id: selectedWarehouse?.id, name: selectedWarehouse?.name}],
+    }));
+    }
+  }, [userWarehouseConfig, userId, wareHouseNames]);
 
   useEffect(() => {
     const payload = {
       userName: userName,
+      userId: userId,
       userPrinterName: userPrinterName,
       saveNoPrintAuth: saveNoPrintAuth,
       sectionName: sectionName,
@@ -253,6 +375,7 @@ export default function UserSettingsPage() {
     updateUserSettings(payload);
   }, [
     userName,
+    userId,
     userPrinterName,
     saveNoPrintAuth,
     sectionName,
@@ -393,15 +516,18 @@ export default function UserSettingsPage() {
 
   useEffect(() => {
     try {
+      if(screenSettings?.userId){
+        dispatch(fetchUserWarehouseConfig({id: screenSettings?.userId}));
+      }
       dispatch(fetchClientsNames());
       //dispatch(fetchUserPrintersConfig());
       dispatch(fetchInvoicePrintersConfig());
-      dispatch(fetchUserWarehouseConfig());
+      
       //dispatch(fetchUserSectionsConfig());
     } catch (err) {
       console.log(err);
     }
-  }, [dispatch]);
+  }, [dispatch, screenSettings?.userId]);
 
 //   useEffect(() => {
 //     if (!userSectionsConfig || Object.keys(userSectionsConfig).length === 0) return;
@@ -434,7 +560,7 @@ export default function UserSettingsPage() {
     const payload = {
       type: "user",
       defaultInvoiceType: invoiceMapping[defaultInvoiceType],
-      allowedInvoiceType: mappedAllowedInvoiceType,
+      allowedInvoiceTypes: mappedAllowedInvoiceType,
       defaultPaymentMethod: paymentMapping[defaultPaymentMethod],
       allowedPaymentMethods: mappedAllowedPaymentMethods,
       defaultWarehouseName: defaultWarehouseName,
@@ -449,7 +575,7 @@ export default function UserSettingsPage() {
       updateUserSettings(payload);
       notify("تم حفظ الاعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
 
@@ -476,35 +602,39 @@ export default function UserSettingsPage() {
       type: "user",
       user_id: Number(screenSettings?.userId),
       cashierPrinterName: userPrinterName,
-      AllowSaveWithoutPrint: saveNoPrintAuth === true ? 1 : 0,
+      allowSaveWithoutPrint: saveNoPrintAuth === true ? 1 : 0,
       barcodePrinterName: barcodePrinterName,
       reportPrinterName: reportPrinterName,
       invoicePrinterSettings: [
-        {
-          printerName: receiptPrinterName,
-          formName: receiptModelName,
-          permssionName: "Receipt Printing",
-          numOfCopies: receiptNum,
-          isActive: receiptPrintAuth === true ? 1 : 0,
-        },
-        {
-          printerName: invoicePrinterName,
-          formName: invoiceModelName,
-          permssionName: "Invoice Printing",
-          numOfCopies: invoiceNum,
-          isActive: invoicePrintAuth === true ? 1 : 0,
-        },
-      ],
+  {
+    printerName: receiptPrinterName,
+    formName: receiptModelName,
+    permssionName: "Receipt Printing",
+    numOfCopies: receiptNum,
+    isActive: receiptPrintAuth ? 1 : 0,
+  },
+  {
+    printerName: invoicePrinterName,
+    formName: invoiceModelName,
+    permssionName: "Invoice Printing",
+    numOfCopies: invoiceNum,
+    isActive: invoicePrintAuth ? 1 : 0,
+  },
+].filter((item) => item.isActive === 1),
     };
 
     try {
+      if((receiptPrintAuth && (receiptModelName.length === 0 || receiptPrinterName.length === 0)) || (invoicePrintAuth && (invoiceModelName.length === 0 || invoicePrinterName.length === 0))){
+        notify("اعدادات طابعة الفاتورة اجبارية", "error");
+        return;
+      }
       await dispatch(
         sendInvoicePrintersConfig({ invoicePrintersConfig: userPrinterConfig }),
       ).unwrap();
       updatePrinterSettings(payload);
       notify("تم حفظ الإعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
   const printerSettingCancel = async () => {
@@ -576,7 +706,7 @@ export default function UserSettingsPage() {
       updateUserSettings(payload);
       notify("تم حفظ الإعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
 
@@ -616,7 +746,7 @@ export default function UserSettingsPage() {
       updateUserSettings(payload);
       notify("تم حفظ الإعدادات بنجاح", "success");
     } catch (err) {
-      notify("حدثت مشكلة برجاء المحاولة مرة أخرى", "error");
+      notify(err.message, "error");
     }
   };
 
@@ -644,6 +774,13 @@ export default function UserSettingsPage() {
   return (
     <div className="w-full min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8 select-none">
       {/* ... Header & Tabs stay exactly the same ... */}
+      
+
+      {loadingPage ? (
+              <div className="w-full h-[90vh] flex justify-center items-center">
+                <LoadingSpinner />
+              </div>
+      ) : (<> 
       <div className="max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-600 rounded-xl text-white shadow-md shadow-blue-100">
@@ -656,8 +793,7 @@ export default function UserSettingsPage() {
           </div>
         </div>
       </div>
-
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fadeIn mb-7">
+<div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fadeIn mb-7">
         <div className="flex items-center gap-2 mb-5 text-slate-800 font-bold border-b border-slate-100 pb-3">
           <FaUserCog className="text-blue-600" />
           <h2>بيانات المستخدم الأساسية</h2>
@@ -721,7 +857,11 @@ export default function UserSettingsPage() {
         </button>
       </div>
       <div className="max-w-4xl mx-auto">
-        {activeTab === "invoice" && (
+        {loading ? (
+          <LoadingSpinner />
+        ) :(
+          <>
+          {activeTab === "invoice" && (
           <>
             <InvoiceTypeSettings
               defaultInvoiceType={defaultInvoiceType}
@@ -774,6 +914,8 @@ export default function UserSettingsPage() {
               sectionRows={sectionRows}
               setSectionRows={setSectionRows}
               isUserMode={true}
+              allowedSectionsNames={allowedSectionsNames}
+              allowedSectionsNamesPOS={allowedSectionsNamesPOS}
               viewableSectionsPermissions={currentViewableSectionsPermissions}
               setViewableSectionsPermissions={(callback) => {
                 setScreenSettings((prev) => ({
@@ -903,7 +1045,11 @@ export default function UserSettingsPage() {
             </div>
           </div>
         )}
+          </>
+        )}
       </div>
+        </>
+      )}
     </div>
   );
 }

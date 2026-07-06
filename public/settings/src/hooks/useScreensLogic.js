@@ -7,7 +7,7 @@ import { fetchPermissions } from "../store/reducers/settingSlice";
 export default function useScreensLogic() {
   const { selectedScreens, setSelectedScreens } = useSelectedScreens();
   const { updateScreenSettings } = useInvoiceSettings();
-  const storedPermissions = useSelector((state) => state?.setting?.permissions);
+  const storedPermissions = useSelector((state) => state?.setting?.userPermissions);
 
   const permissionsNamingMapping = {
     configUpdate: "config.update",

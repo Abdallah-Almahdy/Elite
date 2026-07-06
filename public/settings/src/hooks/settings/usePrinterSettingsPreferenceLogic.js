@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 export default function usePrinterSettingsPreferenceLogic() {
   const users = useSelector((state) => state.user?.users);
     const savedData = JSON.parse(
-    localStorage.getItem("Invoice Settings"),
+    sessionStorage.getItem("Invoice Settings"),
   ) ?? {};
 
   const [printerName, setPrinterName] = useState(savedData?.printerName ||"");

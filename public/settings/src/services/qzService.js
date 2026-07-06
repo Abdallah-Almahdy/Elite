@@ -33,7 +33,7 @@ export const printHTML = async (printerName, htmlContent) => {
 
     const availablePrinters = await qz.printers.find();
 
-    localStorage.setItem("Printer Name", JSON.stringify(availablePrinters));
+    sessionStorage.setItem("Printer Name", JSON.stringify(availablePrinters));
 
     const printerExists = availablePrinters.includes(printerName);
 

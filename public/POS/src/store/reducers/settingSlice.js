@@ -26,10 +26,10 @@ export const fetchPermissions = createAsyncThunk(
 );
 
 export const fetchConfigs = createAsyncThunk(
-  "settings/sendConfigs",
+  "settings/fetchConfigs",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/invice-config");
+      const response = await api.get(`/invice-config`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

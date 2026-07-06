@@ -3,17 +3,20 @@ import { useContext } from "react";
 import { FormDataContext } from "../../../contexts/FormDataContext";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchConfigs } from "../../../store/reducers/settingSlice";
+import { useProducts } from "../../../contexts/ProductsContext";
 export default function OrderType({ selectedOrder, setSelectedOrder }) {
   const dispatch = useDispatch();
   const { formData, setFormData } = useContext(FormDataContext);
+    const { setDraftFormData, draftFormData } = useProducts();
+
   const permissions = useSelector((state)=>state?.setting?.permissions);
   // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
   );
-  useEffect(() => {
-    dispatch(fetchConfigs());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchConfigs());
+  // }, [dispatch]);
   const paymentMapping = {
     cash: "كاش",
     credit_card: "بطاقة ائتمان",
@@ -43,6 +46,7 @@ export default function OrderType({ selectedOrder, setSelectedOrder }) {
   const allowedInvoiceTypeCodes = invoiceSettings?.allowedInvoiceTypes || [
     "تيك أواى",
   ];
+
   const allowedInvoiceTypeLabels = invoiceTypeOptions
     .filter((method) => allowedInvoiceTypeCodes.includes(method.code))
     .map((method) => method.label);
@@ -51,9 +55,12 @@ export default function OrderType({ selectedOrder, setSelectedOrder }) {
 
   const types = allowedInvoiceTypeLabels || ["تيك أواى"];
   const handleInvoiceChange = (value) => {
+    console.log(value)
     setSelectedOrder(value);
     setFormData({ ...formData, invoiceType: value });
+    setDraftFormData({ ...draftFormData, invoiceType: value });
   };
+
 
   useEffect(() => {
     setSelectedOrder(formData.invoiceType);

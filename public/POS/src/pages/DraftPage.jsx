@@ -136,6 +136,7 @@ const visibleDraft = filteredDrafts?.slice(
         <div className="w-full flex justify-center items-end">
           <Pagination
             currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
             totalPages={totalPages}
             onPageChange={(page) => setCurrentPage(page)}
           />

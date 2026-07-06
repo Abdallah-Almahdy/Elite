@@ -7,6 +7,7 @@ import { FormDataContext } from "../../../contexts/FormDataContext";
 import { useSelectedProducts } from "../../../contexts/SelectedProductsContext";
 import { fetchConfigs } from "../../../store/reducers/settingSlice";
 import { useSelector, useDispatch } from "react-redux";
+import { useProducts } from "../../../contexts/ProductsContext";
 export default function PaymentCard({
   error,
   remainingValue,
@@ -19,9 +20,9 @@ export default function PaymentCard({
   const invoiceSettings = useSelector(
     (state) => state?.setting?.invoiceSettings,
   );
-  useEffect(() => {
-    dispatch(fetchConfigs());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   //dispatch(fetchConfigs());
+  // }, [dispatch]);
 
   const paymentMethodOptions = [
     { id: 1, code: "cash", label: "كاش" },
@@ -57,6 +58,8 @@ export default function PaymentCard({
   const { selectedProducts } = useSelectedProducts();
 
   const { formData, setFormData } = useContext(FormDataContext);
+    const { setDraftFormData } = useProducts();
+  
   const [selectedMethods, setSelectedMethods] = useState(
     formData.paymentMethods,
   );
@@ -69,8 +72,12 @@ export default function PaymentCard({
         ...prev,
         paymentMethods: {},
       }));
+      setDraftFormData((prev) => ({
+        ...prev,
+        paymentMethods: {},
+      }));
     }
-  }, [selectedProducts, setFormData]);
+  }, [selectedProducts, setFormData, setDraftFormData]);
 
   useEffect(() => {
     if (!formData?.paymentMethod) return;
@@ -101,12 +108,20 @@ export default function PaymentCard({
         ...prev,
         paymentMethod: `${Object.keys(selectedMethods)[0]}`,
       }));
+      setDraftFormData((prev) => ({
+        ...prev,
+        paymentMethod: `${Object.keys(selectedMethods)[0]}`,
+      }));
     }
   }, [selectedMethods]);
 
   useEffect(() => {
     if (Object.keys(selectedMethods).length > 0) {
       setFormData((prev) => ({
+        ...prev,
+        paymentMethods: selectedMethods,
+      }));
+      setDraftFormData((prev) => ({
         ...prev,
         paymentMethods: selectedMethods,
       }));

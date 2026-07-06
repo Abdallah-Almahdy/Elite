@@ -16,10 +16,6 @@ export default function WarehouseSettings({
   const wareHouseNames = useSelector((state)=> state?.setting?.warehouseNames);
   const dispatch = useDispatch()
 
-  // useEffect(()=>{
-  //   dispatch(fetchWarehouseNames());
-  // }, [dispatch])
-
   const { screenSettings, setScreenSettings } = useScreensPermissions();
 
   const currentActiveWarehouse = isUserMode && screenSettings ? screenSettings?.WarehouseName : WarehouseName;

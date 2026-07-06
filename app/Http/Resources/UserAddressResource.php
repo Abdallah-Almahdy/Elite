@@ -22,6 +22,8 @@ class UserAddressResource extends JsonResource
             'address_building' => $this->address_building ?? null,
             'address_floor' => $this->address_floor ?? null,
             'address_apartment' => $this->address_apartment ?? null,
+            'delivery_place_id' => $this->delivery_place_id,
+            'address_governorate'=> $this->address_governorate,
             'is_default' => $this->is_default,
         ];
         return parent::toArray($request);

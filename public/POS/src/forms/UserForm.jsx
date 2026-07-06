@@ -56,6 +56,8 @@ const UserForm = forwardRef((props, ref) => {
   } = useProducts();
   const { selectedProducts } = useSelectedProducts();
   const { formData, setFormData } = useContext(FormDataContext);
+    const { setDraftFormData } = useProducts();
+
   const inputRef = useRef();
   const [showAddressEditor, setShowAddressEditor] = useState(false);
   const [showClientsResults, setShowClientsResults] = useState(false);
@@ -86,7 +88,7 @@ const UserForm = forwardRef((props, ref) => {
   const warehouseName = defaulredWarehouse?.name;
   const permissions = useSelector((state)=> state?.setting?.permissions);
   useEffect(() => {
-    dispatch(fetchConfigs());
+    //dispatch(fetchConfigs());
     dispatch(fetchUserWarehouseNames());
   }, [dispatch]);
   const paymentMapping = {
@@ -208,8 +210,12 @@ const UserForm = forwardRef((props, ref) => {
       ...prev,
       ...formik.values,
     }));
+    setDraftFormData((prev) => ({
+      ...prev,
+      ...formik.values,
+    }));
     sessionStorage.setItem("draftFormData", JSON.stringify(updatedDraft))
-  }, [formik.values, setFormData, draftFormData]);
+  }, [formik.values, setFormData]);
 
   const paymentMethodOptions = [
     { id: 1, code: "cash", label: "كاش" },
@@ -422,6 +428,20 @@ const UserForm = forwardRef((props, ref) => {
                     formik.setFieldValue("paymentMethod", value);
 
                     setFormData((prev) => {
+                      // If key already exists → keep paymentMethods unchanged
+                      if (prev.paymentMethods?.hasOwnProperty(value)) {
+                        return prev;
+                      }
+
+                      // Otherwise → reset paymentMethods with the new key
+                      return {
+                        ...prev,
+                        paymentMethods: {
+                          [value]: "",
+                        },
+                      };
+                    });
+                    setDraftFormData((prev) => {
                       // If key already exists → keep paymentMethods unchanged
                       if (prev.paymentMethods?.hasOwnProperty(value)) {
                         return prev;

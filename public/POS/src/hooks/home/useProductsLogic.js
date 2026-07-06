@@ -109,6 +109,8 @@ export default function useProductsLogic() {
     dispatch(saveProductsOfflineThunk(data));
   }, [dispatch]);
 
+
+
   {
     /* Adding A New Item To The Table */
   }
@@ -588,9 +590,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-      paymentMethods: {},
-      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? "تيك أواى",
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -605,9 +607,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-      paymentMethods: {},
-      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -622,9 +624,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-      paymentMethods: {},
-      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -679,9 +681,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-      paymentMethods: {},
-      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -695,9 +697,9 @@ export default function useProductsLogic() {
       dateInput: date || "",
       clientName: "",
       notes: "",
-      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod],
-      paymentMethods: {},
-      invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType],
+      paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
+      paymentMethods: {}, 
+        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
       phone1: "",
       newPhone: "",
       optionalPhone: "",
@@ -745,8 +747,8 @@ export default function useProductsLogic() {
       date: dateInput,
       clientName: clientName,
       notes: notes,
-      invoiceType: invoiceType,
-      paymentMethod: paymentMethod,
+      invoiceType:  invoiceType,
+      paymentMethod:  paymentMethod,
       paymentMethods: paymentMethods,
       items: selectedProducts ? [...selectedProducts] : [],
       address1: address1,
@@ -927,6 +929,14 @@ export default function useProductsLogic() {
       optionalAddress: user?.customer_info?.address2 || "",
   };
     setFormData((prev) => ({
+      ...prev,
+      clientName: user?.name || "",
+      phone1: user?.customer_info?.phone || "",
+      optionalPhone: user?.customer_info?.phone2 || "",
+      address1: user?.customer_info?.address1 || "",
+      optionalAddress: user?.customer_info?.address2 || "",
+    }));
+    setDraftFormData((prev) => ({
       ...prev,
       clientName: user?.name || "",
       phone1: user?.customer_info?.phone || "",

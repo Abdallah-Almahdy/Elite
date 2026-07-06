@@ -9,8 +9,7 @@ import { ScreensPermissionsProvider } from "./contexts/ScreensPermissionsContext
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    
-    <BrowserRouter basename="/dashboard/invoice-settings">
+    <BrowserRouter basename="/dashboard/invoice-settings" >
       <SelectedScreensProvider>
         <ScreensPermissionsProvider>
           <App />

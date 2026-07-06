@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchConfigs,
-  fetchPermissions,
   fetchUserPermissions,
   fetchWarehouseNames,
 } from "../store/reducers/settingSlice";
@@ -20,7 +19,10 @@ export const ScreensPermissionsProvider = ({ children }) => {
   const staticWarehouses = useSelector(
     (state) => state?.setting?.warehouseNames || [],
   );
-  const saved = JSON.parse(localStorage.getItem("Screens Settings"));
+  const saved = JSON.parse(sessionStorage.getItem("Screens Settings"));
+    const [screenSettings, setScreenSettings] = useState(() => {
+    return saved || null;
+  });
 
   useEffect(() => {
     dispatch(fetchConfigs());
@@ -135,11 +137,8 @@ export const ScreensPermissionsProvider = ({ children }) => {
       warehousePermissions: defaultWarehousePermissions,
       viewablePermissions: [defaultAllowedList[0].id],
     };
-  }, [userPermissions, mainWarehouse, staticWarehouses]);
+  }, [userPermissions, mainWarehouse, staticWarehouses, screenSettings?.userId]);
 
-  const [screenSettings, setScreenSettings] = useState(() => {
-    return saved || null;
-  });
 
   useEffect(() => {
     if (!userPermissions || !screenSettings) return;
@@ -147,144 +146,70 @@ export const ScreensPermissionsProvider = ({ children }) => {
     setScreenSettings((prev) => ({
       ...prev,
 
-      posShow: saved?.posShow ?? userPermissions?.["pos.show"] ?? true,
-      posPriceChangeAuth:
-        saved?.posPriceChangeAuth ??
-        userPermissions?.["pos.priceChangeAuth"] ??
-        true,
-      posChangeDiscount:
-        saved?.posChangeDiscount ??
-        userPermissions?.["pos.changeDiscount"] ??
-        true,
+       posShow: userPermissions?.["pos.show"] ?? true,
+      posPriceChangeAuth: userPermissions?.["pos.priceChangeAuth"] ?? true,
+      posChangeDiscount: userPermissions?.["pos.changeDiscount"] ?? true,
       posDeleteProdWithPass:
-        saved?.posDeleteProdWithPass ??
-        userPermissions?.["pos.deleteProdWithPass"] ??
-        true,
+        userPermissions?.["pos.deleteProdWithPass"] ?? true,
       posInvoiceTypeChangeAuth:
-        saved?.posInvoiceTypeChangeAuth ??
-        userPermissions?.["pos.InvoiceTypeChangeAuth"] ??
-        true,
+        userPermissions?.["pos.InvoiceTypeChangeAuth"] ?? true,
       posPaymentMethodChangeAuth:
-        saved?.posPaymentMethodChangeAuth ??
-        userPermissions?.["pos.paymentMethodChangeAuth"] ??
-        true,
-      posSaveNoPrintAuth:
-        saved?.posSaveNoPrintAuth ??
-        userPermissions?.["pos.saveNoPrintAuth"] ??
-        true,
-      posEditDate:
-        saved?.posEditDate ?? userPermissions?.["pos.editDate"] ?? true,
-      posChooseClient:
-        saved?.posChooseClient ?? userPermissions?.["pos.chooseClient"] ?? true,
-      posInvoiceFreeze:
-        saved?.posInvoiceFreeze ??
-        userPermissions?.["pos.InviceFreeze"] ??
-        true,
-      posInvoiceCall:
-        saved?.posInvoiceCall ?? userPermissions?.["pos.InviceCall"] ?? true,
-      posPriceChange:
-        saved?.posPriceChange ?? userPermissions?.["pos.priceChange"] ?? true,
-      posChangeTax:
-        saved?.posChangeTax ?? userPermissions?.["pos.changeTax"] ?? true,
-      posInvoiceCancel:
-        saved?.posInvoiceCancel ??
-        userPermissions?.["pos.InviceCancel"] ??
-        true,
-      posShiftClose:
-        saved?.posShiftClose ?? userPermissions?.["pos.shiiftClose"] ?? true,
+        userPermissions?.["pos.paymentMethodChangeAuth"] ?? true,
+      posSaveNoPrintAuth: userPermissions?.["pos.saveNoPrintAuth"] ?? true,
+      posEditDate: userPermissions?.["pos.editDate"] ?? true,
+      posChooseClient: userPermissions?.["pos.chooseClient"] ?? true,
+      posInvoiceFreeze: userPermissions?.["pos.InviceFreeze"] ?? true,
+      posInvoiceCall: userPermissions?.["pos.InviceCall"] ?? true,
+      posPriceChange: userPermissions?.["pos.priceChange"] ?? true,
+      posChangeTax: userPermissions?.["pos.changeTax"] ?? true,
+      posInvoiceCancel: userPermissions?.["pos.InviceCancel"] ?? true,
+      posShiftClose: userPermissions?.["pos.shiiftClose"] ?? true,
 
-      adShow: saved?.adShow ?? userPermissions?.["showAds"] ?? true,
-      notificationShow:
-        saved?.notificationShow ??
-        userPermissions?.["showNotifications"] ??
-        true,
-      bromocodeShow:
-        saved?.bromocodeShow ?? userPermissions?.["showPromoCodes"] ?? true,
+      adShow: userPermissions?.["showAds"] ?? true,
+      notificationShow: userPermissions?.["showNotifications"] ?? true,
+      bromocodeShow: userPermissions?.["showPromoCodes"] ?? true,
 
-      warehouseShow:
-        saved?.warehouseShow ?? userPermissions?.["warehouse.show"] ?? true,
-      warehouseEdit:
-        saved?.warehouseEdit ?? userPermissions?.["warehouse.edit"] ?? true,
-      warehouseDelete:
-        saved?.warehouseDelete ?? userPermissions?.["warehouse.delete"] ?? true,
+      warehouseShow: userPermissions?.["warehouse.show"] ?? true,
+      warehouseEdit: userPermissions?.["warehouse.edit"] ?? true,
+      warehouseDelete: userPermissions?.["warehouse.delete"] ?? true,
 
-      createUser: saved?.createUser ?? userPermissions?.["user.create"] ?? true,
-      configUpdate:
-        saved?.configUpdate ?? userPermissions?.["config.update"] ?? true,
+      createUser: userPermissions?.["user.create"] ?? true,
+      configUpdate: userPermissions?.["config.update"] ?? true,
 
-      productCreate:
-        saved?.productCreate ?? userPermissions?.["product.create"] ?? true,
-      productEdit:
-        saved?.productEdit ?? userPermissions?.["product.edit"] ?? true,
-      productDelete:
-        saved?.productDelete ?? userPermissions?.["product.delete"] ?? true,
-      productShowSidebar:
-        saved?.productShowSidebar ??
-        userPermissions?.["showProductsSidebar"] ??
-        true,
-      productShowGeneral:
-        saved?.productShowGeneral ??
-        userPermissions?.["showGenralProducts"] ??
-        true,
+      productCreate: userPermissions?.["product.create"] ?? true,
+      productEdit: userPermissions?.["product.edit"] ?? true,
+      productDelete: userPermissions?.["product.delete"] ?? true,
+      productShowSidebar: userPermissions?.["showProductsSidebar"] ?? true,
+      productShowGeneral: userPermissions?.["showGenralProducts"] ?? true,
 
-      sectionCreate:
-        saved?.sectionCreate ?? userPermissions?.["section.create"] ?? true,
-      sectionEdit:
-        saved?.sectionEdit ?? userPermissions?.["section.edit"] ?? true,
-      sectionDelete:
-        saved?.sectionDelete ?? userPermissions?.["section.delete"] ?? true,
-      sectionShowSidebar:
-        saved?.sectionShowSidebar ??
-        userPermissions?.["showSectionsSidebar"] ??
-        true,
+      sectionCreate: userPermissions?.["section.create"] ?? true,
+      sectionEdit: userPermissions?.["section.edit"] ?? true,
+      sectionDelete: userPermissions?.["section.delete"] ?? true,
+      sectionShowSidebar: userPermissions?.["showSectionsSidebar"] ?? true,
 
-      orderShow: saved?.orderShow ?? userPermissions?.["order.show"] ?? true,
-      orderPrepare:
-        saved?.orderPrepare ?? userPermissions?.["order.prepare"] ?? true,
-      orderCancel:
-        saved?.orderCancel ?? userPermissions?.["order.cancel"] ?? true,
-      orderFinish:
-        saved?.orderFinish ?? userPermissions?.["order.finish"] ?? true,
-      orderShipment:
-        saved?.orderShipment ?? userPermissions?.["order.shipment"] ?? true,
-      orderShowSidebar:
-        saved?.orderShowSidebar ??
-        userPermissions?.["showOrdersSidebar"] ??
-        true,
+      orderShow: userPermissions?.["order.show"] ?? true,
+      orderPrepare: userPermissions?.["order.prepare"] ?? true,
+      orderCancel: userPermissions?.["order.cancel"] ?? true,
+      orderFinish: userPermissions?.["order.finish"] ?? true,
+      orderShipment: userPermissions?.["order.shipment"] ?? true,
+      orderShowSidebar: userPermissions?.["showOrdersSidebar"] ?? true,
 
-      reportShow:
-        saved?.reportShow ?? userPermissions?.["reports.show"] ?? true,
+      reportShow: userPermissions?.["reports.show"] ?? true,
 
-      deliveryShow:
-        saved?.deliveryShow ?? userPermissions?.["showDelevary"] ?? true,
-      deliveryEdit:
-        saved?.deliveryEdit ?? userPermissions?.["delivery.edit"] ?? true,
-      deliveryDelete:
-        saved?.deliveryDelete ?? userPermissions?.["delivery.delete"] ?? true,
-      deliveryAddArea:
-        saved?.deliveryAddArea ?? userPermissions?.["delevary.addArea"] ?? true,
-      deliveryFreeDelivery:
-        saved?.deliveryFreeDelivery ??
-        userPermissions?.["delevary.freeDelevary"] ??
-        true,
+      deliveryShow: userPermissions?.["showDelevary"] ?? true,
+      deliveryEdit: userPermissions?.["delivery.edit"] ?? true,
+      deliveryDelete: userPermissions?.["delivery.delete"] ?? true,
+      deliveryAddArea: userPermissions?.["delevary.addArea"] ?? true,
+      deliveryFreeDelivery: userPermissions?.["delevary.freeDelevary"] ?? true,
 
-      aboutUsShow:
-        saved?.aboutUsShow ?? userPermissions?.["showAboutUs"] ?? true,
-      evaluationShow:
-        saved?.evaluationShow ?? userPermissions?.["showClientsVote"] ?? true,
-      customerShow:
-        saved?.customerShow ?? userPermissions?.["showCustomers"] ?? true,
-      customerShowMessages:
-        saved?.customerShowMessages ??
-        userPermissions?.["showCustomersMessages"] ??
-        true,
-      kitchenShow:
-        saved?.kitchenShow ?? userPermissions?.["showKitchen"] ?? true,
-      statisticsShow:
-        saved?.statisticsShow ?? userPermissions?.["showStatistics"] ?? true,
-      supplierShow:
-        saved?.supplierShow ?? userPermissions?.["showSuppliers"] ?? true,
-      unitShow: saved?.unitShow ?? userPermissions?.["showUnits"] ?? true,
+      aboutUsShow: userPermissions?.["showAboutUs"] ?? true,
+      evaluationShow: userPermissions?.["showClientsVote"] ?? true,
+      customerShow: userPermissions?.["showCustomers"] ?? true,
+      customerShowMessages: userPermissions?.["showCustomersMessages"] ?? true,
+      kitchenShow: userPermissions?.["showKitchen"] ?? true,
+      statisticsShow: userPermissions?.["showStatistics"] ?? true,
+      supplierShow: userPermissions?.["showSuppliers"] ?? true,
+      unitShow: userPermissions?.["showUnits"] ?? true,
     }));
   }, [userPermissions]);
 
@@ -379,7 +304,7 @@ export const ScreensPermissionsProvider = ({ children }) => {
 
   useEffect(() => {
     if (screenSettings) {
-      localStorage.setItem("Screens Settings", JSON.stringify(screenSettings));
+      sessionStorage.setItem("Screens Settings", JSON.stringify(screenSettings));
     }
   }, [screenSettings]);
 

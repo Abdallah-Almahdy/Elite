@@ -22,7 +22,7 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 
 
 
-// Route::middleware('auth:web', 'web')->group(function () {
+Route::middleware('auth:web', 'web')->group(function () {
 
 
     Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
@@ -63,7 +63,7 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
-// });
+});
 
 
 Route::get('/sections', [ProductsController::class, 'GetAllSections']);
