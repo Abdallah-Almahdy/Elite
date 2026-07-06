@@ -21,6 +21,7 @@ Route::post('/create-order', [IndexPosController::class, 'createOrder']);
 
 Route::get('/getUserPermissions/{id}', [permissionsController::class, 'getUserPermissions']);
 Route::get('/permissions', [permissionsController::class, 'userPermissions']);
+Route::get('/invice-config', [InvoiceController::class, 'userInvioceConfig']);
 
 
 Route::middleware('auth:web', 'web')->group(function () {
@@ -58,7 +59,6 @@ Route::middleware('auth:web', 'web')->group(function () {
 
     Route::post('/permissions', [permissionsController::class, 'edit']);
 
-    Route::get('/invice-config', [InvoiceController::class, 'userInvioceConfig']);
     Route::post('/invice-config', [InvoiceController::class, 'editInviceConfig']);
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
