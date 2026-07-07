@@ -35,6 +35,7 @@ class InvoiceResource extends JsonResource
                     'unit_conversion_factor' => $product->unit_conversion_factor
                 ];
             }),
+            'warehosue_id' => $this->warehosue_id
 
 
         ];

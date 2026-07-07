@@ -43,9 +43,9 @@ class InvoiceController extends Controller
             'products.*.id' => 'required|integer|exists:products,id',
             'products.*.unit_conversion_factor' => 'required|numeric|min:0.0001',
             'products.*.quantity' => 'required|numeric|min:1',
-
+            "warehosue_id" => 'required|exists:warehouses,id'
         ]);
-        
+
 
          return $this->invoiceService->create($data);
 

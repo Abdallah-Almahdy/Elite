@@ -10,6 +10,7 @@ use App\Models\Barcode;
 // use App\Http\Resources\productCollection;
 use App\Models\Product;
 use App\Models\SubSection;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Traits\ApiTrait;
 use Illuminate\Support\Facades\Cache;
@@ -49,21 +50,32 @@ class ProductsController extends Controller
 
             ])
             ->paginate($request->get('num')); // كل صفحة 50 منتج
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
 
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
         // رجع Resource مع pagination
-        return productsResource::collection($products);
+        return productsResource::collection($products)
+            ->additional([
+                'warehouse_id' => $request->get('warehouse_id')
+            ]);
     }
 
-    public function get_product($id)
+    public function get_product($id, Request $request)
     {
         $data = Product::find($id);
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
 
-
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
         return new productsResource($data);
     }
 
   public function searchByname(Request $request)
 {
+
     $name = $request->query('name');
 
     $data = Product::with([
@@ -80,8 +92,16 @@ class ProductsController extends Controller
             'message' => 'بحث عن المنتج بالاسم لم يُعثر على نتائج.'
         ], 404);
     }
+       $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
 
-    return ProductsResource::collection($data);
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
+
+        return productsResource::collection($data)
+            ->additional([
+                'warehouse_id' => $request->get('warehouse_id')
+            ]);
 }
 
     public function searchByBarcode(Request $request)
@@ -101,6 +121,11 @@ class ProductsController extends Controller
                 'message' => 'لم يتم العثور على منتج مرتبط بهذا الباركود.'
             ], 404);
         }
+         $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
 
         return  new productsResource($product);
     }
@@ -130,9 +155,14 @@ class ProductsController extends Controller
 
 
 
-    public function get_best_sellers()
+    public function get_best_sellers(Request $request)
     {
         $data =  Product::where('purchase_count', '>', 0)->orderBy('purchase_count', 'desc')->get();
+
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
 
         return  productsResource::collection($data);
     }
@@ -140,10 +170,15 @@ class ProductsController extends Controller
 
 
 
-    public function get_offer_rate()
+    public function get_offer_rate(Request $request)
     {
         $data =  Product::where('offer_rate', '>', 0)->orderBy('offer_rate', 'desc')->get();
 
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
         if (!isset($data[0])) {
             return  [];
         } else {
@@ -198,6 +233,12 @@ class ProductsController extends Controller
             return [];
         }
 
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
+
         return productsResource::collection($products);
     }
 
@@ -215,6 +256,12 @@ class ProductsController extends Controller
             'section',
 
         ])->where('active', 1)->orderBy('created_at', 'desc')->paginate($perPage);
+
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+
+        $request->merge([
+            'warehouse_id' => $request->get('warehouse_id', $defaultWarehouseId),
+        ]);
 
         return response()->json([
             'total_products' => $data->total(),

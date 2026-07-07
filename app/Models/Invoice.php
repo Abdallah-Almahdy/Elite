@@ -11,7 +11,8 @@ class Invoice extends Model
         'total',
         'safe_id',
         'address',
-        'shift_id'
+        'shift_id',
+        "warehosue_id"
     ];
     public static function paymentMethods()
     {

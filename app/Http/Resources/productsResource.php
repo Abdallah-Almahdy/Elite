@@ -16,13 +16,17 @@ class productsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $quantity = $this->warehouseProducts()
+            ->where('warehouse_id', request('warehouse_id'))
+            ->first()?->quantity ;
+
 
         return [
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
             'image' => config('app.img_base_link') . $this->photo,
-            'quantity' =>  $this->defaultWarehouse->first()->pivot->quantity ?? 0,
+            'quantity' =>  $quantity ?? 0,
             'nutritionWeight' => 0,
             'unit_name' => 'ج.م',
             'offer_rate' => $this->offer_rate,
