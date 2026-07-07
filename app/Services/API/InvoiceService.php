@@ -23,7 +23,8 @@ class InvoiceService
 
             $shift = app(ShiftService::class)->openShift(1);
 
-            $warehouse = Warehouse::where('id', $data['warehouse_id'])->firstOrFail();
+            $warehouse = Warehouse::find($data['warehouse_id']);
+
 
             $invoice = $this->createInvoice($data, $shift);
 
@@ -173,6 +174,7 @@ class InvoiceService
             'shift_id'   => $shift->id,
             'safe_id'    => $shift->safe_id,
             'total'      => 0,
+            "warehouse_id" => $data['warehouse_id']
         ]);
     }
 

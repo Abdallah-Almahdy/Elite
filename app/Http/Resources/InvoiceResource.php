@@ -13,7 +13,7 @@ class InvoiceResource extends JsonResource
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
-    {
+    {   
         return [
             'id' => $this->id,
             'total' => $this->total,
@@ -35,7 +35,7 @@ class InvoiceResource extends JsonResource
                     'unit_conversion_factor' => $product->unit_conversion_factor
                 ];
             }),
-            'warehosue_id' => $this->warehosue_id
+            'warehouse_id' => $this->warehouse_id
 
 
         ];
