@@ -24,7 +24,7 @@ Route::get('/permissions', [permissionsController::class, 'userPermissions']);
 Route::get('/invice-config', [InvoiceController::class, 'userInvioceConfig']);
 
 
-Route::middleware('auth:web', 'web')->group(function () {
+// Route::middleware('auth:web', 'web')->group(function () {
 
 
 
@@ -63,7 +63,7 @@ Route::middleware('auth:web', 'web')->group(function () {
     Route::post('/check-password', [InvoiceController::class, 'checkPassword']);
 
     Route::get('/admins', [AuthController::class, 'getAdmins']);
-});
+// });
 
 
 Route::get('/sections', [ProductsController::class, 'GetAllSections']);
