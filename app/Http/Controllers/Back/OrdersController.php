@@ -92,4 +92,112 @@ class OrdersController extends Controller
     {
         //
     }
+
+    public function validateCart(Request $request)
+    {
+        $data = $request->validate([
+            'products' => 'required|array|min:1',
+            'products.*.id' => 'required|exists:products,id',
+            'products.*.quantity' => 'required|numeric|min:1',
+            'products.*.unit_conversion_factor' => 'required|numeric|min:0.0001',
+            'products.*.price' => 'required|numeric|min:0',
+        ]);
+
+        $products = Product::with([
+            'units',
+            'defaultWarehouse'
+        ])
+            ->whereIn('id', collect($data['products'])->pluck('id'))
+            ->get()
+            ->keyBy('id');
+
+
+
+        $changes = [];
+
+        foreach ($data['products'] as $item) {
+
+            $product = $products->get($item['id']);
+
+            if (!$product) {
+                continue;
+            }
+
+            if (!$product->active) {
+                $changes[] = [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'changes' => [
+                        'status' => [
+                            'type' => 'inactive',
+                            'message' => 'This product is no longer available.',
+                        ],
+                    ],
+                ];
+
+                continue;
+            }
+            $unit = $product->units->first(function ($unit) use ($item) {
+                return (float) $unit->pivot->conversion_factor === (float) $item['unit_conversion_factor'];
+            });
+
+
+            if (!$unit) {
+                $changes[] = [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'changes' => [
+                        'status' => [
+                            'type' => 'unit_not_available',
+                            'message' => 'This product is no longer available with the selected unit.',
+                        ],
+                    ],
+                ];
+
+                continue;
+            }
+
+            $currentPrice = $unit->pivot->sallprice;
+            $availableQuantity = $product->defaultWarehouse->first()?->pivot?->quantity ?? 0;
+
+            $productChanges = [];
+
+            // التحقق من السعر
+            if ((float) $item['price'] !== (float) $currentPrice) {
+                $productChanges['price'] = [
+                    'old' => (float) $item['price'],
+                    'new' => (float) $currentPrice,
+                ];
+            }
+
+            // التحقق من الكمية
+            if ($item['quantity'] > $availableQuantity) {
+                $productChanges['quantity'] = [
+                    'requested' => (float) $item['quantity'],
+                    'available' => (float) $availableQuantity,
+                ];
+            }
+
+            if (!empty($productChanges)) {
+                $changes[] = [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'changes' => $productChanges,
+                ];
+            }
+        }
+
+        if (empty($changes)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart is valid.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Some products have changed.',
+            'products' => $changes
+        ], 422);
+    }
 }

@@ -1,32 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 
 export default function ShiftModal({ isOpen, onConfirm, onClose }) {
   const [cashAmount, setCashAmount] = useState("");
-  useEffect(()=>{
-   if(isOpen){
-     const handleEnter = (e) =>{
-      if(e.key === 'Enter'){
-        try{
-          onConfirm(cashAmount)
-        }catch(err){
-          console.log(err)
-        }
-      }
-    }
-    window.addEventListener("keydown", handleEnter)
-    return() => {
-      window.removeEventListener("keydown", handleEnter)
-    }
-   }
-  }, [])
 
   if (!isOpen) return null;
-  
 
   return (
     <div className="fixed inset-0 w-full min-h-screen flex justify-center items-center bg-black/50 z-50">
+      
       <div className="w-[420px] bg-white rounded-2xl shadow-xl p-6 relative">
+
         <button
           onClick={onClose}
           className="absolute left-4 top-4 text-gray-500 hover:text-red-500 transition"
@@ -34,7 +18,9 @@ export default function ShiftModal({ isOpen, onConfirm, onClose }) {
           <IoClose className="text-2xl" />
         </button>
 
-        <h2 className="text-xl font-bold text-center mb-2">إغلاق الوردية</h2>
+        <h2 className="text-xl font-bold text-center mb-2">
+          إغلاق الوردية
+        </h2>
 
         <p className="text-sm text-gray-500 text-center mb-6">
           يرجى إدخال المبلغ الموجود فعليًا داخل الخزنة قبل إنهاء الوردية
@@ -51,12 +37,13 @@ export default function ShiftModal({ isOpen, onConfirm, onClose }) {
             value={cashAmount}
             onChange={(e) => setCashAmount(e.target.value)}
             placeholder="أدخل المبلغ"
-            autoFocus
             className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
+
         <div className="flex gap-3">
+
           <button
             onClick={onClose}
             className="flex-1 border rounded-lg py-2 hover:bg-gray-100"
@@ -70,7 +57,9 @@ export default function ShiftModal({ isOpen, onConfirm, onClose }) {
           >
             تأكيد إغلاق الوردية
           </button>
+
         </div>
+
       </div>
     </div>
   );

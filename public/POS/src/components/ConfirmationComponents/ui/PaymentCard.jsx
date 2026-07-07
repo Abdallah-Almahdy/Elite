@@ -5,41 +5,12 @@ import { FaWallet } from "react-icons/fa6";
 import { FaRegMoneyBillAlt } from "react-icons/fa";
 import { FormDataContext } from "../../../contexts/FormDataContext";
 import { useSelectedProducts } from "../../../contexts/SelectedProductsContext";
-import { fetchConfigs } from "../../../store/reducers/settingSlice";
-import { useSelector, useDispatch } from "react-redux";
-import { useProducts } from "../../../contexts/ProductsContext";
 export default function PaymentCard({
   error,
   remainingValue,
   setRemainingValue,
 }) {
   const { total } = useSelectedProducts();
-  const permissions = useSelector((state)=>state?.setting?.permissions);
-  // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
-  const dispatch = useDispatch();
-  const invoiceSettings = useSelector(
-    (state) => state?.setting?.invoiceSettings,
-  );
-  // useEffect(() => {
-  //   //dispatch(fetchConfigs());
-  // }, [dispatch]);
-
-  const paymentMethodOptions = [
-    { id: 1, code: "cash", label: "كاش" },
-    { id: 2, code: "credit_card", label: "بطاقة ائتمان" },
-    { id: 3, code: "instapay", label: "انستا باى" },
-    { id: 4, code: "wallet", label: "محفظة" },
-    { id: 5, code: "remaining", label: "اجل" },
-  ];
-
-  const allowedPaymentMethodCodes = invoiceSettings?.allowedPaymentMethods || [
-    "كاش",
-  ];
-  const allowedPaymentMethodLabels = paymentMethodOptions
-    .filter((method) => allowedPaymentMethodCodes.includes(method.code))
-    .map((method) => method.label);
-
-  const allowedPaymentMethods = allowedPaymentMethodLabels || ["كاش"];
   const methods = [
     { id: 1, name: "كاش", icon: <MdOutlineAttachMoney />, desc: "دفع نقدى" },
     {
@@ -52,33 +23,24 @@ export default function PaymentCard({
     { id: 4, name: "انستا باى", icon: <MdFlashOn />, desc: "انستا باى" },
     { id: 5, name: "اجل", icon: <FaRegMoneyBillAlt />, desc: "الدفع لاحقاً" },
   ];
-  const visibleMethods = methods.filter((method) =>
-    allowedPaymentMethods?.includes(method.name),
-  );
-  const { selectedProducts } = useSelectedProducts();
-
-  const { formData, setFormData } = useContext(FormDataContext);
-    const { setDraftFormData } = useProducts();
+  const {selectedProducts} = useSelectedProducts()
   
+  const { formData, setFormData } = useContext(FormDataContext);
   const [selectedMethods, setSelectedMethods] = useState(
     formData.paymentMethods,
   );
   const inputRefs = useRef({});
-  const userSettings = JSON.parse(localStorage.getItem("User Settings"));
-  useEffect(() => {
-    if (selectedProducts.length === 0) {
-      setSelectedMethods({});
-      setFormData((prev) => ({
-        ...prev,
-        paymentMethods: {},
-      }));
-      setDraftFormData((prev) => ({
-        ...prev,
-        paymentMethods: {},
-      }));
-    }
-  }, [selectedProducts, setFormData, setDraftFormData]);
-
+    const userSettings = JSON.parse(localStorage.getItem("User Settings"))
+useEffect(()=>{
+if(selectedProducts.length === 0) {
+  setSelectedMethods({});
+  setFormData((prev) => ({
+    ...prev,
+    paymentMethods: {}
+  }))
+}
+}, [selectedProducts, setFormData])
+  
   useEffect(() => {
     if (!formData?.paymentMethod) return;
 
@@ -90,10 +52,10 @@ export default function PaymentCard({
       const otherMethodsTotal = Object.entries(updated)
         .filter(([key]) => key !== method)
         .reduce((sum, [, val]) => sum + Number(val || 0), 0);
-      const remainingAmount = Number(total) - otherMethodsTotal.toFixed(2);
+      const remainingAmount = total - otherMethodsTotal.toFixed(2);
       if (updated[method] !== undefined) {
         // if (Number(updated[method]) < remainingAmount) {
-        updated[method] = remainingAmount.toFixed(2);
+          updated[method] = remainingAmount.toFixed(2);
         // }
       } else {
         updated[method] = remainingAmount.toFixed(2);
@@ -102,13 +64,12 @@ export default function PaymentCard({
     });
   }, [formData?.paymentMethod, total, remainingValue]);
 
+
+
+
   useEffect(() => {
     if (Object.keys(selectedMethods).length === 1) {
       setFormData((prev) => ({
-        ...prev,
-        paymentMethod: `${Object.keys(selectedMethods)[0]}`,
-      }));
-      setDraftFormData((prev) => ({
         ...prev,
         paymentMethod: `${Object.keys(selectedMethods)[0]}`,
       }));
@@ -118,10 +79,6 @@ export default function PaymentCard({
   useEffect(() => {
     if (Object.keys(selectedMethods).length > 0) {
       setFormData((prev) => ({
-        ...prev,
-        paymentMethods: selectedMethods,
-      }));
-      setDraftFormData((prev) => ({
         ...prev,
         paymentMethods: selectedMethods,
       }));
@@ -151,11 +108,12 @@ export default function PaymentCard({
     0,
   );
 
-  const remainingTotal = (paidAmount - Number(total)).toFixed(2);
+
+  const remainingTotal = (paidAmount - total).toFixed(2);
   const isFullyPaid = Number(remainingTotal) < 0;
   useEffect(() => {
     setRemainingValue(remainingTotal);
-  }, [remainingTotal]);
+  }, [remainingTotal ]);
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -165,7 +123,7 @@ export default function PaymentCard({
         المتبقي:
         {remainingTotal}
       </div>
-      {visibleMethods.map((m) => (
+      {methods.map((m) => (
         <div
           key={m.id}
           className={`flex items-center justify-between border rounded-md p-1 px-2 transition ${
@@ -180,20 +138,10 @@ export default function PaymentCard({
               checked={!!selectedMethods[m.name]}
               onChange={() => handleToggle(m.name)}
               className="w-4 h-4 accent-blue-600"
-              disabled={!permissions["pos.paymentMethodChangeAuth"]}
+              disabled={!userSettings?.methodChangeAuth}
             />
-            <span
-              className="text-blue-600 opacity-80 cursor-pointer"
-              onClick={() => handleToggle(m.name)}
-            >
-              {m.icon}
-            </span>
-            <span
-              className="text-sm font-semibold cursor-pointer"
-              onClick={() => handleToggle(m.name)}
-            >
-              {m.name}
-            </span>
+            <span className="text-blue-600 opacity-80 cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.icon}</span>
+            <span className="text-sm font-semibold cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.name}</span>
           </div>
 
           {selectedMethods[m.name] !== undefined && (

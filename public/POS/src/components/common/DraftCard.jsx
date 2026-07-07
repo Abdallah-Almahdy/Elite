@@ -3,7 +3,7 @@ import React from "react";
 export default function DraftCard({ data, handleReturn }) {
   return (
     <>
-      {data?.map((draft) => {
+      {data.map((draft) => {
         return (
           <div
             key={draft?.id}

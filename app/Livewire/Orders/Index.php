@@ -5,6 +5,8 @@ namespace App\Livewire\Orders;
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\OrderTracking;
+use App\Models\Warehouse;
+use App\Services\API\InvoiceService;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -24,7 +26,30 @@ class Index extends Component
 
     public function delivery($id)
     {
+        $order = Order::with('orderProducts')->findOrFail($id);
+
         OrderTracking::where('order_id', $id)->update(['status' => 2]);
+
+        $data = [
+            'address' => $order->address,
+            'warehouse_id' =>  Warehouse::where('is_default', true)->value('id'), // اختر المخزن هنا,
+            'payment_methods' => [
+                [
+                    'key' => $order->payment_method,
+                    'amount' => $order->totalPrice,
+                ]
+            ],
+            'products' => $order->orderProducts->map(function ($product) {
+                return [
+                    'id' => $product->product_id,
+                    'quantity' => $product->totalCount,
+                    'unit_conversion_factor' => $product->unit_conversion_factor,
+                ];
+            })->toArray(),
+        ];
+
+        app(InvoiceService::class)->create($data);
+        
     }
 
     public function cancel($id)

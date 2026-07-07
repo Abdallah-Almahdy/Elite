@@ -34,7 +34,7 @@ class OrdersService
             'orderProducts.*.quantity' => 'required|integer|min:1',
             'orderProducts.*.unit_id' => 'required|exists:units,id',
             'orderProducts.*.unit_conversion_factor' => 'required|numeric|min:0.01',
-            
+
         ]);
 
 
@@ -68,7 +68,7 @@ class OrdersService
             'special_order_notes' => $data['special_order_notes'],
             'discount' => 0,
             'totalPrice' => 0,
-            'phoneNumber' => $user->profile->phone_number,
+            'phoneNumber' => $user->userProfile->phone_number,
             'status' => 0
         ];
 

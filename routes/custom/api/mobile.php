@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
-
+use App\Http\Controllers\Back\OrdersController as BackOrdersController;
 
 Route::middleware('auth:sanctum')->group(function ()
 {
@@ -129,3 +129,4 @@ Route::match(['get', 'post'], '/payment/callback', [PaymentController::class, 'c
 
 
 Route::get('getDeliveryPrice', [DeliveryController::class, 'getDeliveryPrice']);
+Route::post('/validateCart', [BackOrdersController::class, 'validateCart']);

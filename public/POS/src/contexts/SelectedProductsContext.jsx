@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import { useCalculateTotals } from "../utils/useCalculateTotals";
+import { calculateTotals } from "../utils/calculateTotals";
 
 const SelectedProductsContext = createContext(null);
 
@@ -7,7 +7,9 @@ export const SelectedProductsProvider = ({ children }) => {
   const savedData =
     JSON.parse(sessionStorage?.getItem("Selected Products")) || [];
   const [selectedProducts, setSelectedProducts] = useState(savedData || []);
-  const { total } = useCalculateTotals(selectedProducts);
+  const { total } = useMemo(() => {
+    return calculateTotals(selectedProducts);
+  }, [selectedProducts]);
 
   return (
     <SelectedProductsContext.Provider

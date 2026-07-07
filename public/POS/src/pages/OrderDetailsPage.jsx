@@ -8,52 +8,28 @@ import PaymentMethods from "../components/ConfirmationComponents/common/PaymentM
 import Actions from "../components/ConfirmationComponents/common/Actions";
 import UserInfoSummary from "../components/ConfirmationComponents/common/UserInfoSummary";
 import { useNetworkStatus } from "../hooks/offlineFirst/useNetworkStatus";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { syncOfflineOrders } from "../store/reducers/orderSlice";
 import { saveOrder } from "../store/reducers/orderSlice";
 import { FormDataContext } from "../contexts/FormDataContext";
 import Receipt80mm from "../components/ui/Receipt80mm";
-import { useCalculateTotals } from "../utils/useCalculateTotals";
+import { calculateTotals } from "../utils/calculateTotals";
 import { useSelectedProducts } from "../contexts/SelectedProductsContext";
 import { deleteDraft } from "../store/reducers/draftSlice";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../contexts/ProductsContext";
 import notify from "../hooks/Notification";
-import { fetchConfigs, fetchPermissions } from "../store/reducers/settingSlice";
 
 export default function OrderDetailsPage() {
-  const dispatch = useDispatch();
-  const invoiceSettings = useSelector(
-    (state) => state?.setting?.invoiceSettings,
-  );
-  const warehouseName = useSelector((state) => state?.setting?.warehouseName);
-   useEffect(()=>{
-     dispatch(fetchPermissions());
-   }, [])
-  const paymentMapping = {
-    cash: "كاش",
-    credit_card: "بطاقة ائتمان",
-    instapay: "انستا باى",
-    wallet: "محفظة",
-    remaining: "اجل",
-  };
-
-  const invoiceMapping = {
-    take_away: "تيك أواى",
-    delvery: "دليفرى",
-    hall: "صالة",
-  };
+  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPayment, setSelectedPayment] = useState(
-    paymentMapping[invoiceSettings?.defaultPaymentMethod],
-  );
-  const [selectedOrder, setSelectedOrder] = useState(
-    invoiceMapping[invoiceSettings?.defaultInvoiceType],
-  );
+  const [selectedPayment, setSelectedPayment] = useState(invoiceSettings?.defaultPaymentMethod);
+  const [selectedOrder, setSelectedOrder] = useState(invoiceSettings?.defaultInvoiceType);
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const formRef = useRef();
+  const dispatch = useDispatch();
   const [error, setError] = useState("");
   const [remainingValue, setRemainingValue] = useState(0);
   const receiptRef = useRef();
@@ -63,24 +39,12 @@ export default function OrderDetailsPage() {
   const { selectedProducts, total, setSelectedProducts } =
     useSelectedProducts();
   const { formData, setFormData } = useContext(FormDataContext);
-  const { setDraftFormData, setInvSerial, handleFreeze } = useProducts();
+  const { setDraftFormData, setInvSerial } = useProducts();
   const { handleNew } = useProducts();
 
-  const { subtotal } = useCalculateTotals(selectedProducts);
-    const [draftID, setDraftID] = useState(1)
-
+  const { subtotal } = calculateTotals(selectedProducts);
 
   useNetworkStatus();
-
-   useEffect(() => {
-    
-    setDraftID(JSON.parse(sessionStorage.getItem("draftFormData"))?.id)
-
-     if(JSON.parse(sessionStorage.getItem("draftFormData"))?.id === formData?.serialInput){
-      handleFreeze();
-     }
-       
-  }, [selectedProducts, formData, total, handleFreeze, draftID] );
 
   useEffect(() => {
     const handleOnline = () => dispatch(syncOfflineOrders());
@@ -99,11 +63,8 @@ export default function OrderDetailsPage() {
     }
   };
 
-  // const printReceipt = (data) => {
-  //   receiptRef?.current?.printReceipt(data || invoice);
-  // };
-  const printReceipt = () => {
-    receiptRef?.current?.printReceipt();
+  const printReceipt = (data) => {
+    receiptRef?.current?.printReceipt(data || invoice);
   };
 
   const paymentMethodMap = {
@@ -122,230 +83,220 @@ export default function OrderDetailsPage() {
     }));
 
   const handleSubmitWithPrinting = async () => {
-    try {
-      // formRef.current?.submitForm();
-      const paymentMethods = formData.paymentMethods || {};
-      const hasPrice = Object.values(paymentMethods).some(
-        (val) => val !== "" && Number(val) > 0,
-      );
-      if (!hasPrice) {
-        setError("يجب إدخال قيمة لطريقة دفع واحدة على الأقل قبل إتمام الطلب");
-        return;
-      }
-      if (remainingValue < 0) {
-        setError("يجب دفع القيمة المطلوبة");
-        return;
-      }
-      setError("");
-      const isValid = await formRef?.current?.validateForm();
-      if (isValid) {
-        formRef?.current?.submitForm();
-        const payload = {
-          payment_methods: convertedPaymentMethods,
-          // payment_method: "cash",
-          cashier_id: Number(formData.cashier_id) || 1,
-
-          products: selectedProducts.map((product) => ({
-            id: product.id,
-            unit_conversion_factor: product.unit_conversion_factor ?? 1,
-            quantity: product.number,
-          })),
-        };
-        if (formData.address1?.trim()) {
-          payload.address = formData.address1.trim();
-        }
-        try {
-          await receiptRef.current?.printReceipt();
-          const returnedInvoice = await dispatch(saveOrder(payload));
-
-          const invoiceData = {
-            id: returnedInvoice?.id,
-            type: "invoice",
-            invoice: {
-              userInfo: formData,
-              items: selectedProducts,
-              subTotal: subtotal,
-              timestamp: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`,
-            },
-          };
-
-          setInvoice(invoiceData);
-          setPayload(returnedInvoice);
-          let backendSerial = returnedInvoice?.id ? returnedInvoice?.id : 1;
-          setInvSerial(backendSerial);
-          localStorage.setItem(
-            "Invoice Serial",
-            JSON.stringify(backendSerial || 1),
-          );
-          await dispatch(
-            deleteDraft(invoiceData?.invoice?.userInfo?.serialInput),
-          );
-          handleNew();
-          sessionStorage.removeItem("selectedUser");
-          sessionStorage.removeItem("draftFormData");
-          sessionStorage.removeItem("Selected Products");
-          setSelectedProducts([]);
-
-          let date = new Date();
-          date = `${date.getFullYear()}-${date.toLocaleDateString("en-US", {
-            month: "2-digit",
-          })}-${date.toLocaleDateString("en-US", {
-            day: "2-digit",
-          })}`;
-          sessionStorage.removeItem("FormData");
-
-          setDraftFormData({
-            serialInput: ++backendSerial || "",
-            dateInput: date || "",
-            clientName: "",
-            notes: "",
-              paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
-      paymentMethods: {}, 
-        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
-            phone1: "",
-            newPhone: "",
-            optionalPhone: "",
-            address1: "",
-            newAddress: "",
-            optionalAddress: "",
-            warehouseName: warehouseName || "",
-          });
-          setFormData({
-            serialInput: ++backendSerial || "",
-            dateInput: date || "",
-            clientName: "",
-            notes: "",
-            paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
-      paymentMethods: {}, 
-        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
-            phone1: "",
-            newPhone: "",
-            optionalPhone: "",
-            address1: "",
-            newAddress: "",
-            optionalAddress: "",
-            warehouseName: warehouseName || "",
-          });
-        } catch (err) {
-          notify(err, "error");
-        }
-
-        // navigate("/", { replace: true });
-      }
-    } catch (error) {
-      notify("حدث مشكلة يرجى المحاولة مرة أخرى", "error");
+   try{
+ 
+    // formRef.current?.submitForm();
+    const paymentMethods = formData.paymentMethods || {};
+    const hasPrice = Object.values(paymentMethods).some(
+      (val) => val !== "" && Number(val) > 0,
+    );
+    if (!hasPrice) {
+      setError("يجب إدخال قيمة لطريقة دفع واحدة على الأقل قبل إتمام الطلب");
+      return;
     }
+    if (remainingValue < 0) {
+      setError("يجب دفع القيمة المطلوبة");
+      return;
+    }
+    setError("");
+    const isValid = await formRef?.current?.validateForm();
+    if (isValid) {
+      formRef?.current?.submitForm();
+      const payload = {
+        payment_methods:  convertedPaymentMethods,
+        // payment_method: "cash",
+        cashier_id: Number(formData.cashier_id) || 1,
+
+        products: selectedProducts.map((product) => ({
+          id: product.id,
+          unit_conversion_factor: product.unit_conversion_factor ?? 1,
+          quantity: product.number,
+        })),
+      };
+      if (formData.address1?.trim()) {
+  payload.address = formData.address1.trim();
+}
+      const returnedInvoice = await dispatch(saveOrder(payload));
+      await receiptRef.current?.printReceipt();
+
+      const invoiceData = {
+        id: returnedInvoice?.id,
+        type: "invoice",
+        invoice: {
+          userInfo: formData,
+          items: selectedProducts,
+          subTotal: subtotal,
+          timestamp: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`,
+        },
+      };
+
+      setInvoice(invoiceData);
+      setPayload(returnedInvoice);
+      let backendSerial = returnedInvoice?.id ? returnedInvoice?.id : 1;
+      setInvSerial(backendSerial);
+      localStorage.setItem("Invoice Serial", JSON.stringify(backendSerial || 1));
+      // console.log(returnedInvoice.id)
+      await dispatch(deleteDraft(invoiceData?.invoice?.userInfo?.serialInput));
+      handleNew();
+      sessionStorage.removeItem("selectedUser");
+      sessionStorage.removeItem("draftFormData");
+      sessionStorage.removeItem("Selected Products");
+      setSelectedProducts([]);
+
+      let date = new Date();
+      date = `${date.getFullYear()}-${date.toLocaleDateString("en-US", {
+        month: "2-digit",
+      })}-${date.toLocaleDateString("en-US", {
+        day: "2-digit",
+      })}`;
+      sessionStorage.removeItem("FormData");
+
+      setDraftFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: invoiceSettings?.defaultPaymentMethod,
+        paymentMethods: {},
+        invoiceType: invoiceSettings?.defaultInvoiceType,
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+      setFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: "كاش",
+        paymentMethods: {},
+        invoiceType: "تيك أواى",
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+
+      
+      // navigate("/", { replace: true });
+    }
+   }
+   catch(error){
+    notify("حدث مشكلة يرجى المحاولة مرة أخرى", "error" || error.message)
+   }
   };
 
   const handleSubmitWithoutPrinting = async () => {
-    try {
-      // formRef.current?.submitForm();
-      const paymentMethods = formData.paymentMethods || {};
-      const hasPrice = Object.values(paymentMethods).some(
-        (val) => val !== "" && Number(val) > 0,
-      );
-      if (!hasPrice) {
-        setError("يجب إدخال قيمة لطريقة دفع واحدة على الأقل قبل إتمام الطلب");
-        return;
-      }
-      if (remainingValue < 0) {
-        setError("يجب دفع القيمة المطلوبة");
-        return;
-      }
-      setError("");
-      const isValid = await formRef?.current?.validateForm();
-      if (isValid) {
-        formRef?.current?.submitForm();
-        const payload = {
-          payment_methods: convertedPaymentMethods,
-          // payment_method: "cash",
-          cashier_id: Number(formData.cashier_id) || 1,
-
-          products: selectedProducts.map((product) => ({
-            id: product.id,
-            unit_conversion_factor: product.unit_conversion_factor ?? 1,
-            quantity: product.number || product.quantity,
-          })),
-        };
-        if (formData.address1?.trim()) {
-          payload.address = formData.address1.trim();
-        }
-        const returnedInvoice = await dispatch(saveOrder(payload));
-
-        const invoiceData = {
-          id: returnedInvoice?.id,
-          type: "invoice",
-          invoice: {
-            userInfo: formData,
-            items: selectedProducts,
-            subTotal: subtotal,
-            timestamp: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`,
-          },
-        };
-
-        setInvoice(invoiceData);
-        setPayload(returnedInvoice);
-        let backendSerial = returnedInvoice?.id;
-        setInvSerial(backendSerial);
-        localStorage.setItem(
-          "Invoice Serial",
-          JSON.stringify(backendSerial || 1),
-        );
-        await dispatch(
-          deleteDraft(invoiceData?.invoice?.userInfo?.serialInput),
-        );
-        handleNew();
-        sessionStorage.removeItem("selectedUser");
-        sessionStorage.removeItem("draftFormData");
-        sessionStorage.removeItem("Selected Products");
-        setSelectedProducts([]);
-
-        let date = new Date();
-        date = `${date.getFullYear()}-${date.toLocaleDateString("en-US", {
-          month: "2-digit",
-        })}-${date.toLocaleDateString("en-US", {
-          day: "2-digit",
-        })}`;
-        sessionStorage.removeItem("FormData");
-
-        setDraftFormData({
-          serialInput: ++backendSerial || "",
-          dateInput: date || "",
-          clientName: "",
-          notes: "",
-          paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
-      paymentMethods: {}, 
-        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
-          phone1: "",
-          newPhone: "",
-          optionalPhone: "",
-          address1: "",
-          newAddress: "",
-          optionalAddress: "",
-          warehouseName: warehouseName || "",
-        });
-        setFormData({
-          serialInput: ++backendSerial || "",
-          dateInput: date || "",
-          clientName: "",
-          notes: "",
-          paymentMethod: paymentMapping[invoiceSettings?.defaultPaymentMethod] ?? "كاش" ,
-      paymentMethods: {}, 
-        invoiceType: invoiceMapping[invoiceSettings?.defaultInvoiceType] ?? ["تيك أواى"],
-          phone1: "",
-          newPhone: "",
-          optionalPhone: "",
-          address1: "",
-          newAddress: "",
-          optionalAddress: "",
-          warehouseName: warehouseName || "",
-        });
-
-        // navigate("/", { replace: true });
-      }
-    } catch (error) {
-      notify("حدث مشكلة يرجى المحاولة مرة أخرى", "error" || error.message);
+   try{
+ 
+    // formRef.current?.submitForm();
+    const paymentMethods = formData.paymentMethods || {};
+    const hasPrice = Object.values(paymentMethods).some(
+      (val) => val !== "" && Number(val) > 0,
+    );
+    if (!hasPrice) {
+      setError("يجب إدخال قيمة لطريقة دفع واحدة على الأقل قبل إتمام الطلب");
+      return;
     }
+    if (remainingValue < 0) {
+      setError("يجب دفع القيمة المطلوبة");
+      return;
+    }
+    setError("");
+    const isValid = await formRef?.current?.validateForm();
+    if (isValid) {
+      formRef?.current?.submitForm();
+      const payload = {
+        payment_methods:  convertedPaymentMethods,
+        // payment_method: "cash",
+        cashier_id: Number(formData.cashier_id) || 1,
+
+        products: selectedProducts.map((product) => ({
+          id: product.id,
+          unit_conversion_factor: product.unit_conversion_factor ?? 1,
+          quantity: product.number || product.quantity,
+        })),
+      };
+      if (formData.address1?.trim()) {
+  payload.address = formData.address1.trim();
+}
+      const returnedInvoice = await dispatch(saveOrder(payload));
+
+      const invoiceData = {
+        id: returnedInvoice?.id,
+        type: "invoice",
+        invoice: {
+          userInfo: formData,
+          items: selectedProducts,
+          subTotal: subtotal,
+          timestamp: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`,
+        },
+      };
+
+      setInvoice(invoiceData);
+      setPayload(returnedInvoice);
+      let backendSerial = returnedInvoice?.id;
+      setInvSerial(backendSerial);
+      localStorage.setItem("Invoice Serial", JSON.stringify(backendSerial || 1));
+      // console.log(returnedInvoice.id)
+      await dispatch(deleteDraft(invoiceData?.invoice?.userInfo?.serialInput));
+      handleNew();
+      sessionStorage.removeItem("selectedUser");
+      sessionStorage.removeItem("draftFormData");
+      sessionStorage.removeItem("Selected Products");
+      setSelectedProducts([]);
+
+      let date = new Date();
+      date = `${date.getFullYear()}-${date.toLocaleDateString("en-US", {
+        month: "2-digit",
+      })}-${date.toLocaleDateString("en-US", {
+        day: "2-digit",
+      })}`;
+      sessionStorage.removeItem("FormData");
+
+      setDraftFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: invoiceSettings?.defaultPaymentMethod,
+        paymentMethods: {},
+        invoiceType: invoiceSettings?.defaultInvoiceType,
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+      setFormData({
+        serialInput: ++backendSerial || "",
+        dateInput: date || "",
+        clientName: "",
+        notes: "",
+        paymentMethod: "كاش",
+        paymentMethods: {},
+        invoiceType: "تيك أواى",
+        phone1: "",
+        newPhone: "",
+        optionalPhone: "",
+        address1: "",
+        newAddress: "",
+        optionalAddress: "",
+      });
+
+      
+      // navigate("/", { replace: true });
+    }
+   }
+   catch(error){
+    notify("حدث مشكلة يرجى المحاولة مرة أخرى", "error" || error.message)
+   }
   };
 
   useEffect(() => {

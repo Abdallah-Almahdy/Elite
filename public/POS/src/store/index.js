@@ -3,7 +3,6 @@ import productSlice from "./reducers/productSlice";
 import orderSlice from "./reducers/orderSlice";
 import userSlice from "./reducers/userSlice";
 import draftSlice from "./reducers/draftSlice";
-import settingSlice from "./reducers/settingSlice";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +10,5 @@ export const store = configureStore({
     order: orderSlice,
     user: userSlice,
     draft: draftSlice,
-    setting: settingSlice,
   },
 });
