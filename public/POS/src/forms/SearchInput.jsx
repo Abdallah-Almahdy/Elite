@@ -1,6 +1,10 @@
 import React from "react";
 
-export default function SearchInput( {searchByClientName, setSearchByClientName, setCurrentPage} ) {
+export default function SearchInput({
+  searchByClientName,
+  setSearchByClientName,
+  setCurrentPage,
+}) {
   return (
     <form className="w-full mx-auto">
       <label
@@ -33,7 +37,7 @@ export default function SearchInput( {searchByClientName, setSearchByClientName,
           id="searchByClientName"
           name="searchByClientName"
           value={searchByClientName}
-          onChange={(e)=>{
+          onChange={(e) => {
             setSearchByClientName(e.target.value);
             setCurrentPage(1);
           }}

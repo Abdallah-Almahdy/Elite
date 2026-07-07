@@ -9,6 +9,7 @@ const initialState = {
   searchedResultsInGrid: [],
   barcodeProduct: [],
   maxPage: 1,
+  totalNoProducts: 0,
   loading: false,
   error: null,
 };
@@ -27,9 +28,9 @@ export const fetchCategory = createAsyncThunk(
 
 export const searchProductsByName = createAsyncThunk(
   "products/searchProductsByName",
-  async (searchName, { rejectWithValue }) => {
+  async ({searchName, warehouse_id}, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/product/searchByname?name=${searchName}`);
+      const response = await api.get(`/product/searchByname?name=${searchName}&warehouse_id=${warehouse_id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -39,9 +40,9 @@ export const searchProductsByName = createAsyncThunk(
 
 export const searchProductsByNameInGrid = createAsyncThunk(
   "products/searchProductsByNameInGrid",
-  async (searchName, { rejectWithValue }) => {
+  async ({searchName, warehouse_id}, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/product/searchByname?name=${searchName}`);
+      const response = await api.get(`/product/searchByname?name=${searchName}&warehouse_id=${warehouse_id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -51,9 +52,9 @@ export const searchProductsByNameInGrid = createAsyncThunk(
 
 export const searchProductsByBarcode = createAsyncThunk(
   "products/searchProductsByBarcode",
-  async (barcodeValue, { rejectWithValue }) => {
+  async ({barcodeValue, warehouse_id}, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/product/searchByBarcode?barcode=${barcodeValue}`);
+      const response = await api.get(`/product/searchByBarcode?barcode=${barcodeValue}&warehouse_id=${warehouse_id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -63,9 +64,9 @@ export const searchProductsByBarcode = createAsyncThunk(
 
 export const fetchCategoryProducts = createAsyncThunk(
   "sections/fetchCategoryProducts",
-  async ({id, pageNum, itemNum}, { rejectWithValue }) => {
+  async ({ id, pageNum, itemNum, warehouse_id}, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/sections/${id}/products?page=${pageNum}&num=${itemNum}`);
+      const response = await api.get(`/sections/${id}/products?page=${pageNum}&num=${itemNum}&warehouse_id=${warehouse_id}`);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -107,6 +108,7 @@ export const productSlice = createSlice({
         state.loading = false;
         state.products = action?.payload?.data;
         state.maxPage = action?.payload?.meta?.last_page;
+        state.totalNoProducts = action?.payload?.meta?.total;
       })
       .addCase(fetchCategoryProducts.rejected, (state, action) => {
         state.loading = false;

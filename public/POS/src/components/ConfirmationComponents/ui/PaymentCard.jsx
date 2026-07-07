@@ -5,12 +5,41 @@ import { FaWallet } from "react-icons/fa6";
 import { FaRegMoneyBillAlt } from "react-icons/fa";
 import { FormDataContext } from "../../../contexts/FormDataContext";
 import { useSelectedProducts } from "../../../contexts/SelectedProductsContext";
+import { fetchConfigs } from "../../../store/reducers/settingSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { useProducts } from "../../../contexts/ProductsContext";
 export default function PaymentCard({
   error,
   remainingValue,
   setRemainingValue,
 }) {
   const { total } = useSelectedProducts();
+  const permissions = useSelector((state) => state?.setting?.permissions);
+  // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  const dispatch = useDispatch();
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+  // useEffect(() => {
+  //   //dispatch(fetchConfigs());
+  // }, [dispatch]);
+
+  const paymentMethodOptions = [
+    { id: 1, code: "cash", label: "كاش" },
+    { id: 2, code: "credit_card", label: "بطاقة ائتمان" },
+    { id: 3, code: "instapay", label: "انستا باى" },
+    { id: 4, code: "wallet", label: "محفظة" },
+    { id: 5, code: "remaining", label: "اجل" },
+  ];
+
+  const allowedPaymentMethodCodes = invoiceSettings?.allowedPaymentMethods || [
+    "كاش",
+  ];
+  const allowedPaymentMethodLabels = paymentMethodOptions
+    .filter((method) => allowedPaymentMethodCodes.includes(method.code))
+    .map((method) => method.label);
+
+  const allowedPaymentMethods = allowedPaymentMethodLabels || ["كاش"];
   const methods = [
     { id: 1, name: "كاش", icon: <MdOutlineAttachMoney />, desc: "دفع نقدى" },
     {
@@ -23,24 +52,33 @@ export default function PaymentCard({
     { id: 4, name: "انستا باى", icon: <MdFlashOn />, desc: "انستا باى" },
     { id: 5, name: "اجل", icon: <FaRegMoneyBillAlt />, desc: "الدفع لاحقاً" },
   ];
-  const {selectedProducts} = useSelectedProducts()
-  
+  const visibleMethods = methods.filter((method) =>
+    allowedPaymentMethods?.includes(method.name),
+  );
+  const { selectedProducts } = useSelectedProducts();
+
   const { formData, setFormData } = useContext(FormDataContext);
+  const { setDraftFormData } = useProducts();
+
   const [selectedMethods, setSelectedMethods] = useState(
     formData.paymentMethods,
   );
   const inputRefs = useRef({});
-    const userSettings = JSON.parse(localStorage.getItem("User Settings"))
-useEffect(()=>{
-if(selectedProducts.length === 0) {
-  setSelectedMethods({});
-  setFormData((prev) => ({
-    ...prev,
-    paymentMethods: {}
-  }))
-}
-}, [selectedProducts, setFormData])
-  
+  const userSettings = JSON.parse(localStorage.getItem("User Settings"));
+  useEffect(() => {
+    if (selectedProducts.length === 0) {
+      setSelectedMethods({});
+      setFormData((prev) => ({
+        ...prev,
+        paymentMethods: {},
+      }));
+      setDraftFormData((prev) => ({
+        ...prev,
+        paymentMethods: {},
+      }));
+    }
+  }, [selectedProducts, setFormData, setDraftFormData]);
+
   useEffect(() => {
     if (!formData?.paymentMethod) return;
 
@@ -52,24 +90,25 @@ if(selectedProducts.length === 0) {
       const otherMethodsTotal = Object.entries(updated)
         .filter(([key]) => key !== method)
         .reduce((sum, [, val]) => sum + Number(val || 0), 0);
-      const remainingAmount = total - otherMethodsTotal.toFixed(2);
+      const remainingAmount = Number(total) - otherMethodsTotal.toFixed(2);
       if (updated[method] !== undefined) {
         // if (Number(updated[method]) < remainingAmount) {
-          updated[method] = remainingAmount.toFixed(2);
+        updated[method] = remainingAmount.toFixed(2);
         // }
       } else {
         updated[method] = remainingAmount.toFixed(2);
       }
       return updated;
     });
-  }, [formData?.paymentMethod, total, remainingValue]);
-
-
-
+  }, [formData?.paymentMethod, total]);
 
   useEffect(() => {
     if (Object.keys(selectedMethods).length === 1) {
       setFormData((prev) => ({
+        ...prev,
+        paymentMethod: `${Object.keys(selectedMethods)[0]}`,
+      }));
+      setDraftFormData((prev) => ({
         ...prev,
         paymentMethod: `${Object.keys(selectedMethods)[0]}`,
       }));
@@ -79,6 +118,10 @@ if(selectedProducts.length === 0) {
   useEffect(() => {
     if (Object.keys(selectedMethods).length > 0) {
       setFormData((prev) => ({
+        ...prev,
+        paymentMethods: selectedMethods,
+      }));
+      setDraftFormData((prev) => ({
         ...prev,
         paymentMethods: selectedMethods,
       }));
@@ -98,22 +141,43 @@ if(selectedProducts.length === 0) {
   };
 
   const handleAmountChange = (name, value) => {
-    if (!/^\d*\.?\d*$/.test(value)) return;
-    setSelectedMethods((prev) => ({ ...prev, [name]: value }));
-  };
+  if (!/^\d*\.?\d*$/.test(value)) return;
 
-  // Calculate remaining total dynamically
+  const defaultMethod = formData.paymentMethod || "كاش";
+
+  setSelectedMethods((prev) => {
+    const updated = { ...prev, [name]: value };
+
+    if (name === defaultMethod) {
+      return updated;
+    }
+
+    const otherMethodsTotal = Object.entries(updated)
+      .filter(([key]) => key !== defaultMethod)
+      .reduce((sum, [, val]) => sum + Number(val || 0), 0);
+
+    const remainingForDefault = Number(total) - otherMethodsTotal;
+
+    if (remainingForDefault >= 0) {
+      updated[defaultMethod] = remainingForDefault.toString();
+    } else {
+      updated[defaultMethod] = "0"; 
+    }
+
+    return updated;
+  });
+};
+
   const paidAmount = Object.values(selectedMethods).reduce(
     (sum, val) => sum + Number(val || 0),
     0,
   );
 
-
-  const remainingTotal = (paidAmount - total).toFixed(2);
+  const remainingTotal = (paidAmount - Number(total)).toFixed(2);
   const isFullyPaid = Number(remainingTotal) < 0;
   useEffect(() => {
     setRemainingValue(remainingTotal);
-  }, [remainingTotal ]);
+  }, [remainingTotal]);
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -123,7 +187,7 @@ if(selectedProducts.length === 0) {
         المتبقي:
         {remainingTotal}
       </div>
-      {methods.map((m) => (
+      {visibleMethods.map((m) => (
         <div
           key={m.id}
           className={`flex items-center justify-between border rounded-md p-1 px-2 transition ${
@@ -138,10 +202,20 @@ if(selectedProducts.length === 0) {
               checked={!!selectedMethods[m.name]}
               onChange={() => handleToggle(m.name)}
               className="w-4 h-4 accent-blue-600"
-              disabled={!userSettings?.methodChangeAuth}
+              disabled={!permissions["pos.paymentMethodChangeAuth"]}
             />
-            <span className="text-blue-600 opacity-80 cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.icon}</span>
-            <span className="text-sm font-semibold cursor-pointer" onClick={()=> handleToggle(m.name)}>{m.name}</span>
+            <span
+              className="text-blue-600 opacity-80 cursor-pointer"
+              onClick={() => handleToggle(m.name)}
+            >
+              {m.icon}
+            </span>
+            <span
+              className="text-sm font-semibold cursor-pointer"
+              onClick={() => handleToggle(m.name)}
+            >
+              {m.name}
+            </span>
           </div>
 
           {selectedMethods[m.name] !== undefined && (
@@ -151,13 +225,16 @@ if(selectedProducts.length === 0) {
               value={selectedMethods[m.name] ?? ""}
               onChange={(e) => handleAmountChange(m.name, e.target.value)}
               onBlur={() => {
-                if (selectedMethods[m.name] === "") {
-                  setSelectedMethods((prev) => {
-                    const copy = { ...prev };
+                setSelectedMethods((prev) => {
+                  const copy = { ...prev };
+
+                  if (copy[m.name] === "" || copy[m.name] === undefined) {
                     delete copy[m.name];
-                    return copy;
-                  });
-                }
+                  } else {
+                    copy[m.name] = Number(copy[m.name]).toFixed(2);
+                  }
+                  return copy;
+                });
               }}
               placeholder="المبلغ"
               className="w-3/4 text-sm p-1 border-2 border-blue-600 rounded-md focus:outline-blue-600 focus:ring-1 focus:ring-blue-500"

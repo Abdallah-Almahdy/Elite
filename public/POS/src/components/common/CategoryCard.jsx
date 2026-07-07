@@ -3,10 +3,16 @@ import { IoClose } from "react-icons/io5";
 import { useProducts } from "../../contexts/ProductsContext";
 
 export default function CategoryCard() {
-  const { data, selectedCategory, setSelectedCategory, setCurrentPage } =
+  const { data, AllowedSectionsPOS, selectedCategory, setSelectedCategory, setCurrentPage } =
     useProducts();
   const [isOpen, setIsOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(5);
+
+
+  const filteredCategories = data?.filter((cat)=>{
+    return AllowedSectionsPOS?.includes(cat?.id)
+  })
+
 
   // Dynamically set visible count based on screen width
   useEffect(() => {
@@ -30,7 +36,7 @@ export default function CategoryCard() {
     <div className="flex flex-col gap-y-2">
       <h1 className="text-xl font-bold">الأقسام</h1>
       <div className="flex flex-wrap gap-2">
-        {data.slice(0, visibleCount).map((cat) => {
+        {filteredCategories?.slice(0, visibleCount).map((cat) => {
           return (
             <button
               type="button"
@@ -50,7 +56,7 @@ export default function CategoryCard() {
           );
         })}
         {/* "+ المزيد" button */}
-        {data.length > visibleCount && (
+        {filteredCategories.length > visibleCount && (
           <button
             onClick={() => setIsOpen(true)}
             className="cursor-pointer whitespace-nowrap px-4 py-2 rounded-lg border border-gray-300 bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
@@ -74,11 +80,12 @@ export default function CategoryCard() {
               </button>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              {data
-                .flatMap((obj) => Object.keys(obj))
+              {filteredCategories
+                // .flatMap((obj) => Object.keys(obj))
                 .map((cat, index) => {
-                  const categoryObj = data.find((obj) => obj[cat]);
-                  const id = categoryObj[cat]._id;
+                  // const categoryObj = data.find((obj) => obj[cat]);
+                  const id = cat.id;
+                  // const id = categoryObj[cat]._id;
                   return (
                     <button
                       key={index}
@@ -88,7 +95,7 @@ export default function CategoryCard() {
                         setIsOpen(false);
                       }}
                     >
-                      <h2> {cat}</h2>
+                      <h2> {cat?.name}</h2>
                     </button>
                   );
                 })}

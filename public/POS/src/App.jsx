@@ -1,6 +1,5 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { UIPreferencesProvider } from "./contexts/UIPreferencesContext.jsx";
-import { InvoiceSettingsProvider } from "./contexts/InvoiceSettingsContext.jsx";
 import Home from "./pages/Home";
 import DraftPage from "./pages/DraftPage.jsx";
 import { useState, useEffect, useContext } from "react";
@@ -17,23 +16,37 @@ import {
 import { ProductsProvider, useProducts } from "./contexts/ProductsContext.jsx";
 import PrintBarcodePage from "./pages/PrintBarcodePage.jsx";
 import { ToastContainer } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import { fetchProducts } from "./store/reducers/productSlice.js";
 import { fetchCategory } from "./store/reducers/productSlice.js";
 import { fetchClientsNames } from "./store/reducers/userSlice.js";
-import { SettingsPreferenceProvider } from "./contexts/SettingsPreferenceContext.jsx";
-import { UserSettingsPreferenceProvider } from "./contexts/UserSettingsPreferenceContext.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
-import UserSettingsPage from "./pages/UserSettingsPage.jsx";
 
 export default function App() {
-  const { setSelectedProducts } = useSelectedProducts();
+  const { selectedProducts, setSelectedProducts } = useSelectedProducts();
   const { setDraftFormData, draftFormData } = useProducts();
   const { setFormData } = useContext(FormDataContext);
   // const {setDraftFormData} = useProducts()
   const [draftData, setDraftData] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+
+  const paymentMapping = {
+    cash: "كاش",
+    credit_card: "بطاقة ائتمان",
+    instapay: "انستا باى",
+    wallet: "محفظة",
+    remaining: "اجل",
+  };
+
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
+
   useEffect(() => {
     dispatch(fetchCategory());
   }, [dispatch]);
@@ -54,6 +67,14 @@ export default function App() {
     };
 
     setDraftData(clonedDraft);
+    let items = selectedProducts?.filter((p) =>
+  clonedDraft.items.some((item) => item.id === p.id)
+);
+        let test = items.filter((item, index)=>{
+return item.quantity < item.number || item.quantity < item.weight
+        })
+        
+        sessionStorage.setItem("test", JSON.stringify(test));
     setSelectedProducts(clonedDraft.items);
 
     setDraftFormData(clonedDraft);
@@ -68,61 +89,72 @@ export default function App() {
     window.location.reload();
   };
 
+
   useEffect(() => {
     if (!draftFormData) return;
 
     setFormData((prev) => ({
       ...prev,
-      serialInput: draftFormData?.serialInput ?? prev.serialInput,
+      serialInput: draftFormData?.id ?? prev.serialInput,
       dateInput: draftFormData?.dateInput ?? prev.dateInput,
       clientName: draftFormData?.clientName ?? prev.clientName,
       notes: draftFormData?.notes ?? prev.notes,
-      paymentMethod: draftFormData?.paymentMethod ?? prev.paymentMethod,
-      paymentMethos: draftFormData?.paymentMethod ?? prev.paymentMethods,
-      invoiceType: draftFormData?.invoiceType ?? prev.invoiceType,
+      paymentMethod:  draftFormData.paymentMethod ?? prev.paymentMethod,
+      paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
+        invoiceType:  draftFormData.invoiceType ?? prev.invoiceType,
       phone1: draftFormData?.phone1 ?? prev.phone1,
       newPhone: draftFormData?.newPhone ?? prev.newPhone,
       optionalPhone: draftFormData?.optionalPhone ?? prev.optionalPhone,
       address1: draftFormData?.address1 ?? prev.address1,
       newAddress: draftFormData?.newAddress ?? prev.newAddress,
       optionalAddress: draftFormData?.optionalAddress ?? prev.optionalAddress,
+      warehouseName: draftFormData?.warehouseName ?? prev.warehouseName,
+      warehouseId: draftFormData?.warehouseId ?? prev.warehouseId,
     }));
-  }, [draftFormData]);
+    setDraftFormData((prev) => ({
+      ...prev,
+      id: draftFormData?.id ?? prev.serialInput,
+      serialInput: draftFormData?.id ?? prev.serialInput,
+      dateInput: draftFormData?.dateInput ?? prev.dateInput,
+      clientName: draftFormData?.clientName ?? prev.clientName,
+      notes: draftFormData?.notes ?? prev.notes,
+     paymentMethod:  draftFormData.paymentMethod ?? prev.paymentMethod,
+      paymentMethods: draftFormData.paymentMethods ?? prev.paymentMethods,
+        invoiceType:  draftFormData.invoiceType ?? prev.invoiceType,
+      phone1: draftFormData?.phone1 ?? prev.phone1,
+      newPhone: draftFormData?.newPhone ?? prev.newPhone,
+      optionalPhone: draftFormData?.optionalPhone ?? prev.optionalPhone,
+      address1: draftFormData?.address1 ?? prev.address1,
+      newAddress: draftFormData?.newAddress ?? prev.newAddress,
+      optionalAddress: draftFormData?.optionalAddress ?? prev.optionalAddress,
+      warehouseName: draftFormData?.warehouseName ?? prev.warehouseName,
+      warehouseId: draftFormData?.warehouseId ?? prev.warehouseId,
+    }));
+    
+
+  }, [draftFormData, setFormData, invoiceSettings]);
 
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <SettingsPreferenceProvider>
-        <UserSettingsPreferenceProvider>
-          <SelectedProductsProvider>
+      <SelectedProductsProvider>
         <FormDataProvider>
           <ProductsProvider>
-            <InvoiceSettingsProvider>
-              <UIPreferencesProvider>
+            <UIPreferencesProvider>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Home />
-                  }
-                />
+                <Route path="/" element={<Home />} />
                 <Route
                   path="/draft"
                   element={<DraftPage handleReturn={handleReturn} />}
                 />
                 <Route path="/order-details" element={<OrderDetailsPage />} />
                 <Route path="/print-barcode" element={<PrintBarcodePage />} />
-                <Route path="/invoice-settings" element={<SettingsPage />} />
-                <Route path="/user-settings" element={<UserSettingsPage />} />
               </Routes>
             </UIPreferencesProvider>
-            </InvoiceSettingsProvider>
           </ProductsProvider>
         </FormDataProvider>
       </SelectedProductsProvider>
-        </UserSettingsPreferenceProvider>
-      </SettingsPreferenceProvider>
     </>
   );
 }

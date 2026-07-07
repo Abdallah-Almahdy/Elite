@@ -1,10 +1,14 @@
 // Receipt80mm.jsx
 import React, { forwardRef, useRef, useImperativeHandle } from "react";
 import { printHTML, connectQZ, getPrinters } from "../../services/qzService";
-import { useUserSettingsPreference } from "../../contexts/UserSettingsPreferenceContext";
+import { useSelector } from "react-redux";
+// import { useUserSettingsPreference } from "../../contexts/UserSettingsPreferenceContext";
 
 const Receipt80mm = forwardRef(({ invoice, payload }, ref) => {
-  const {printerName} = useUserSettingsPreference();
+  //const printerSettings = JSON.parse(localStorage.getItem("Printer Settings"))
+  const userPrintersConfig = useSelector((state)=> state?.setting?.userPrintersConfig);
+  const selectedConf = userPrintersConfig?.invicePrinters?.find((conf)=> conf?.permssionName === "Receipt Printing");
+  const printerName = selectedConf?.printerName;
   const domRef = useRef();
 
   // Expose the print function to parent
@@ -163,7 +167,7 @@ const imgBase64 = await fetch(cloudinaryUrl)
                   ? item?.weight.toFixed(3)
                   : item?.number.toFixed(3)}
               </td>
-              <td>{item?.price?.toFixed(2)}</td>
+              <td>{Number(item?.price).toFixed(2)}</td>
               <td>{item?.total?.toFixed(2)}</td>
             </tr>
           ))}

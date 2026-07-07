@@ -20,12 +20,11 @@ import { closeShift, syncOfflineUsers } from "../store/reducers/userSlice";
 import PrintBarcodePage from "./PrintBarcodePage";
 import { getOfflineDrafts } from "../services/indexedDB";
 import { useProducts } from "../contexts/ProductsContext";
-import SettingsPage from "./SettingsPage";
-import { useInvoiceSettings } from "../contexts/InvoiceSettingsContext";
-import UserSettingsPage from "./UserSettingsPage";
-import { useUserSettingsPreference } from "../contexts/UserSettingsPreferenceContext";
 import notify from "../hooks/Notification";
 import ShiftModal from "../components/confirm/ShiftModal";
+import { fetchPermissions } from "../store/reducers/settingSlice";
+import { MdErrorOutline } from "react-icons/md";
+
 export default function Home() {
   const {
     selectedProducts,
@@ -39,13 +38,15 @@ export default function Home() {
     setDraftFormData,
   } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [draftID, setDraftID] = useState(1)
 
-  
   const { preference, updatePreference } = useUIPreferences();
-  const { invoiceSetting, updateUserSettings } = useInvoiceSettings();
-  const {passwordReq, errors, password, confirmPassword, printerName} =  useUserSettingsPreference();
   const loading = useSelector((state) => state.product.loading);
+  const permissions = useSelector((state)=> state?.setting?.permissions);
+  const currentDraft = useSelector((state)=> state.draft?.currentDraft)
+    const invoiceSettings = useSelector((state) => state.setting.invoiceSettings);
+
   const isFirstRun = useRef(true);
   const dispatch = useDispatch();
 
@@ -53,6 +54,11 @@ export default function Home() {
   const backSpace = useRef(null);
 
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    dispatch(fetchPermissions());
+  }, [])
+
   useEffect(() => {
     const loadDraft = async () => {
       const draftId = draftFormData?.id;
@@ -63,6 +69,7 @@ export default function Home() {
 
       if (draft) {
         setDraftFormData(draft);
+        
         setSelectedProducts(draft.items);
         sessionStorage.setItem("draftFormData", JSON.stringify(draft));
         sessionStorage.setItem(
@@ -76,14 +83,19 @@ export default function Home() {
   }, [draftFormData?.id]);
 
   useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
+    // if (isFirstRun.current) {
+    //   isFirstRun.current = false;
+    //   return;
+    // }
+    setDraftID(JSON.parse(sessionStorage.getItem("draftFormData"))?.id)
 
-    handleFreeze();
-  }, [selectedProducts, formData, total]);
+     if(JSON.parse(sessionStorage.getItem("draftFormData"))?.id === formData?.serialInput){
+      handleFreeze();
+     }
+       
+  }, [selectedProducts, formData, total, handleFreeze, draftID, invoiceSettings] );
 
+  
   useEffect(() => {
     let products =
       JSON.parse(sessionStorage.getItem("Selected Products")) || null;
@@ -98,6 +110,11 @@ export default function Home() {
     );
     sessionStorage.setItem("Total", JSON.stringify(total));
   }, [selectedProducts, total]);
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
 
   useNetworkStatus();
   useEffect(() => {
@@ -144,17 +161,15 @@ export default function Home() {
     setIsShiftModalOpen(false);
   };
 
-  const handleConfirmCloseShift = (amount) =>{
-    try{
-      dispatch(closeShift({amount}));
-    handleShiftModalClose()
-    notify("تم إغلاق الوردية بنجاح", "success")
+  const handleConfirmCloseShift = async (amount) => {
+    try {
+      await dispatch(closeShift({ amount })).unwrap();
+      handleShiftModalClose();
+      notify("تم إغلاق الوردية بنجاح", "success");
+    } catch (err) {
+      notify("حدثت مشكلة فى اغلاق الورديه!", "warn");
     }
-    catch(err){
-      notify("حدثت مشكلة فى اغلاق الورديه!", "warn")
-    }
-  }
-
+  };
 
   if (loading) {
     return (
@@ -171,9 +186,15 @@ export default function Home() {
   }
 
   return (
-    <>
+   <>
+   {permissions["pos.show"] ? (
+     <>
       <Modal isOpen={isModalOpen} onConfirm={handleModalConfirm} />
-      <ShiftModal isOpen={isShiftModalOpen} onClose={handleShiftModalClose} onConfirm={handleConfirmCloseShift}/>
+      <ShiftModal
+        isOpen={isShiftModalOpen}
+        onClose={handleShiftModalClose}
+        onConfirm={handleConfirmCloseShift}
+      />
       <div
         className={`w-full p-1 lg:pb-0 flex flex-col-reverse md:flex-row ${!isModalOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}  ${!isPopupOpen ? `min-h-screen overflow-auto` : `h-screen overflow-hidden`}`}
       >
@@ -212,5 +233,17 @@ export default function Home() {
         </div>
       </div>
     </>
+   )
+  : (
+    <div className="w-full h-screen flex flex-col justify-center items-center gap-y-2">
+      <MdErrorOutline className="text-7xl"/>
+
+      <h1 className="font-bold text-3xl mb-3 text-center">ليس لديك صلاحية الوصول إلى هذه الصفحة
+</h1>
+<h2 className="font-semibold text-lg text-center">نأسف، ليس لديك إذن بالوصول إلى هذه الصفحة</h2>
+    </div>
+  )
+  }
+   </>
   );
 }

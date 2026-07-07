@@ -11,8 +11,12 @@ import * as Yup from "yup";
 import { useSelectedProducts } from "../../../contexts/SelectedProductsContext";
 import Select from "react-select";
 import notify from "../../../hooks/Notification";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchConfigs } from "../../../store/reducers/settingSlice";
+import { useProducts } from "../../../contexts/ProductsContext";
 
 const UserForm = forwardRef((props, ref) => {
+  const dispatch = useDispatch();
   const { formData, setFormData } = useContext(FormDataContext);
   const draftFormData = JSON.parse(sessionStorage.getItem("draftFormData"));
   const { selectedProducts } = useSelectedProducts();
@@ -20,18 +24,39 @@ const UserForm = forwardRef((props, ref) => {
   const [showNewPhone, setShowNewPhone] = useState(false);
   const [showOptionalAddress, setShowOptionalAddress] = useState(false);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const {setDraftFormData} = useProducts()
   const date = new Date();
   function safeJSONParse(value, fallback = null) {
-  try {
-    if (!value) return fallback;
-    return JSON.parse(value);
-  } catch (error) {
-    console.warn("Invalid JSON detected:", value);
-    return fallback;
+    try {
+      if (!value) return fallback;
+      return JSON.parse(value);
+    } catch (error) {
+      console.warn("Invalid JSON detected:", value);
+      return fallback;
+    }
   }
-}
-  const invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
-  const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
+  // useEffect(() => {
+  //   dispatch(fetchConfigs());
+  // }, [dispatch]);
+  let invSerial = safeJSONParse(localStorage.getItem("Invoice Serial"), null);
+  
+  const invoiceSettings = useSelector(
+    (state) => state?.setting?.invoiceSettings,
+  );
+  const paymentMapping = {
+    cash: "كاش",
+    credit_card: "بطاقة ائتمان",
+    instapay: "انستا باى",
+    wallet: "محفظة",
+    remaining: "اجل",
+  };
+
+  const invoiceMapping = {
+    take_away: "تيك أواى",
+    delvery: "دليفرى",
+    hall: "صالة",
+  };
+  // const invoiceSettings = JSON.parse(localStorage.getItem("Invoice Settings"))
   const formik = useFormik({
     initialValues: {
       serialInput: draftFormData?.id || formData.serialInput || invSerial || "",
@@ -51,9 +76,13 @@ const UserForm = forwardRef((props, ref) => {
         draftFormData?.optionalAddress || formData?.optionalAddress || "",
       newAddress: draftFormData?.newAddress || formData?.newAddress || "",
       invoiceType:
-        draftFormData?.invoiceType || formData?.invoiceType || invoiceSettings?.defaultInvoiceType,
+        draftFormData?.invoiceType ||
+        formData?.invoiceType ||
+        invoiceMapping[invoiceSettings?.defaultInvoiceType],
       paymentMethod:
-        draftFormData?.paymentMethod || formData?.paymentMethod || invoiceSettings?.defaultPaymentMethod,
+        draftFormData?.paymentMethod ||
+        formData?.paymentMethod ||
+        paymentMapping[invoiceSettings?.defaultPaymentMethod],
       paymentMethods:
         draftFormData?.paymentMethods || formData?.paymentMethods || {},
     },
@@ -116,10 +145,20 @@ const UserForm = forwardRef((props, ref) => {
     isValid: formik.isValid,
   }));
   React.useEffect(() => {
+     const updatedDraft = {
+    ...draftFormData,
+    id: formik.values.serialInput,
+    ...formik.values,
+  };
     setFormData((prev) => ({
       ...prev,
       ...formik.values,
     }));
+    setDraftFormData((prev)=>({
+      ...prev,
+      ...formik.values,
+    }))
+    sessionStorage.setItem("draftFormData", JSON.stringify(updatedDraft))
   }, [formik.values]);
   useEffect(() => {
     sessionStorage.setItem("Order Summary Form", JSON.stringify(formik.values));
