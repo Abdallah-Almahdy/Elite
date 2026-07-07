@@ -75,6 +75,9 @@ class UserController extends Controller
 
         $validatedData['address_city'] = Delivery::find($validatedData['delivery_place_id'])->name;
 
+        $isFirstAddress = !$user->userAddresses()->exists();
+        $validatedData['is_default'] = $isFirstAddress;
+        
         $userAddress = $user->userAddresses()->create($validatedData);
         if($validatedData['is_default'] ?? false) {
             $user->userAddresses()->where('id', '!=', $userAddress->id)->update(['is_default' => false]);
@@ -113,6 +116,12 @@ class UserController extends Controller
     {
         $user = $request->user();
         $address = $user->userAddresses()->findOrFail($addressId);
+        if ($address->is_default) {
+            $user->userAddresses()
+                ->where('id', '!=', $address->id)
+                ->limit(1)
+                ->update(['is_default' => true]);
+        }
 
         $address->delete();
 
