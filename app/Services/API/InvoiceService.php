@@ -21,7 +21,7 @@ class InvoiceService
 
         try {
 
-            $shift = app(ShiftService::class)->openShift(1);
+            $shift = app(ShiftService::class)->openShift(auth()->user()->id);
 
             $warehouse = Warehouse::find($data['warehouse_id']);
 
